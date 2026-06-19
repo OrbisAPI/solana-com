@@ -3,29 +3,22 @@ title: Token Yatırma
 description: Tokenleri gizli duruma nasıl yatıracağınızı öğrenin.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Programı, güvenlik denetimi sürecinde olduğu için şu anda mainnet
-  ve devnet üzerinde geçici olarak devre dışı bırakılmıştır. Bu, gizli transfer
-  uzantısının şu anda kullanılamadığı anlamına gelir. Kavramlar hala geçerli
-  olsa da, kod örnekleri çalışmayacaktır.
-</Callout>
+## Gizli bekleyen bakiyeye token nasıl yatırılır
 
-## Tokenleri gizli bekleyen bakiyeye nasıl yatırılır
-
-Tokenler gizli olarak transfer edilmeden önce, açık token bakiyesinin gizli
+Tokenlar gizli olarak transfer edilmeden önce, genel token bakiyesinin gizli
 bakiyeye dönüştürülmesi gerekir. Bu dönüşüm iki aşamada gerçekleşir:
 
-1. **Gizli Bekleyen Bakiye**: Başlangıçta, tokenler açık bakiyeden "bekleyen"
+1. **Gizli Bekleyen Bakiye**: Başlangıçta, tokenlar genel bakiyeden "bekleyen"
    gizli bakiyeye "yatırılır".
 2. **Gizli Kullanılabilir Bakiye**: Bekleyen bakiye daha sonra kullanılabilir
-   bakiyeye "uygulanır", böylece tokenler gizli transferler için kullanılabilir
-   hale gelir.
+   bakiyeye "uygulanır" ve tokenlar gizli transferler için kullanılabilir hale
+   gelir.
 
-Bu bölüm, ilk aşamayı açıklar: açık token bakiyesini gizli bekleyen bakiyeye
-yatırma.
+Bu bölüm, birinci aşamayı açıklamaktadır: genel token bakiyesinin gizli bekleme
+bakiyesine yatırılması.
 
-Aşağıdaki diyagram, tokenleri açık bakiyeden gizli bekleyen bakiyeye yatırma
-adımlarını göstermektedir:
+Aşağıdaki diyagram, genel bakiyeden gizli bekleyen bakiyeye token yatırma
+işleminde yer alan adımları göstermektedir:
 
 ```mermaid title="Deposit Tokens"
 sequenceDiagram
@@ -45,33 +38,33 @@ sequenceDiagram
 
 ### Gerekli Talimat
 
-Açık bakiyeyi gizli bekleyen bakiyeye dönüştürmek için
+Genel bakiyeyi gizli bekleyen bakiyeye dönüştürmek için
 [ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386)
-talimatını çağırın. Her yatırma talimatı için
+talimatını çağırın. Deposit talimatı başına izin verilen
 [maksimum miktar](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
 2^48 ile sınırlıdır.
 
 `spl_token_client` crate'i, aşağıdaki örnekte gösterildiği gibi `Deposit`
-talimatıyla bir işlem oluşturan ve gönderen bir `confidential_transfer_deposit`
-metodu sağlar.
+talimatıyla bir işlem oluşturup gönderen `confidential_transfer_deposit`
+metodunu sağlar.
 
 ### Örnek Kod
 
-Aşağıdaki örnek, açık token bakiyesini gizli bekleyen bakiyeye nasıl
-yatıracağınızı göstermektedir.
+Aşağıdaki örnek, genel token bakiyesinin gizli bekleyen bakiyeye nasıl
+yatırılacağını göstermektedir.
 
-Örneği çalıştırmak için, aşağıdaki komutu kullanarak mainnet'ten klonlanmış
-Token Extensions Program ile yerel bir validator başlatın. Yerel validator'ı
-başlatmak için Solana CLI'nin kurulu olması gerekir.
+Örneği çalıştırmak için, aşağıdaki komutu kullanarak mainnet'ten klonlanan Token
+Extensions Program ile yerel bir validator başlatın. Yerel validator'ı başlatmak
+için Solana CLI'nin kurulu olması gerekmektedir.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Bu yazının yazıldığı sırada, Gizli Transferler varsayılan yerel validator
-  üzerinde etkinleştirilmemiştir. Örnek kodu çalıştırmak için ana ağdaki Token
-  Extensions Program'ı klonlamanız gerekmektedir.
+  Bu yazının yazıldığı sırada, Gizli Transferler varsayılan yerel validator'da
+  etkin değildir. Örnek kodu çalıştırmak için mainnet Token Extensions Program'ı
+  klonlamanız gerekmektedir.
 </Callout>
 
 <CodeTabs>

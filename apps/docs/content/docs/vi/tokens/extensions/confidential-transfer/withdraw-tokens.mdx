@@ -3,46 +3,39 @@ title: Rút token
 description: Tìm hiểu cách rút token từ trạng thái bảo mật.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program tạm thời bị vô hiệu hóa trên mainnet và devnet khi đang
-  trải qua kiểm toán bảo mật. Điều này có nghĩa là tiện ích mở rộng chuyển khoản
-  bảo mật hiện không khả dụng. Mặc dù các khái niệm vẫn hợp lệ, các ví dụ mã sẽ
-  không chạy được.
-</Callout>
-
 ## Cách rút token từ số dư khả dụng bảo mật
 
 Để rút token từ số dư khả dụng bảo mật sang số dư công khai:
 
 1. Tạo
    [hai bằng chứng](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/proof-generation/src/withdraw.rs#L22)
-   ở phía client:
+   phía client:
 
-   **Bằng chứng bình đẳng
+   **Bằng chứng Đẳng thức
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
-   Xác minh rằng ciphertext số dư khả dụng còn lại sau khi rút khớp với
+   Xác minh rằng bản mã số dư khả dụng còn lại sau khi rút khớp với
    [cam kết Pedersen](https://en.wikipedia.org/wiki/Commitment_scheme) tương
    ứng, đảm bảo số dư khả dụng mới của tài khoản được tính toán chính xác là
    `remaining_balance = current_balance - withdraw_amount`.
 
-   **Bằng chứng phạm vi
+   **Bằng chứng Phạm vi
    ([BatchedRangeProofU64Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u64.rs#L37))**:
-   Xác minh rằng số dư khả dụng còn lại sau khi rút không âm và nằm trong phạm
-   vi được chỉ định.
+   Xác minh rằng số dư khả dụng còn lại sau khi rút là không âm và nằm trong
+   phạm vi được chỉ định.
 
 2. Đối với mỗi bằng chứng:
-   - Gọi ZK ElGamal proof program để xác minh dữ liệu bằng chứng.
-   - Lưu trữ metadata cụ thể của bằng chứng trong tài khoản "context state" để
-     sử dụng trong các instruction khác.
+   - Gọi chương trình bằng chứng ZK ElGamal để xác minh dữ liệu bằng chứng.
+   - Lưu trữ siêu dữ liệu dành riêng cho bằng chứng trong tài khoản "context
+     state" của bằng chứng để sử dụng trong các lệnh khác.
 
-3. Gọi instruction
+3. Gọi lệnh
    [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
    cung cấp hai tài khoản bằng chứng.
 
-4. Đóng các tài khoản bằng chứng để thu hồi SOL đã sử dụng để tạo chúng.
+4. Đóng các tài khoản bằng chứng để thu hồi SOL đã dùng để tạo chúng.
 
-Sơ đồ sau đây cho thấy các bước liên quan đến việc rút token từ số dư khả dụng
-bảo mật sang số dư công khai:
+Sơ đồ sau đây mô tả các bước liên quan đến việc rút token từ số dư khả dụng bảo
+mật sang số dư công khai:
 
 ```mermaid title="Withdraw Tokens"
 sequenceDiagram
@@ -69,43 +62,43 @@ sequenceDiagram
     deactivate ElGamal
 ```
 
-### Các instruction bắt buộc
+### Các Lệnh Bắt buộc
 
 Để rút token từ số dư khả dụng bảo mật sang số dư công khai, bạn phải:
 
-- Tạo bằng chứng bình đẳng và bằng chứng phạm vi ở phía client
-- Gọi Zk ElGamal proof program để xác minh các bằng chứng và khởi tạo các tài
-  khoản "context state"
-- Gọi instruction
+- Tạo bằng chứng đẳng thức và bằng chứng phạm vi phía client
+- Gọi chương trình bằng chứng Zk ElGamal để xác minh các bằng chứng và khởi tạo
+  các tài khoản "context state"
+- Gọi lệnh
   [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
   cung cấp hai tài khoản bằng chứng.
 - Đóng hai tài khoản bằng chứng để thu hồi rent.
 
 Crate `spl_token_client` cung cấp các phương thức sau:
 
-- Phương thức `confidential_transfer_create_context_state_account` tạo một tài
-  khoản bằng chứng.
+- Phương thức `confidential_transfer_create_context_state_account` để tạo một
+  tài khoản bằng chứng.
 - Phương thức `confidential_transfer_withdraw` gọi lệnh `Withdraw`.
-- Phương thức `confidential_transfer_close_context_state_account` đóng một tài
-  khoản bằng chứng.
+- Phương thức `confidential_transfer_close_context_state_account` để đóng một
+  tài khoản bằng chứng.
 
-### Mã ví dụ
+### Mã Ví dụ
 
 Ví dụ sau đây minh họa cách rút token từ số dư khả dụng bảo mật sang số dư công
 khai.
 
-Để chạy ví dụ, khởi động một validator cục bộ với Token Extension Program được
-sao chép từ mainnet bằng lệnh sau. Bạn phải cài đặt Solana CLI để khởi động
-validator cục bộ.
+Để chạy ví dụ, hãy khởi động một validator cục bộ với Token Extensions Program
+được sao chép từ mainnet bằng lệnh sau. Bạn phải cài đặt Solana CLI trước khi
+khởi động validator cục bộ.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Tại thời điểm viết bài, Confidential Transfers chưa được kích hoạt trên
-  validator cục bộ mặc định. Bạn phải sao chép Token Extension Program từ
-  mainnet để chạy mã ví dụ.
+  Tại thời điểm viết bài, Chuyển khoản Bảo mật chưa được bật trên validator cục
+  bộ mặc định. Bạn phải sao chép Token Extensions Program từ mainnet để chạy mã
+  ví dụ.
 </Callout>
 
 <CodeTabs>

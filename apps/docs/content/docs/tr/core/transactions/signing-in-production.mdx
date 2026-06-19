@@ -1,0 +1,69 @@
+---
+title: Üretimde İmzalama
+description:
+  Bir Solana üretim uygulamasında imzalama anahtarlarının nerede bulunduğu ve
+  yerel anahtarlar, tarayıcı cüzdanları, bulut KMS/HSM ile yönetilen imzalama
+  arka uçları arasında nasıl seçim yapılacağı.
+type: conceptual
+prerequisites:
+  - /docs/core/transactions/transaction-structure
+related:
+  - /docs/tools/keychain
+  - /docs/payments/production-readiness
+---
+
+Bir işlem, yalnızca gerekli tüm imzalayanlardan geçerli bir
+[imza](/docs/core/transactions/transaction-structure#signatures) taşıyorsa
+çalıştırılabilir. Yerel geliştirme sırasında genellikle bu anahtarı bir
+[`Keypair`](/developers/cookbook/wallets/create-keypair) olarak tutar ve
+doğrudan imzalarsınız. Üretim ortamında ise önemli soru farklıdır: **özel
+anahtar nerede bulunur ve onu kullanarak imza vermeye kim yetkilidir?**
+
+<Callout type="warn">
+  Özel anahtarları hiçbir zaman istemci tarafı koda gömmeyin, bir ön uca dahil
+  etmeyin veya kaynak kontrolüne işlemeyin. Anahtarı ele geçiren herkes o
+  hesabın fonları üzerinde tam denetime sahip olur.
+</Callout>
+
+## İmzalama yaklaşımları
+
+| Yaklaşım                       | Anahtarın bulunduğu yer                                        | İmzalayan                                  | En uygun olduğu durum                                      |
+| ------------------------------ | -------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------- |
+| **Yerel keypair**              | Makinedeki bir dosya veya ortam değişkeni                      | Kodunuz, doğrudan                          | Yerel geliştirme, testler, CI                              |
+| **Tarayıcı cüzdanı**           | Son kullanıcının cüzdanı (örn. Phantom, Solflare)              | Son kullanıcı, işlem başına                | Kullanıcıların kendi işlemlerini imzaladığı ön uç dApp'ler |
+| **Bulut KMS / HSM**            | Donanım destekli bir anahtar hizmeti (AWS KMS, GCP KMS, Vault) | Arka ucunuz hizmetten imza talep eder      | Arka uç hizmetleri, hazine işlemleri, düzenlenmiş ortamlar |
+| **Yönetilen / MPC cüzdanları** | Bir sağlayıcının altyapısına bölünmüş veya emanet edilmiş      | Sağlayıcı, politikanıza göre ortak imzalar | Gömülü cüzdanlar, onay iş akışları, kurumsal saklama       |
+
+Yerel keypair, ham anahtar materyalini doğrudan uygulamanızın içine yerleştiren
+tek yaklaşımdır. Tüm üretim yaklaşımları anahtarı özel bir altyapıda saklar ve
+imzalama işlemini sizin adınıza bu altyapıya yaptırır.
+
+## Arka uç imzalama
+
+Bir sunucunun imzalaması gerektiğinde — ücret ödemek, program işlemleri
+göndermek veya bir hazineyi yönetmek gibi durumlarda — ham bir keypair yerine
+özel bir anahtar yönetim arka ucu kullanın. Solana Vakfı, yukarıdaki tablodaki
+tüm arka uçlarda tek bir `SolanaSigner` arayüzü sunan birleşik bir imzalama
+kütüphanesi olan [Keychain](/docs/tools/keychain)'i (Rust ve TypeScript)
+geliştirmektedir: Memory, HashiCorp Vault, AWS KMS, GCP KMS, Fireblocks, Privy,
+Turnkey, CDP, Crossmint, Dfns, Para, Openfort ve Utila.
+
+Arayüz tüm arka uçlarda aynı olduğundan, uygulama kodunu yeniden yazmadan yerel
+geliştirme ortamında bellek içi bir anahtar kullanabilir ve yapılandırma
+aracılığıyla üretim arka ucuna geçiş yapabilirsiniz. Keychain,
+[`@solana/kit`](/docs/clients/official/javascript) ve
+[Rust SDK](/docs/clients/official/rust) ile uyumludur.
+
+<Cards>
+  <Card title="Keychain" href="/docs/tools/keychain">
+    Yerel anahtarlar, KMS, HSM ve yönetilen cüzdan arka uçları genelinde
+    birleşik imzalama.
+  </Card>
+  <Card title="Arka uç seçimi" href="/docs/tools/keychain/choosing-a-backend">
+    Saklama modellerini karşılaştırın ve uygulamanız için doğru imzalama arka
+    ucunu seçin.
+  </Card>
+</Cards>
+
+Tam üretim kontrol listesi için — anahtar yönetimi, RPC güvenliği ve izleme —
+bkz. [Üretime Hazırlık](/docs/payments/production-readiness).

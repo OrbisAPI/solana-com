@@ -5,33 +5,26 @@ description:
   do dodawania opcjonalnych funkcji do mintów i kont tokenów.
 ---
 
-<Callout type="warn">
-  Program ZK ElGamal jest tymczasowo wyłączony na mainnecie i devnecie, ponieważ
-  przechodzi audyt bezpieczeństwa. Oznacza to, że rozszerzenie poufnych
-  transferów jest obecnie niedostępne. Chociaż koncepcje pozostają aktualne,
-  przykłady kodu nie będą działać.
-</Callout>
-
 ## Czym są poufne transfery?
 
-Poufne transfery umożliwiają przesyłanie tokenów między kontami tokenów bez
-ujawniania kwoty transferu. Jest to przydatne w transakcjach chroniących
-prywatność. Tylko kwoty transferów i salda tokenów pozostają prywatne. Adresy
-kont tokenów pozostają publiczne.
+Poufne transfery umożliwiają przesyłanie tokenów między token accounts bez
+ujawniania kwoty transferu. Jest to przydatne w przypadku transakcji
+zachowujących prywatność. Prywatne są wyłącznie kwoty transferów i salda
+tokenów. Adresy token accounts pozostają publiczne.
 
-- [Przegląd protokołu](https://www.solana-program.com/docs/confidential-balances/overview)
-  – Szczegóły dotyczące zastosowanego protokołu kryptograficznego
-- [Szybki start](https://www.solana-program.com/docs/confidential-balances#setup)
-  – Konfiguracja i podstawowe polecenia CLI
-- [Cookbook poufnych sald](https://github.com/solana-developers/Confidential-Balances-Sample)
-  – Przykłady kodu pokazujące, jak korzystać z rozszerzenia poufnych transferów
+- [Przegląd protokołu](https://www.solana-program.com/docs/confidential-balances/overview) -
+  Szczegóły dotyczące bazowego protokołu kryptograficznego
+- [Przewodnik szybkiego startu](https://www.solana-program.com/docs/confidential-balances#setup) -
+  Konfiguracja i podstawowe polecenia CLI
+- [Confidential Balances Cookbook](https://github.com/solana-developers/Confidential-Balances-Sample) -
+  Fragmenty kodu pokazujące, jak korzystać z rozszerzenia Confidential Transfer
 
 ### Jak to działa?
 
-Rozszerzenie poufnych transferów dodaje
+Rozszerzenie Confidential Transfer dodaje
 [instrukcje](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
-do programu Token Extension, które pozwalają przesyłać tokeny między kontami bez
-ujawniania kwoty transferu.
+do Token Extensions Program, które umożliwiają przesyłanie tokenów między
+kontami bez ujawniania kwoty transferu.
 
 ```mermaid title="Confidential Transfer Basic Overview"
     sequenceDiagram
@@ -53,19 +46,19 @@ ujawniania kwoty transferu.
 
 Podstawowy przebieg poufnych transferów tokenów wygląda następująco:
 
-1. Utwórz mint account z rozszerzeniem poufnych transferów.
-2. Utwórz konta tokenów z rozszerzeniem poufnych transferów dla nadawcy i
+1. Utwórz mint account z rozszerzeniem poufnego transferu.
+2. Utwórz token accounts z rozszerzeniem poufnego transferu dla nadawcy i
    odbiorcy.
-3. Wymintuj tokeny na konto nadawcy.
-4. **Zdeponuj** publiczne saldo nadawcy do **poufnego salda oczekującego**.
-5. **Zastosuj** oczekujące saldo nadawcy do **poufnego salda dostępnego**.
-6. Poufnie **prześlij** tokeny z konta tokenów nadawcy na konto tokenów
+3. Wydaj tokeny na konto nadawcy.
+4. **Wpłać** publiczne saldo nadawcy na **poufne saldo oczekujące**.
+5. **Zastosuj** saldo oczekujące nadawcy jako **poufne saldo dostępne**.
+6. Poufnie **prześlij** tokeny z token account nadawcy do token account
    odbiorcy.
-7. **Zastosuj** oczekujące saldo odbiorcy do **poufnego salda dostępnego**.
-8. **Wypłać** poufne dostępne saldo odbiorcy do **salda publicznego**.
+7. **Zastosuj** saldo oczekujące odbiorcy jako **poufne saldo dostępne**.
+8. **Wypłać** poufne saldo dostępne odbiorcy na **saldo publiczne**.
 
-Aby uzyskać więcej informacji o poszczególnych krokach w procesie poufnego
-transferu, zobacz odpowiednie strony:
+Aby uzyskać więcej informacji na temat kroków w przepływie poufnego transferu,
+zapoznaj się z odpowiednimi stronami:
 
 <Cards>
   <Card
@@ -84,19 +77,19 @@ transferu, zobacz odpowiednie strony:
     title="Wpłać tokeny"
     href="/docs/tokens/extensions/confidential-transfer/deposit-tokens"
   >
-    Jak wpłacić tokeny do poufnego salda oczekującego
+    Jak wpłacić tokeny na poufne saldo oczekujące
   </Card>
   <Card
     title="Zastosuj saldo oczekujące"
     href="/docs/tokens/extensions/confidential-transfer/apply-pending-balance"
   >
-    Jak zastosować saldo oczekujące do dostępnego salda poufnego
+    Jak zastosować saldo oczekujące jako dostępne saldo poufne
   </Card>
   <Card
     title="Wypłać tokeny"
     href="/docs/tokens/extensions/confidential-transfer/withdraw-tokens"
   >
-    Jak wypłacić tokeny z dostępnego salda poufnego
+    Jak wypłacić tokeny z poufnego salda dostępnego
   </Card>
   <Card
     title="Prześlij tokeny"
@@ -105,16 +98,23 @@ transferu, zobacz odpowiednie strony:
     Jak poufnie przesyłać tokeny między token accounts
   </Card>
   <Card
-    title="Przewodnik dla emitenta"
+    title="Przewodnik integracji"
+    href="/docs/tokens/extensions/confidential-transfer/integration-guide"
+  >
+    Jak portfele, eksploratory i giełdy mogą obsługiwać tokeny z poufnym
+    transferem
+  </Card>
+  <Card
+    title="Przewodnik emitenta"
     href="/docs/tokens/extensions/confidential-transfer/issuer-guide"
   >
-    Jak emitować poufny token transferu i zarządzać nim (polityka zatwierdzania,
-    audytorzy, opłaty, emisja i spalanie)
+    Jak emitować tokeny z poufnym transferem i zarządzać nimi (polityka
+    zatwierdzania, audytorzy, opłaty, emisja i spalanie)
   </Card>
 </Cards>
 
-Poniższy diagram przedstawia szczegółową sekwencję podstawowego przebiegu
-poufnych transferów tokenów:
+Poniższy diagram przedstawia szczegółową sekwencję podstawowego przepływu dla
+poufnych przelewów tokenów:
 
 ```mermaid title="Confidential Transfer Detailed Overview"
 sequenceDiagram
@@ -261,22 +261,22 @@ sequenceDiagram
 
 ### Przykładowy kod
 
-Poniższy przykład w języku Rust pokazuje kroki poufnych transferów tokenów
-odpowiadające powyższemu diagramowi. Kroki zostały rozdzielone na funkcje
-pomocnicze dla przejrzystości.
+Poniższy przykład w języku Rust przedstawia kroki dotyczące poufnych przelewów
+tokenów odpowiadające poprzedniemu diagramowi. Kroki są rozdzielone na funkcje
+pomocnicze dla zachowania przejrzystości.
 
-Aby uruchomić przykład, uruchom lokalny validator z Token Extension Program
-sklonowanym z mainnetu za pomocą poniższego polecenia. Musisz mieć zainstalowane
-Solana CLI, aby korzystać z lokalnego validatora.
+Aby uruchomić przykład, uruchom lokalny validator z Token Extensions Program
+sklonowanym z sieci głównej za pomocą poniższego polecenia. Aby korzystać z
+lokalnego validatora, musisz mieć zainstalowane Solana CLI.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  W momencie pisania tego tekstu poufne transfery nie są domyślnie włączone w
-  lokalnym validatorze. Musisz sklonować Token Extension Program z mainnetu, aby
-  uruchomić przykładowy kod.
+  W chwili pisania tego tekstu, Poufne Transfery nie są włączone w domyślnym
+  lokalnym validatorze. Aby uruchomić przykładowy kod, musisz sklonować
+  mainnetowy Token Extensions Program.
 </Callout>
 
 <CodeTabs>
@@ -1157,25 +1157,26 @@ tokio = { version = "1.44.2", features = ["full"] }
 
 </CodeTabs>
 
-## Instrukcje poufnego transferu
+## Instrukcje Poufnych Transferów
 
-Pełna lista instrukcji rozszerzenia poufnego transferu znajduje się
-[tutaj](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29):
+Pełna lista instrukcji rozszerzenia Poufnych Transferów
+[instructions](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
+jest następująca:
 
-| Instrukcja                          | Opis                                                                                                                                                       |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _rs`InitializeMint`_                | Konfiguruje konto mint do poufnych transferów. Ta instrukcja musi być zawarta w tej samej transakcji co instrukcja _rs`TokenInstruction::InitializeMint`_. |
-| _rs`UpdateMint`_                    | Aktualizuje ustawienia poufnych transferów dla mint.                                                                                                       |
-| _rs`ConfigureAccount`_              | Konfiguruje konto tokenów do poufnych transferów.                                                                                                          |
-| _rs`ApproveAccount`_                | Zatwierdza konto tokenów do poufnych transferów, jeśli mint wymaga zatwierdzenia nowych kont tokenów.                                                      |
-| _rs`EmptyAccount`_                  | Opróżnia oczekujące i dostępne poufne salda, aby umożliwić zamknięcie konta tokenów.                                                                       |
-| _rs`Deposit`_                       | Konwertuje publiczne saldo tokenów na oczekujące poufne saldo.                                                                                             |
-| _rs`Withdraw`_                      | Konwertuje dostępne poufne saldo z powrotem na saldo publiczne.                                                                                            |
-| _rs`Transfer`_                      | Poufnie przenosi tokeny między kontami tokenów.                                                                                                            |
-| _rs`ApplyPendingBalance`_           | Konwertuje saldo oczekujące na dostępne saldo po wpłatach lub transferach.                                                                                 |
-| _rs`EnableConfidentialCredits`_     | Pozwala kontu tokenów na odbieranie poufnych transferów tokenów.                                                                                           |
-| _rs`DisableConfidentialCredits`_    | Blokuje przychodzące poufne transfery, ale nadal pozwala na publiczne transfery.                                                                           |
-| _rs`EnableNonConfidentialCredits`_  | Pozwala kontu tokenów na odbieranie publicznych transferów tokenów.                                                                                        |
-| _rs`DisableNonConfidentialCredits`_ | Blokuje zwykłe transfery, aby konto mogło otrzymywać tylko poufne transfery.                                                                               |
-| _rs`TransferWithFee`_               | Poufnie przenosi tokeny między kontami tokenów z opłatą.                                                                                                   |
-| _rs`ConfigureAccountWithRegistry`_  | Alternatywny sposób konfigurowania kont tokenów do poufnych transferów przy użyciu konta _rs`ElGamalRegistry`_ zamiast dowodu _rs`VerifyPubkeyValidity`_.  |
+| Instrukcja                          | Opis                                                                                                                                                          |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _rs`InitializeMint`_                | Konfiguruje mint account dla poufnych transferów. Ta instrukcja musi być zawarta w tej samej transakcji co instrukcja _rs`TokenInstruction::InitializeMint`_. |
+| _rs`UpdateMint`_                    | Aktualizuje ustawienia poufnych transferów dla mint.                                                                                                          |
+| _rs`ConfigureAccount`_              | Konfiguruje token account dla poufnych transferów.                                                                                                            |
+| _rs`ApproveAccount`_                | Zatwierdza token account dla poufnych transferów, jeśli mint wymaga zatwierdzenia dla nowych token accounts.                                                  |
+| _rs`EmptyAccount`_                  | Opróżnia oczekujące i dostępne poufne salda, aby umożliwić zamknięcie token account.                                                                          |
+| _rs`Deposit`_                       | Konwertuje publiczne saldo tokenów na oczekujące poufne saldo.                                                                                                |
+| _rs`Withdraw`_                      | Konwertuje dostępne poufne saldo z powrotem na saldo publiczne.                                                                                               |
+| _rs`Transfer`_                      | Poufnie transferuje tokeny pomiędzy token accounts.                                                                                                           |
+| _rs`ApplyPendingBalance`_           | Konwertuje oczekujące saldo na dostępne saldo po wpłatach lub transferach.                                                                                    |
+| _rs`EnableConfidentialCredits`_     | Umożliwia token account odbieranie poufnych transferów tokenów.                                                                                               |
+| _rs`DisableConfidentialCredits`_    | Blokuje przychodzące poufne transfery, nadal zezwalając na publiczne transfery.                                                                               |
+| _rs`EnableNonConfidentialCredits`_  | Umożliwia token account odbieranie publicznych transferów tokenów.                                                                                            |
+| _rs`DisableNonConfidentialCredits`_ | Blokuje zwykłe transfery, aby konto odbierało wyłącznie poufne transfery.                                                                                     |
+| _rs`TransferWithFee`_               | Poufnie transferuje tokeny pomiędzy token accounts z opłatą.                                                                                                  |
+| _rs`ConfigureAccountWithRegistry`_  | Alternatywny sposób konfiguracji token accounts dla poufnych transferów przy użyciu konta _rs`ElGamalRegistry`_ zamiast dowodu _rs`VerifyPubkeyValidity`_.    |

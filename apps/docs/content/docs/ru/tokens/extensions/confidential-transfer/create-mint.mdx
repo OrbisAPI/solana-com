@@ -4,21 +4,14 @@ description:
   Узнайте, как создать минт токена с расширением Confidential Transfer.
 ---
 
-<Callout type="warn">
-  Программа ZK ElGamal временно отключена в mainnet и devnet из-за проведения
-  аудита безопасности. Это означает, что расширение confidential transfers
-  сейчас недоступно. Хотя концепции остаются актуальными, примеры кода не будут
-  работать.
-</Callout>
+## Как создать mint с расширением Confidential Transfer
 
-## Как создать минт с расширением Confidential Transfer
-
-Расширение Confidential Transfer позволяет осуществлять приватные переводы
+Расширение Confidential Transfer обеспечивает конфиденциальность переводов
 токенов, добавляя дополнительное состояние в mint account. В этом разделе
-объясняется, как создать минт токена с включённым этим расширением.
+объясняется, как создать token mint с включённым расширением.
 
-На следующей схеме показаны шаги по созданию минта с расширением Confidential
-Transfer:
+На следующей диаграмме показаны шаги, необходимые для создания mint с
+расширением Confidential Transfer:
 
 ```mermaid title="Create Mint with Confidential Transfer Extension"
 sequenceDiagram
@@ -32,7 +25,7 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Состояние минта Confidential Transfer
+### Состояние Mint при Confidential Transfer
 
 Расширение добавляет состояние
 [ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)
@@ -64,58 +57,57 @@ pub struct ConfidentialTransferMint {
 
 _rs`ConfidentialTransferMint`_ содержит три поля конфигурации:
 
-- **authority**: Аккаунт, который имеет право изменять настройки confidential
-  transfer для минта и одобрять новые конфиденциальные аккаунты, если
-  автоодобрение отключено.
+- **authority**: Аккаунт, имеющий разрешение изменять настройки конфиденциальных
+  переводов для mint и подтверждать новые конфиденциальные аккаунты, если
+  автоматическое подтверждение отключено.
 
 - **auto_approve_new_accounts**: Если установлено значение true, пользователи
-  могут создавать token accounts с включённой поддержкой confidential transfers
-  по умолчанию. Если false, authority должен одобрять каждый новый token account
-  перед его использованием для confidential transfers.
+  могут создавать token account с включёнными конфиденциальными переводами по
+  умолчанию. Если false, authority должен одобрить каждый новый token account,
+  прежде чем он сможет использоваться для конфиденциальных переводов.
 
 - **auditor_elgamal_pubkey**: Необязательный аудитор, который может
   расшифровывать суммы переводов в конфиденциальных транзакциях, обеспечивая
-  механизм соответствия требованиям при сохранении приватности для широкой
+  механизм соответствия требованиям при сохранении конфиденциальности от широкой
   публики.
 
 ### Необходимые инструкции
 
-Создание минта с включённым Confidential Transfer требует трёх инструкций в
-одной транзакции:
+Создание mint с включённым Confidential Transfer требует трёх инструкций в одной
+транзакции:
 
-1. **Создать mint account**: Вызовите инструкцию _rs`CreateAccount`_ System
+1. **Создание mint account**: Вызовите инструкцию _rs`CreateAccount`_ System
    Program для создания mint account.
 
 2. **Инициализация расширения Confidential Transfer**: Вызовите инструкцию
    [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
-   из Token Extension Program для настройки состояния
-   _rs`ConfidentialTransferMint`_ для минта.
+   Token Extensions Program для настройки состояния
+   _rs`ConfidentialTransferMint`_ для mint.
 
-3. **Инициализация минта**: Вызовите инструкцию
-   _rs`Instruction::InitializeMint`_ из Token Extension Program для
-   инициализации стандартного состояния минта.
+3. **Инициализация Mint**: Вызовите инструкцию _rs`Instruction::InitializeMint`_
+   Token Extensions Program для инициализации стандартного состояния mint.
 
-Хотя вы можете прописать эти инструкции вручную, crate `spl_token_client`
+Хотя эти инструкции можно написать вручную, крейт `spl_token_client`
 предоставляет метод `create_mint`, который формирует и отправляет транзакцию со
-всеми тремя инструкциями одним вызовом функции, как показано в примере ниже.
+всеми тремя инструкциями в одном вызове функции, как показано в примере ниже.
 
 ### Пример кода
 
-Следующий пример демонстрирует, как создать минт с расширением Confidential
+Следующий код демонстрирует, как создать минт с расширением Confidential
 Transfer.
 
 Чтобы запустить пример, запустите локальный validator с Token Extension Program,
-клонированной из mainnet, используя следующую команду. Для запуска локального
-validator у вас должен быть установлен Solana CLI.
+клонированной из мейннета, используя следующую команду. Для запуска локального
+validator необходимо установить Solana CLI.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  На момент написания Confidential Transfers не включён по умолчанию в локальном
-  validator. Для запуска примера необходимо клонировать Token Extension Program
-  из mainnet.
+  На момент написания Confidential Transfers не включён в стандартном локальном
+  validator. Для запуска примера кода необходимо клонировать Token Extension
+  Program из мейннета.
 </Callout>
 
 <CodeTabs>

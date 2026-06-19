@@ -3,31 +3,25 @@ title: Áp dụng số dư chờ xử lý
 description: Tìm hiểu cách áp dụng số dư chờ xử lý để làm cho tiền có sẵn.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program tạm thời bị vô hiệu hóa trên mainnet và devnet khi đang
-  trải qua kiểm toán bảo mật. Điều này có nghĩa là tiện ích mở rộng chuyển khoản
-  bảo mật hiện không khả dụng. Mặc dù các khái niệm vẫn hợp lệ, các ví dụ mã sẽ
-  không chạy được.
-</Callout>
-
-## Cách áp dụng số dư chờ xử lý vào số dư khả dụng
+## Cách áp dụng số dư đang chờ xử lý vào số dư khả dụng
 
 Trước khi token có thể được chuyển một cách bảo mật, số dư token công khai phải
-được chuyển đổi thành số dư bảo mật. Quá trình chuyển đổi này diễn ra qua hai
+được chuyển đổi thành số dư bảo mật. Quá trình chuyển đổi này diễn ra theo hai
 giai đoạn:
 
-1. **Số dư bảo mật chờ xử lý**: Ban đầu, token được "gửi" từ số dư công khai vào
-   số dư bảo mật "chờ xử lý".
-2. **Số dư bảo mật khả dụng**: Số dư chờ xử lý sau đó được "áp dụng" vào số dư
-   khả dụng, làm cho token có sẵn cho các giao dịch chuyển khoản bảo mật.
+1. **Số dư đang chờ xử lý bảo mật**: Ban đầu, các token được "nạp" từ số dư công
+   khai sang số dư bảo mật "đang chờ xử lý".
+2. **Số dư khả dụng bảo mật**: Số dư đang chờ xử lý sau đó được "áp dụng" vào số
+   dư khả dụng, giúp các token sẵn sàng cho việc chuyển khoản bảo mật.
 
-Phần này giải thích giai đoạn thứ hai: áp dụng số dư chờ xử lý vào số dư khả
-dụng.
+Phần này giải thích giai đoạn thứ hai: áp dụng số dư đang chờ xử lý vào số dư
+khả dụng.
 
-Khi token được "gửi" từ số dư công khai hoặc khi token được chuyển bảo mật từ
-một token account này sang token account khác, token ban đầu được thêm vào số dư
-bảo mật chờ xử lý. Trước khi token có thể được sử dụng cho các giao dịch chuyển
-khoản bảo mật, số dư chờ xử lý phải được "áp dụng" vào số dư khả dụng.
+Khi các token được "nạp" từ số dư công khai hoặc khi các token được chuyển khoản
+bảo mật từ token account này sang token account khác, các token sẽ ban đầu được
+thêm vào số dư bảo mật đang chờ xử lý. Trước khi token có thể được sử dụng cho
+các giao dịch chuyển khoản bảo mật, số dư đang chờ xử lý phải được "áp dụng" vào
+số dư khả dụng.
 
 ```mermaid title="Apply Pending Balance"
 sequenceDiagram
@@ -47,7 +41,7 @@ CC->>BB: Transfer
 B->>BB: Apply
 ```
 
-Sơ đồ sau đây cho thấy các bước liên quan đến việc áp dụng số dư chờ xử lý vào
+Sơ đồ sau đây mô tả các bước liên quan đến việc áp dụng số dư đang chờ xử lý vào
 số dư khả dụng:
 
 ```mermaid title="Apply Pending Balance"
@@ -69,22 +63,22 @@ sequenceDiagram
     Note over TokenAccount: Tokens now in available confidential balance<br>ready for confidential transfers
 ```
 
-### Instruction bắt buộc
+### Lệnh bắt buộc
 
-Để chuyển đổi số dư chờ xử lý thành số dư khả dụng, hãy gọi instruction
+Để chuyển đổi số dư đang chờ xử lý thành số dư khả dụng, hãy gọi lệnh
 [ConfidentialTransferInstruction::ApplyPendingBalance](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1152).
 
 Crate `spl_token_client` cung cấp phương thức
-`confidential_transfer_apply_pending_balance` để xây dựng và gửi một transaction
-với instruction `ApplyPendingBalance`, như được minh họa trong ví dụ dưới đây.
+`confidential_transfer_apply_pending_balance` để xây dựng và gửi một giao dịch
+với lệnh `ApplyPendingBalance`, như được minh họa trong ví dụ bên dưới.
 
 ### Mã ví dụ
 
 Ví dụ sau đây minh họa cách áp dụng số dư bảo mật đang chờ xử lý vào số dư bảo
 mật khả dụng.
 
-Để chạy ví dụ, khởi động một validator cục bộ với Token Extension Program được
-sao chép từ mainnet bằng lệnh sau. Bạn phải cài đặt Solana CLI để khởi động
+Để chạy ví dụ, hãy khởi động một validator cục bộ với Token Extensions Program
+được sao chép từ mainnet bằng lệnh sau. Bạn phải cài đặt Solana CLI để khởi động
 validator cục bộ.
 
 ```terminal
@@ -92,8 +86,8 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 ```
 
 <Callout type="info">
-  Tại thời điểm viết bài, Confidential Transfers chưa được kích hoạt trên
-  validator cục bộ mặc định. Bạn phải sao chép Token Extension Program từ
+  Tại thời điểm viết bài, tính năng Confidential Transfers chưa được bật trên
+  validator cục bộ mặc định. Bạn phải sao chép Token Extensions Program từ
   mainnet để chạy mã ví dụ.
 </Callout>
 

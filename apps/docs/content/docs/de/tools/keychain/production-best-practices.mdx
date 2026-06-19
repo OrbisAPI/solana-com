@@ -1,0 +1,70 @@
+---
+title: Best Practices für den Produktionsbetrieb
+description:
+  Keychain-Signing-Backends sicher im Produktionsbetrieb betreiben –
+  Aufgabentrennung, Schlüsselrotation, Least-Privilege-Zugriff, Verfügbarkeit,
+  Transportsicherheit, Monitoring und Audit.
+related:
+  - /docs/tools/keychain/choosing-a-backend
+  - /docs/payments/production-readiness
+---
+
+Keychain abstrahiert das Signing-Backend, doch der Betrieb eines Signers im
+Produktionsbetrieb liegt weiterhin in Ihrer Verantwortung. Diese Praktiken
+gelten für alle Backends; siehe
+[Backend auswählen](/docs/tools/keychain/choosing-a-backend) zur Auswahl des
+geeigneten Backends.
+
+## Hot- und Cold-Signer trennen
+
+Verwenden Sie einen Signer mit geringem Guthaben ("Hot"-Signer) für häufige,
+automatisierte Transaktionen und einen separaten Signer für hohe Werte
+("Cold"-Signer) für Treasury-Bewegungen. Sichern Sie den Cold-Signer mit
+MPC-Custody oder einem Cloud-HSM ab und verlangen Sie Genehmigungsrichtlinien
+vor der Signierung. Da die Schnittstelle identisch ist, kann jede Rolle ein
+anderes Backend verwenden, ohne die Aufrufstellen zu ändern.
+
+## Schlüssel gezielt rotieren
+
+Bei Solana ist der Signing-Key gleichzeitig die Kontenadresse, daher erzeugt
+eine Schlüsselrotation eine neue Adresse. Planen Sie die Rotation als Migration:
+Stellen Sie einen neuen Schlüssel bereit, übertragen Sie die relevanten
+Berechtigungen (oder verschieben Sie Guthaben) auf die neue Adresse und
+deaktivieren Sie anschließend den alten Schlüssel. Verwenden Sie für jede
+Umgebung eigene Schlüssel, damit Devnet-Schlüssel niemals im Mainnet
+wiederverwendet werden.
+
+## Least-Privilege-Zugriff gewähren
+
+Beschränken Sie die Zugangsdaten jedes Backends auf das Minimum, das zum
+Signieren erforderlich ist. Für AWS KMS sind das `kms:Sign` und
+`kms:DescribeKey` für den jeweiligen Schlüssel; bevorzugen Sie IAM-Rollen
+gegenüber statischen Zugangsdaten. Wenden Sie dasselbe Prinzip auf
+Vault-Richtlinien und verwaltete Wallet-API-Schlüssel an.
+
+## Verfügbarkeit einplanen
+
+Remote-Backends sind auf einen Netzwerkdienst angewiesen. Rufen Sie
+`isAvailable()` auf, bevor Sie sich auf einen Signer verlassen, wenden Sie
+Wiederholungsversuche mit Backoff bei vorübergehenden Fehlern an und definieren
+Sie einen Fallback-Pfad für Ausfälle. Keychain erzwingt HTTPS für
+Remote-Backends und wendet ein Standard-Anfragetimeout an.
+
+## Geheimnisse und Transport schützen
+
+- Alle Remote-Backends kommunizieren über HTTPS; Nicht-HTTPS-Endpunkte werden
+  abgelehnt.
+- API-Schlüssel, Tokens und Zugangsdaten aus einem Secret-Manager oder
+  Umgebungsvariablen beziehen — niemals fest im Code verankern oder in die
+  Versionsverwaltung einchecken.
+- Keychain bereinigt Fehlerantworten, um das Durchsickern von Geheimnissen in
+  Logs zu vermeiden; halten Sie Ihre eigenen Log-Ausgaben frei von
+  unverschlüsselten Zugangsdaten und Schlüsselmaterial.
+
+## Signiervorgänge überwachen und prüfen
+
+Überwachen Sie Erfolgsrate, Latenz und Fehleranzahl bei Signiervorgängen und
+richten Sie Benachrichtigungen bei Ausreißern ein — siehe die Metriken unter
+[Production Readiness](/docs/payments/production-readiness#monitoring).
+Aktivieren Sie anbietersei­tige Audit-Logs (KMS, Vault oder Verwahrer) und
+gleichen Sie diese mit den Transaktionen ab, die Ihre Anwendung einreicht.

@@ -3,13 +3,6 @@ title: Talleta tokeneita
 description: Opi tallettamaan tokeneita luottamukselliseen tilaan.
 ---
 
-<Callout type="warn">
-  ZK ElGamal -ohjelma on väliaikaisesti poistettu käytöstä pääverkossa ja
-  kehitysverkossa turvallisuusauditoinnin ajaksi. Tämä tarkoittaa, että
-  luottamukselliset siirtolaajennukset eivät ole tällä hetkellä käytettävissä.
-  Vaikka konseptit ovat edelleen päteviä, koodiesimerkit eivät toimi.
-</Callout>
-
 ## Kuinka tallettaa tokeneita luottamukselliseen odottavaan saldoon
 
 Ennen kuin tokeneita voidaan siirtää luottamuksellisesti, julkinen tokenisaldo
@@ -18,14 +11,14 @@ vaiheessa:
 
 1. **Luottamuksellinen odottava saldo**: Aluksi tokenit "talletetaan" julkisesta
    saldosta "odottavaan" luottamukselliseen saldoon.
-2. **Luottamuksellinen käytettävissä oleva saldo**: Odottava saldo "sovelletaan"
-   sitten käytettävissä olevaan saldoon, jolloin tokenit ovat käytettävissä
-   luottamuksellisiin siirtoihin.
+2. **Luottamuksellinen käytettävissä oleva saldo**: Odottava saldo
+   "kohdistetaan" sitten käytettävissä olevaan saldoon, jolloin tokenit ovat
+   käytettävissä luottamuksellisiin siirtoihin.
 
-Tämä osio selittää ensimmäisen vaiheen: julkisen tokenisaldon tallettamisen
+Tässä osiossa selitetään ensimmäinen vaihe: julkisen tokenisaldon tallettaminen
 luottamukselliseen odottavaan saldoon.
 
-Seuraava kaavio näyttää vaiheet, jotka liittyvät tokenien tallettamiseen
+Seuraava kaavio näyttää vaiheet, jotka liittyvät tokeneiden tallettamiseen
 julkisesta saldosta luottamukselliseen odottavaan saldoon:
 
 ```mermaid title="Deposit Tokens"
@@ -46,34 +39,33 @@ sequenceDiagram
 
 ### Vaadittu ohje
 
-Julkisen saldon muuntamiseksi luottamukselliseksi odottavaksi saldoksi, kutsu
+Muuntaaksesi julkisen saldon luottamukselliseksi odottavaksi saldoksi, kutsu
 [ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386)
 -ohjetta.
 [Enimmäismäärä](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
-talletusohjetta kohden on rajoitettu 2^48:aan.
+yhtä talletusohjausta kohti on rajoitettu arvoon 2^48.
 
-`spl_token_client`-crate tarjoaa `confidential_transfer_deposit`-metodin, joka
-rakentaa ja lähettää transaktion `Deposit`-käskyllä, kuten alla olevassa
-esimerkissä on esitetty.
+`spl_token_client` -paketti tarjoaa `confidential_transfer_deposit` -metodin,
+joka rakentaa ja lähettää transaktion `Deposit` -ohjeella, kuten alla olevassa
+esimerkissä on osoitettu.
 
 ### Esimerkkikoodi
 
-Seuraava esimerkki näyttää, kuinka tallettaa julkinen tokenisaldo
+Seuraava esimerkki havainnollistaa, kuinka julkinen tokenisaldo talletetaan
 luottamukselliseen odottavaan saldoon.
 
-Suorittaaksesi esimerkin, käynnistä paikallinen validator Token Extensions
-Program -ohjelmalla, joka on kloonattu pääverkosta käyttäen seuraavaa komentoa.
-Sinulla on oltava Solana CLI asennettuna paikallisen validatorin
-käynnistämiseksi.
+Suorittaaksesi esimerkin, käynnistä paikallinen validator, johon on kloonattu
+Token Extensions Program mainnettistä käyttämällä seuraavaa komentoa. Sinulla
+täytyy olla Solana CLI asennettuna käynnistääksesi paikallisen validatorin.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Tätä kirjoitettaessa luottamukselliset siirrot eivät ole käytössä
-  oletusarvoisessa paikallisessa validatorissa. Sinun täytyy kloonata mainnetin
-  Token Extensions Program suorittaaksesi esimerkkikoodin.
+  Kirjoitushetkellä Confidential Transfers ei ole käytössä oletuspaikallisessa
+  validatorissa. Sinun on kloonattava mainnet Token Extensions Program
+  suorittaaksesi esimerkkikoodin.
 </Callout>
 
 <CodeTabs>

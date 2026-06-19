@@ -5,31 +5,24 @@ description:
   özellikler eklemek için nasıl kullanılacağı hakkında bilgi edinin.
 ---
 
-<Callout type="warn">
-  ZK ElGamal programı, güvenlik denetiminden geçerken mainnet ve devnet'te
-  geçici olarak devre dışı bırakılmıştır. Bu, gizli transfer uzantısının şu anda
-  kullanılamadığı anlamına gelir. Kavramlar hala geçerli olsa da, kod örnekleri
-  çalışmayacaktır.
-</Callout>
+## Gizli Transferler Nedir?
 
-## Gizli transferler nedir?
-
-Gizli transferler, transfer miktarını açığa çıkarmadan token hesapları arasında
+Gizli transferler, transfer miktarını açıklamadan token account'lar arasında
 token transferi yapmanızı sağlar. Bu, gizliliği koruyan işlemler için
-kullanışlıdır. Yalnızca transfer miktarları ve token bakiyeleri özeldir. Token
-hesap adresleri herkese açık kalır.
+kullanışlıdır. Yalnızca transfer miktarları ve token bakiyeleri gizlidir. token
+account adresleri ise herkese açık kalmaya devam eder.
 
-- [Protokol genel bakış](https://www.solana-program.com/docs/confidential-balances/overview) -
-  Temel kriptografik protokol hakkında ayrıntılar
-- [Hızlı başlangıç kılavuzu](https://www.solana-program.com/docs/confidential-balances#setup) -
+- [Protokole Genel Bakış](https://www.solana-program.com/docs/confidential-balances/overview) -
+  Temel kriptografik protokole ilişkin ayrıntılar
+- [Hızlı Başlangıç Kılavuzu](https://www.solana-program.com/docs/confidential-balances#setup) -
   Kurulum ve temel CLI komutları
-- [Gizli bakiyeler yemek kitabı](https://github.com/solana-developers/Confidential-Balances-Sample) -
-  Gizli transfer uzantısının nasıl kullanılacağına dair kod parçacıkları
+- [Gizli Bakiyeler Yemek Kitabı](https://github.com/solana-developers/Confidential-Balances-Sample) -
+  Gizli Transfer uzantısının nasıl kullanılacağına dair kod parçacıkları
 
-### Nasıl çalışır?
+### Nasıl Çalışır?
 
-Gizli transfer uzantısı, Token Extension programına hesaplar arasında transfer
-miktarını açığa çıkarmadan token transferi yapmanızı sağlayan
+Gizli Transfer uzantısı, Token Extensions Program'a transfer miktarını
+açıklamadan hesaplar arasında token transferi yapmanıza olanak tanıyan
 [talimatlar](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
 ekler.
 
@@ -53,19 +46,18 @@ ekler.
 
 Gizli token transferlerinin temel akışı şu şekildedir:
 
-1. Gizli transfer uzantısına sahip bir mint hesabı oluşturun.
-2. Gönderen ve alıcı için gizli transfer uzantısına sahip token hesapları
-   oluşturun.
-3. Gönderen hesabına token basın.
+1. Gizli transfer uzantısıyla bir mint account oluşturun.
+2. Gönderici ve alıcı için gizli transfer uzantılı token account'lar oluşturun.
+3. Gönderici hesabına token'ları mint edin.
 4. Göndericinin genel bakiyesini **gizli bekleyen bakiyeye** **yatırın**.
 5. Göndericinin bekleyen bakiyesini **gizli kullanılabilir bakiyeye**
    **uygulayın**.
-6. Gönderen token hesabından alıcı token hesabına gizli olarak token
-   **transferi** yapın.
+6. token'ları gönderici token account'tan alıcı token account'a gizli olarak
+   **transfer edin**.
 7. Alıcının bekleyen bakiyesini **gizli kullanılabilir bakiyeye** **uygulayın**.
 8. Alıcının gizli kullanılabilir bakiyesini **genel bakiyeye** **çekin**.
 
-Gizli transfer akışındaki adımlarla ilgili daha fazla ayrıntı için ilgili
+Gizli transfer akışındaki adımlara ilişkin daha fazla ayrıntı için ilgili
 sayfalara bakın:
 
 <Cards>
@@ -73,19 +65,19 @@ sayfalara bakın:
     title="Mint Account Oluştur"
     href="/docs/tokens/extensions/confidential-transfer/create-mint"
   >
-    Confidential Transfer uzantısıyla mint account nasıl oluşturulur
+    Gizli Transfer uzantısıyla mint account nasıl oluşturulur
   </Card>
   <Card
     title="Token Account Oluştur"
     href="/docs/tokens/extensions/confidential-transfer/create-token-account"
   >
-    Confidential Transfer uzantısıyla token account nasıl yapılandırılır
+    Gizli Transfer uzantısıyla token account nasıl yapılandırılır
   </Card>
   <Card
     title="Token Yatır"
     href="/docs/tokens/extensions/confidential-transfer/deposit-tokens"
   >
-    Tokenlar gizli bekleyen bakiyeye nasıl yatırılır
+    Token'lar gizli bekleyen bakiyeye nasıl yatırılır
   </Card>
   <Card
     title="Bekleyen Bakiyeyi Uygula"
@@ -97,25 +89,32 @@ sayfalara bakın:
     title="Token Çek"
     href="/docs/tokens/extensions/confidential-transfer/withdraw-tokens"
   >
-    Tokenlar gizli mevcut bakiyeden nasıl çekilir
+    Token'lar gizli kullanılabilir bakiyeden nasıl çekilir
   </Card>
   <Card
     title="Token Transfer Et"
     href="/docs/tokens/extensions/confidential-transfer/transfer-tokens"
   >
-    Tokenlar token account'lar arasında gizli olarak nasıl transfer edilir
+    Token'lar token account'lar arasında gizli olarak nasıl transfer edilir
   </Card>
   <Card
-    title="İhraçcı Rehberi"
+    title="Entegrasyon Kılavuzu"
+    href="/docs/tokens/extensions/confidential-transfer/integration-guide"
+  >
+    Cüzdanlar, gezginler ve borsalar gizli transfer token'larını nasıl
+    destekleyebilir
+  </Card>
+  <Card
+    title="İhraççı Kılavuzu"
     href="/docs/tokens/extensions/confidential-transfer/issuer-guide"
   >
-    Gizli transfer tokeni nasıl çıkarılır ve işletilir (onay politikası,
+    Gizli transfer token'ı nasıl ihraç edilir ve işletilir (onay politikası,
     denetçiler, ücretler, mint ve burn)
   </Card>
 </Cards>
 
-Aşağıdaki diyagram, gizli token transferleri için temel akışın ayrıntılı bir
-sırasını göstermektedir:
+Aşağıdaki diyagram, gizli token transferlerinin temel akışına ilişkin ayrıntılı
+bir sıralamayı göstermektedir:
 
 ```mermaid title="Confidential Transfer Detailed Overview"
 sequenceDiagram
@@ -260,24 +259,24 @@ sequenceDiagram
     end
 ```
 
-### Örnek kod
+### Örnek Kod
 
 Aşağıdaki Rust örneği, önceki diyagrama karşılık gelen gizli token transferleri
-için adımları göstermektedir. Adımlar netlik için yardımcı fonksiyonlara
-ayrılmıştır.
+adımlarını göstermektedir. Adımlar, netlik sağlamak amacıyla yardımcı
+fonksiyonlara ayrılmıştır.
 
 Örneği çalıştırmak için, aşağıdaki komutu kullanarak mainnet'ten klonlanan Token
-Extension Program ile yerel bir validator başlatın. Yerel validator'ı kullanmak
-için Solana CLI'nin yüklü olması gerekir.
+Extensions Program ile birlikte yerel bir validator başlatın. Yerel validator'ı
+kullanabilmek için Solana CLI'nin yüklü olması gerekmektedir.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Bu yazının yazıldığı sırada, Gizli Transferler varsayılan yerel validator'da
-  etkinleştirilmemiştir. Örnek kodu çalıştırmak için mainnet Token Extension
-  Program'ı klonlamanız gerekir.
+  Bu yazının hazırlandığı sırada, Gizli Transferler varsayılan yerel validator
+  üzerinde etkinleştirilmemişti. Örnek kodu çalıştırabilmek için mainnet Token
+  Extensions Program'ı klonlamanız gerekmektedir.
 </Callout>
 
 <CodeTabs>
@@ -1158,26 +1157,26 @@ tokio = { version = "1.44.2", features = ["full"] }
 
 </CodeTabs>
 
-## Gizli Transfer talimatları
+## Gizli Transfer Talimatları
 
-Gizli Transfer uzantısı
-[talimatlarının](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
-tam listesi aşağıdaki gibidir:
+Gizli Transfer uzantısının tam talimat listesi
+[instructions](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
+aşağıdaki gibidir:
 
-| Talimat                             | Açıklama                                                                                                                                                       |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _rs`InitializeMint`_                | Mint hesabını gizli transferler için ayarlar. Bu talimat _rs`TokenInstruction::InitializeMint`_ talimatıyla aynı işleme dahil edilmelidir.                     |
-| _rs`UpdateMint`_                    | Bir mint için gizli transfer ayarlarını günceller.                                                                                                             |
-| _rs`ConfigureAccount`_              | Bir token hesabını gizli transferler için ayarlar.                                                                                                             |
-| _rs`ApproveAccount`_                | Mint yeni token hesapları için onay gerektiriyorsa, bir token hesabını gizli transferler için onaylar.                                                         |
-| _rs`EmptyAccount`_                  | Bir token hesabının kapatılmasına izin vermek için bekleyen ve kullanılabilir gizli bakiyeleri boşaltır.                                                       |
-| _rs`Deposit`_                       | Açık token bakiyesini bekleyen gizli bakiyeye dönüştürür.                                                                                                      |
-| _rs`Withdraw`_                      | Kullanılabilir gizli bakiyeyi tekrar açık bakiyeye dönüştürür.                                                                                                 |
-| _rs`Transfer`_                      | Token hesapları arasında gizli olarak token transfer eder.                                                                                                     |
-| _rs`ApplyPendingBalance`_           | Yatırma veya transferlerden sonra bekleyen bakiyeyi kullanılabilir bakiyeye dönüştürür.                                                                        |
-| _rs`EnableConfidentialCredits`_     | Bir token hesabının gizli token transferleri almasına izin verir.                                                                                              |
-| _rs`DisableConfidentialCredits`_    | Gelen gizli transferleri engeller ancak yine de açık transferlere izin verir.                                                                                  |
-| _rs`EnableNonConfidentialCredits`_  | Bir token hesabının açık token transferleri almasına izin verir.                                                                                               |
-| _rs`DisableNonConfidentialCredits`_ | Hesabın yalnızca gizli transferler almasını sağlamak için normal transferleri engeller.                                                                        |
-| _rs`TransferWithFee`_               | Token hesapları arasında ücretli olarak gizli şekilde token transfer eder.                                                                                     |
-| _rs`ConfigureAccountWithRegistry`_  | _rs`VerifyPubkeyValidity`_ kanıtı yerine bir _rs`ElGamalRegistry`_ hesabı kullanarak token hesaplarını gizli transferler için yapılandırmanın alternatif yolu. |
+| Talimat                             | Açıklama                                                                                                                                                            |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _rs`InitializeMint`_                | mint account'u gizli transferler için yapılandırır. Bu talimat, _rs`TokenInstruction::InitializeMint`_ talimatıyla aynı işleme dahil edilmelidir.                   |
+| _rs`UpdateMint`_                    | Bir mint için gizli transfer ayarlarını günceller.                                                                                                                  |
+| _rs`ConfigureAccount`_              | Bir token account'u gizli transferler için yapılandırır.                                                                                                            |
+| _rs`ApproveAccount`_                | Mint yeni token account'lar için onay gerektiriyorsa, bir token account'u gizli transferler için onaylar.                                                           |
+| _rs`EmptyAccount`_                  | Bir token account'ı kapatabilmek için bekleyen ve mevcut gizli bakiyeleri sıfırlar.                                                                                 |
+| _rs`Deposit`_                       | Genel token bakiyesini bekleyen gizli bakiyeye dönüştürür.                                                                                                          |
+| _rs`Withdraw`_                      | Mevcut gizli bakiyeyi tekrar genel bakiyeye dönüştürür.                                                                                                             |
+| _rs`Transfer`_                      | Token'ları, token account'lar arasında gizli şekilde transfer eder.                                                                                                 |
+| _rs`ApplyPendingBalance`_           | Yatırma işlemleri veya transferlerin ardından bekleyen bakiyeyi mevcut bakiyeye dönüştürür.                                                                         |
+| _rs`EnableConfidentialCredits`_     | Bir token account'ın gizli token transferleri almasına izin verir.                                                                                                  |
+| _rs`DisableConfidentialCredits`_    | Genel transferlere izin verirken gelen gizli transferleri engeller.                                                                                                 |
+| _rs`EnableNonConfidentialCredits`_  | Bir token account'ın genel token transferleri almasına izin verir.                                                                                                  |
+| _rs`DisableNonConfidentialCredits`_ | Hesabın yalnızca gizli transferler almasını sağlamak için normal transferleri engeller.                                                                             |
+| _rs`TransferWithFee`_               | Token'ları, token account'lar arasında ücret alınarak gizli şekilde transfer eder.                                                                                  |
+| _rs`ConfigureAccountWithRegistry`_  | Token account'larını gizli transferler için yapılandırmanın alternatif bir yöntemi; _rs`VerifyPubkeyValidity`_ kanıtı yerine _rs`ElGamalRegistry`_ hesabı kullanır. |

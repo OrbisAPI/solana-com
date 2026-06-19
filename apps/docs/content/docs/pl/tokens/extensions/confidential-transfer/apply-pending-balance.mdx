@@ -4,31 +4,25 @@ description:
   Dowiedz się, jak zastosować oczekujące saldo, aby środki były dostępne.
 ---
 
-<Callout type="warn">
-  Program ZK ElGamal jest tymczasowo wyłączony na mainnecie i devnecie z powodu
-  trwającego audytu bezpieczeństwa. Oznacza to, że rozszerzenie poufnych
-  transferów jest obecnie niedostępne. Chociaż koncepcje pozostają aktualne,
-  przykłady kodu nie będą działać.
-</Callout>
-
 ## Jak zastosować oczekujące saldo do dostępnego salda
 
-Zanim tokeny będą mogły być przesyłane w sposób poufny, publiczne saldo tokenów
-musi zostać przekształcone w saldo poufne. Ta konwersja odbywa się w dwóch
-etapach:
+Zanim tokeny będą mogły być transferowane w sposób poufny, publiczne saldo
+tokenów musi zostać przekonwertowane na saldo poufne. Konwersja ta przebiega
+dwuetapowo:
 
-1. **Poufne oczekujące saldo**: Na początku tokeny są „deponowane” z publicznego
-   salda do „oczekującego” poufnego salda.
-2. **Poufne dostępne saldo**: Następnie oczekujące saldo jest „zastosowane” do
-   dostępnego salda, dzięki czemu tokeny są dostępne do poufnych transferów.
+1. **Poufne saldo oczekujące**: Początkowo tokeny są „deponowane“ z salda
+   publicznego na „oczekujące“ saldo poufne.
+2. **Poufne saldo dostępne**: Saldo oczekujące jest następnie „stosowane“ do
+   salda dostępnego, dzięki czemu tokeny stają się dostępne do poufnych
+   transferów.
 
-Ta sekcja wyjaśnia drugi etap: zastosowanie oczekującego salda do salda
+Ta sekcja wyjaśnia drugi etap: stosowanie salda oczekującego do salda
 dostępnego.
 
-Gdy tokeny są „deponowane” z publicznego salda lub gdy tokeny są przesyłane
-poufnie z jednego token account do innego, tokeny są początkowo dodawane do
-poufnego oczekującego salda. Zanim tokeny będą mogły być użyte do poufnych
-transferów, oczekujące saldo musi zostać „zastosowane” do salda dostępnego.
+Gdy tokeny są „deponowane“ z salda publicznego lub gdy tokeny są poufnie
+transferowane z jednego token account do innego, tokeny są początkwo dodawane do
+poufnego salda oczekującego. Zanim tokeny będą mogły być użyte do poufnych
+transferów, saldo oczekujące musi zostać „zastosowane“ do salda dostępnego.
 
 ```mermaid title="Apply Pending Balance"
 sequenceDiagram
@@ -48,7 +42,7 @@ CC->>BB: Transfer
 B->>BB: Apply
 ```
 
-Poniższy diagram pokazuje kroki związane z zastosowaniem oczekującego salda do
+Poniższy diagram przedstawia kroki związane ze stosowaniem salda oczekującego do
 salda dostępnego:
 
 ```mermaid title="Apply Pending Balance"
@@ -72,30 +66,31 @@ sequenceDiagram
 
 ### Wymagana instrukcja
 
-Aby przekształcić oczekujące saldo w saldo dostępne, wywołaj instrukcję
+Aby przekonwertować saldo oczekujące na saldo dostępne, wywołaj instrukcję
 [ConfidentialTransferInstruction::ApplyPendingBalance](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1152).
 
-Pakiet `spl_token_client` odostępnia metodę
+Crate `spl_token_client` udostępnia metodę
 `confidential_transfer_apply_pending_balance`, która buduje i wysyła transakcję
-z instrukcją `ApplyPendingBalance`, jak pokazano w przykładzie poniżej.
+z instrukcją `ApplyPendingBalance`, co zostało zademonstrowane w poniższym
+przykładzie.
 
 ### Przykładowy kod
 
-Poniższy przykład pokazuje, jak zastosować poufne oczekujące saldo do poufnego
-dostępnego salda.
+Poniższy przykład demonstruje, jak zastosować poufne saldo oczekujące do
+poufnego salda dostępnego.
 
-Aby uruchomić ten przykład, uruchom lokalny validator z Token Extension Program
-sklonowanym z mainnetu, używając poniższego polecenia. Do uruchomienia lokalnego
-validatora musisz mieć zainstalowane Solana CLI.
+Aby uruchomić przykład, uruchom lokalny validator z Token Extensions Program
+sklonowanym z sieci mainnet przy użyciu poniższego polecenia. Aby uruchomić
+lokalny validator, musisz mieć zainstalowane Solana CLI.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  W chwili pisania tego tekstu Confidential Transfers nie jest włączone w
-  domyślnym lokalnym validatorze. Musisz sklonować Token Extension Program z
-  mainnetu, aby uruchomić przykładowy kod.
+  W chwili pisania tego tekstu, Confidential Transfers nie jest włączone w
+  domyślnym lokalnym validatorze. Aby uruchomić przykładowy kod, musisz
+  sklonować mainnetowy Token Extensions Program.
 </Callout>
 
 <CodeTabs>

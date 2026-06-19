@@ -3,30 +3,23 @@ title: Tokens storten
 description: Leer hoe je tokens naar vertrouwelijke status kunt storten.
 ---
 
-<Callout type="warn">
-  Het ZK ElGamal Programma is tijdelijk uitgeschakeld op het mainnet en devnet
-  terwijl het een beveiligingsaudit ondergaat. Dit betekent dat de
-  vertrouwelijke overdrachtsextensie momenteel niet beschikbaar is. Hoewel de
-  concepten nog steeds geldig zijn, zullen de code voorbeelden niet werken.
-</Callout>
-
-## Hoe tokens storten naar vertrouwelijk wachtend saldo
+## Hoe tokens te storten naar het vertrouwelijke wachtende saldo
 
 Voordat tokens vertrouwelijk kunnen worden overgedragen, moet het openbare
-tokensaldo worden omgezet naar een vertrouwelijk saldo. Deze conversie gebeurt
+tokensaldo worden omgezet naar een vertrouwelijk saldo. Deze conversie verloopt
 in twee fasen:
 
-1. **Vertrouwelijk wachtend saldo**: In eerste instantie worden tokens "gestort"
-   van openbaar saldo naar een "wachtend" vertrouwelijk saldo.
-2. **Vertrouwelijk beschikbaar saldo**: Het wachtende saldo wordt vervolgens
+1. **Vertrouwelijk Wachtend Saldo**: Aanvankelijk worden tokens "gestort" van
+   het openbare saldo naar een "wachtend" vertrouwelijk saldo.
+2. **Vertrouwelijk Beschikbaar Saldo**: Het wachtende saldo wordt vervolgens
    "toegepast" op het beschikbare saldo, waardoor de tokens beschikbaar worden
    voor vertrouwelijke overdrachten.
 
-Dit gedeelte legt de eerste fase uit: het storten van openbaar tokensaldo naar
-het vertrouwelijk wachtend saldo.
+Dit gedeelte legt de eerste fase uit: het storten van het openbare tokensaldo
+naar het vertrouwelijke wachtende saldo.
 
-Het volgende diagram toont de stappen die betrokken zijn bij het storten van
-tokens van het openbare saldo naar het vertrouwelijk wachtend saldo:
+Het volgende diagram toont de stappen voor het storten van tokens van het
+openbare saldo naar het vertrouwelijke wachtende saldo:
 
 ```mermaid title="Deposit Tokens"
 sequenceDiagram
@@ -47,7 +40,7 @@ sequenceDiagram
 ### Vereiste instructie
 
 Om een openbaar saldo om te zetten naar een vertrouwelijk wachtend saldo, roep
-je de
+de
 [ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386)
 instructie aan. Het
 [maximale bedrag](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
@@ -59,22 +52,21 @@ gedemonstreerd in het onderstaande voorbeeld.
 
 ### Voorbeeldcode
 
-Het volgende voorbeeld laat zien hoe je openbaar tokensaldo naar vertrouwelijk
-wachtend saldo kunt storten.
+Het volgende voorbeeld demonstreert hoe het openbare tokensaldo wordt gestort
+naar het vertrouwelijke wachtende saldo.
 
-Om het voorbeeld uit te voeren, start je een lokale validator met het Token
-Extensions Program gekloond van het mainnet met behulp van het volgende
-commando. Je moet de Solana CLI geïnstalleerd hebben om de lokale validator te
-starten.
+Om het voorbeeld uit te voeren, start een lokale validator met het Token
+Extensions Program gekloond van mainnet met behulp van de volgende opdracht. U
+moet de Solana CLI geïnstalleerd hebben om de lokale validator te starten.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Op het moment van schrijven zijn de vertrouwelijke overdrachten niet
-  ingeschakeld op de standaard lokale validator. Je moet het Token Extension
-  Program van het mainnet klonen om de voorbeeldcode uit te voeren.
+  Op het moment van schrijven zijn Vertrouwelijke Overdrachten niet ingeschakeld
+  op de standaard lokale validator. U moet het mainnet Token Extensions Program
+  klonen om de voorbeeldcode uit te voeren.
 </Callout>
 
 <CodeTabs>

@@ -4,21 +4,14 @@ description:
   Tìm hiểu cách tạo token account với tiện ích mở rộng Confidential Transfer.
 ---
 
-<Callout type="warn">
-  Chương trình ZK ElGamal tạm thời bị vô hiệu hóa trên mainnet và devnet khi
-  đang được kiểm tra bảo mật. Điều này có nghĩa là tiện ích mở rộng confidential
-  transfers hiện không khả dụng. Mặc dù các khái niệm vẫn hợp lệ, nhưng các ví
-  dụ mã sẽ không chạy được.
-</Callout>
+## Cách tạo token account với extension Confidential Transfer
 
-## Cách tạo token account với tiện ích mở rộng Confidential Transfer
+Extension Confidential Transfer cho phép chuyển token riêng tư bằng cách thêm
+trạng thái bổ sung vào token account. Phần này giải thích cách tạo một token
+account với extension này được bật.
 
-Tiện ích mở rộng Confidential Transfer cho phép chuyển token riêng tư bằng cách
-thêm trạng thái bổ sung vào token account. Phần này giải thích cách tạo token
-account với tiện ích mở rộng này được kích hoạt.
-
-Sơ đồ sau đây cho thấy các bước liên quan đến việc tạo token account với tiện
-ích mở rộng Confidential Transfer:
+Sơ đồ sau đây minh họa các bước liên quan đến việc tạo token account với
+extension Confidential Transfer:
 
 ```mermaid title="Create Token Account with Confidential Transfer Extension"
 sequenceDiagram
@@ -51,9 +44,9 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Trạng thái Confidential Transfer Token Account
+### Trạng Thái Token Account Confidential Transfer
 
-Tiện ích mở rộng này thêm trạng thái
+Extension bổ sung trạng thái
 [ConfidentialTransferAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L75-L122)
 vào token account:
 
@@ -108,72 +101,73 @@ pub struct ConfidentialTransferAccount {
 ```
 
 _rs`ConfidentialTransferAccount`_ chứa một số trường để quản lý các giao dịch
-chuyển khoản bảo mật:
+chuyển token bảo mật:
 
 - **approved**: Trạng thái phê duyệt của tài khoản cho các giao dịch chuyển
-  khoản bảo mật. Nếu cấu hình `auto_approve_new_accounts` của mint account được
+  token bảo mật. Nếu cấu hình `auto_approve_new_accounts` của mint account được
   đặt là `true`, tất cả token account sẽ tự động được phê duyệt cho các giao
-  dịch chuyển khoản bảo mật.
+  dịch chuyển token bảo mật.
 
 - **elgamal_pubkey**: Khóa công khai ElGamal được sử dụng để mã hóa số dư và số
-  tiền chuyển khoản.
+  tiền chuyển.
 
-- **pending_balance_lo**: 16 bit thấp đã mã hóa của số dư đang chờ xử lý. Số dư
-  được chia thành phần cao và thấp để giải mã hiệu quả.
+- **pending_balance_lo**: 16 bit thấp được mã hóa của số dư đang chờ xử lý. Số
+  dư được chia thành phần cao và phần thấp để giải mã hiệu quả.
 
-- **pending_balance_hi**: 48 bit cao đã mã hóa của số dư đang chờ xử lý. Số dư
-  được chia thành phần cao và thấp để giải mã hiệu quả.
+- **pending_balance_hi**: 48 bit cao được mã hóa của số dư đang chờ xử lý. Số dư
+  được chia thành phần cao và phần thấp để giải mã hiệu quả.
 
-- **available_balance**: Số dư đã mã hóa có sẵn để chuyển khoản.
+- **available_balance**: Số dư được mã hóa khả dụng để thực hiện giao dịch
+  chuyển.
 
 - **decryptable_available_balance**: Số dư khả dụng được mã hóa bằng khóa
-  Advanced Encryption Standard (AES) để chủ tài khoản giải mã hiệu quả.
+  Advanced Encryption Standard (AES) để giải mã hiệu quả bởi chủ sở hữu tài
+  khoản.
 
-- **allow_confidential_credits**: Nếu là true, cho phép các giao dịch chuyển
-  tiền bí mật đến.
+- **allow_confidential_credits**: Nếu đúng, cho phép các giao dịch chuyển token
+  bảo mật đến.
 
-- **allow_non_confidential_credits**: Nếu là true, cho phép các giao dịch chuyển
-  tiền không bí mật đến.
+- **allow_non_confidential_credits**: Nếu đúng, cho phép các giao dịch chuyển
+  token không bảo mật đến.
 
-- **pending_balance_credit_counter**: Đếm số lượng tín dụng số dư đang chờ xử lý
-  đến từ các lệnh gửi tiền và chuyển khoản.
+- **pending_balance_credit_counter**: Đếm số lần ghi có số dư đang chờ xử lý từ
+  các lệnh nạp tiền và chuyển tiền.
 
-- **maximum_pending_balance_credit_counter**: Giới hạn số lượng các khoản tín
-  dụng đang chờ xử lý trước khi yêu cầu lệnh _rs`ApplyPendingBalance`_ để chuyển
-  đổi số dư đang chờ xử lý thành số dư khả dụng.
+- **maximum_pending_balance_credit_counter**: Giới hạn số lần ghi có đang chờ xử
+  lý trước khi yêu cầu lệnh _rs`ApplyPendingBalance`_ để chuyển đổi số dư đang
+  chờ xử lý thành số dư khả dụng.
 
 - **expected_pending_balance_credit_counter**: Giá trị
   `pending_balance_credit_counter` được cung cấp bởi client thông qua
-  instruction data lần cuối cùng lệnh _rs`ApplyPendingBalance`_ được xử lý.
+  instruction data vào lần cuối lệnh _rs`ApplyPendingBalance`_ được xử lý.
 
 - **actual_pending_balance_credit_counter**: Giá trị
   `pending_balance_credit_counter` trên token account tại thời điểm lệnh
   _rs`ApplyPendingBalance`_ cuối cùng được xử lý.
 
 <Callout type="info">
-  **Số dư đang chờ xử lý và số dư khả dụng**
+  **Số dư chờ xử lý và số dư khả dụng**
 
-Số dư bí mật được phân tách thành số dư đang chờ xử lý và số dư khả dụng để ngăn
-chặn các cuộc tấn công DoS. Nếu không có sự phân tách này, kẻ tấn công có thể
-liên tục gửi token đến một token account, chặn khả năng chuyển token của chủ
-token account. Chủ token account sẽ không thể chuyển token vì số dư được mã hóa
-sẽ thay đổi giữa thời điểm giao dịch được gửi và khi nó được xử lý, dẫn đến giao
-dịch thất bại.
+Số dư bảo mật được tách thành số dư chờ xử lý và số dư khả dụng để ngăn chặn các
+cuộc tấn công DoS. Nếu không có sự tách biệt này, kẻ tấn công có thể liên tục
+gửi token đến một token account, chặn khả năng chuyển token của chủ sở hữu token
+account. Chủ sở hữu token account sẽ không thể chuyển token vì số dư được mã hóa
+sẽ thay đổi trong khoảng thời gian từ khi giao dịch được gửi đến khi được xử lý,
+dẫn đến giao dịch thất bại.
 
-Tất cả các khoản tiền gửi và số tiền chuyển khoản ban đầu được thêm vào số dư
-đang chờ xử lý. Chủ sở hữu token account phải sử dụng lệnh
-_rs`ApplyPendingBalance`_ để chuyển đổi số dư đang chờ xử lý thành số dư khả
-dụng. Các giao dịch chuyển khoản hoặc tiền gửi đến không ảnh hưởng đến số dư khả
-dụng của token account.
+Tất cả các khoản tiền gửi và số tiền chuyển đều được thêm vào số dư chờ xử lý
+ban đầu. Chủ sở hữu token account phải sử dụng lệnh _rs`ApplyPendingBalance`_ để
+chuyển đổi số dư chờ xử lý thành số dư khả dụng. Các khoản chuyển đến hoặc tiền
+gửi không ảnh hưởng đến số dư khả dụng của token account.
 
 </Callout>
 
 <Callout type="info">
-  **Phân chia số dư đang chờ xử lý thành cao/thấp**
+  **Phân tách số dư chờ xử lý thành giá trị cao/thấp**
 
-Số dư đang chờ xử lý bảo mật được chia thành `pending_balance_lo` và
-`pending_balance_hi` vì việc giải mã ElGamal yêu cầu nhiều tính toán hơn cho các
-số lớn hơn. Bạn có thể tìm thấy cách triển khai phép toán ciphertext
+Số dư chờ xử lý bảo mật được chia thành `pending_balance_lo` và
+`pending_balance_hi` vì giải mã ElGamal đòi hỏi nhiều tính toán hơn cho các số
+lớn hơn. Bạn có thể tìm thấy phần triển khai số học bản mã
 [tại đây](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/ciphertext-arithmetic/src/lib.rs#L54),
 được sử dụng trong lệnh _rs`ApplyPendingBalance`_
 [tại đây](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1180-L1184).
@@ -181,18 +175,18 @@ số lớn hơn. Bạn có thể tìm thấy cách triển khai phép toán ciph
 </Callout>
 
 <Callout type="info">
-  **Bộ đếm tín dụng số dư đang chờ xử lý**
+  **Bộ đếm ghi có số dư chờ xử lý**
 
-Khi gọi lệnh _rs`ApplyPendingBalance`_ để chuyển đổi số dư đang chờ xử lý thành
-số dư khả dụng:
+Khi gọi lệnh _rs`ApplyPendingBalance`_ để chuyển đổi số dư chờ xử lý thành số dư
+khả dụng:
 
-1. Client tra cứu số dư đang chờ xử lý và số dư khả dụng hiện tại, mã hóa tổng,
-   và cung cấp `decryptable_available_balance` được mã hóa bằng khóa AES của chủ
-   sở hữu token account.
+1. Client tra cứu số dư chờ xử lý và số dư khả dụng hiện tại, mã hóa tổng số, và
+   cung cấp `decryptable_available_balance` được mã hóa bằng khóa AES của chủ sở
+   hữu token account.
 
-2. Các bộ đếm tín dụng đang chờ xử lý dự kiến và thực tế theo dõi các thay đổi
-   đối với giá trị bộ đếm giữa thời điểm lệnh _rs`ApplyPendingBalance`_ được tạo
-   và được xử lý:
+2. Bộ đếm ghi có chờ xử lý dự kiến và thực tế theo dõi các thay đổi đối với giá
+   trị bộ đếm trong khoảng thời gian từ khi lệnh _rs`ApplyPendingBalance`_ được
+   tạo đến khi được xử lý:
    - `expected_pending_balance_credit_counter`: Giá trị
      `pending_balance_credit_counter` khi client tạo lệnh
      _rs`ApplyPendingBalance`_
@@ -200,42 +194,41 @@ số dư khả dụng:
      `pending_balance_credit_counter` trên token account tại thời điểm lệnh
      _rs`ApplyPendingBalance`_ được xử lý
 
-Các bộ đếm dự kiến/thực tế khớp nhau cho biết `decryptable_available_balance`
+Các bộ đếm kỳ vọng/thực tế khớp nhau cho thấy `decryptable_available_balance`
 khớp với `available_balance`.
 
-Khi truy xuất trạng thái của token account để đọc
-`decryptable_available_balance`, các giá trị bộ đếm dự kiến/thực tế khác nhau
-yêu cầu client tra cứu các lệnh deposit/transfer gần đây khớp với sự chênh lệch
-bộ đếm để tính toán số dư chính xác.
+Khi lấy trạng thái của token account để đọc `decryptable_available_balance`, các
+giá trị bộ đếm kỳ vọng/thực tế khác nhau yêu cầu client tra cứu các lệnh nạp
+tiền/chuyển tiền gần đây khớp với chênh lệch bộ đếm để tính số dư chính xác.
 
-**Quy trình đối chiếu số dư**
+**Quy Trình Đối Soát Số Dư**
 
-Khi các bộ đếm số dư chờ xử lý dự kiến và thực tế khác nhau, hãy làm theo các
-bước sau để đối chiếu `decryptable_available_balance`:
+Khi các bộ đếm số dư chờ xử lý kỳ vọng và thực tế khác nhau, hãy làm theo các
+bước sau để đối soát `decryptable_available_balance`:
 
 1. Bắt đầu với `decryptable_available_balance` từ token account
-2. Truy xuất các giao dịch gần đây nhất bao gồm các lệnh deposit và transfer lên
-   đến chênh lệch bộ đếm (thực tế - dự kiến):
-   - Cộng các số tiền công khai từ các lệnh deposit
-   - Giải mã và cộng các số tiền ciphertext đích từ các lệnh transfer
+2. Lấy các giao dịch gần nhất bao gồm các lệnh nạp tiền và chuyển tiền cho đến
+   chênh lệch bộ đếm (thực tế - kỳ vọng):
+   - Cộng các khoản công khai từ lệnh nạp tiền
+   - Giải mã và cộng các khoản ciphertext đích từ lệnh chuyển tiền
 
 </Callout>
 
-### Các lệnh bắt buộc
+### Các Lệnh Bắt Buộc
 
-Việc tạo token account với phần mở rộng Confidential Transfer yêu cầu ba lệnh:
+Việc tạo một token account với extension Confidential Transfer yêu cầu ba lệnh:
 
-1. **Tạo token account**: Gọi lệnh
+1. **Tạo Token Account**: Gọi lệnh
    _rs`AssociatedTokenAccountInstruction:Create`_ của Associated Token Program
    để tạo token account.
 
-2. **Phân bổ lại không gian tài khoản**: Gọi lệnh
-   _rs`TokenInstruction::Reallocate`_ của Token Extension Program để thêm không
+2. **Tái Phân Bổ Không Gian Tài Khoản**: Gọi lệnh
+   _rs`TokenInstruction::Reallocate`_ của Token Extensions Program để thêm không
    gian cho trạng thái _rs`ConfidentialTransferAccount`_.
 
-3. **Cấu hình chuyển khoản bảo mật**: Gọi lệnh
+3. **Cấu Hình Confidential Transfers**: Gọi lệnh
    [ConfidentialTransferInstruction::ConfigureAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L201)
-   của Token Extension Program để khởi tạo trạng thái
+   của Token Extensions Program để khởi tạo trạng thái
    _rs`ConfidentialTransferAccount`_.
 
 <Callout type="info">
@@ -243,24 +236,24 @@ Việc tạo token account với phần mở rộng Confidential Transfer yêu c
 **Chỉ chủ sở hữu token account mới có thể cấu hình token account cho các giao
 dịch bảo mật**.
 
-Lệnh _rs`ConfigureAccount`_ yêu cầu tạo khóa mã hóa và dữ liệu chứng minh ở phía
-client mà chỉ có thể được tạo bởi chủ sở hữu token account.
+Lệnh _rs`ConfigureAccount`_ yêu cầu tạo phía client các khóa mã hóa và dữ liệu
+bằng chứng chỉ có thể được tạo bởi chủ sở hữu token account.
 
-_rs`PubkeyValidityProofData`_ tạo một chứng minh xác thực rằng khóa ElGamal hợp
-lệ. Để biết chi tiết triển khai, xem:
+_rs`PubkeyValidityProofData`_ tạo một bằng chứng xác minh rằng khóa ElGamal là
+hợp lệ. Để biết chi tiết triển khai, xem:
 
 - [PubkeyValidityProofData](https://github.com/anza-xyz/agave/blob/b39a9764005ac8596b7e14e61d381305ce57ecaa/zk-sdk/src/zk_elgamal_proof_program/proof_data/pubkey_validity.rs#L58)
 - [PubkeyValidityProof](https://github.com/anza-xyz/agave/blob/b39a9764005ac8596b7e14e61d381305ce57ecaa/zk-sdk/src/sigma_proofs/pubkey_validity.rs#L65)
 
 </Callout>
 
-### Mã ví dụ
+### Mã Ví Dụ
 
-Đoạn mã sau đây minh họa cách tạo Associated Token Account với tiện ích mở rộng
+Đoạn code sau đây minh họa cách tạo một associated token account với extension
 Confidential Transfer,
 
-Để chạy ví dụ, hãy khởi động validator cục bộ với Token Extensions Program được
-sao chép từ mainnet bằng lệnh sau. Bạn phải cài đặt Solana CLI để khởi động
+Để chạy ví dụ, hãy khởi động một validator cục bộ với Token Extensions Program
+được sao chép từ mainnet bằng lệnh sau. Bạn phải cài đặt Solana CLI để khởi động
 validator cục bộ.
 
 ```terminal
@@ -268,7 +261,7 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 ```
 
 <Callout type="info">
-  Tại thời điểm viết bài, Confidential Transfers chưa được kích hoạt trên
+  Tại thời điểm viết bài, tính năng Confidential Transfers chưa được bật trên
   validator cục bộ mặc định. Bạn phải sao chép Token Extensions Program từ
   mainnet để chạy mã ví dụ.
 </Callout>

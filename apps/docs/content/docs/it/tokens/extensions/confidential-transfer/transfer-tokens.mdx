@@ -4,62 +4,56 @@ description:
   Scopri come trasferire token in modo privato da un account token a un altro.
 ---
 
-<Callout type="warn">
-  Il programma ZK ElGamal è temporaneamente disabilitato sulla mainnet e devnet
-  mentre è sottoposto a un audit di sicurezza. Ciò significa che l'estensione
-  per i trasferimenti confidenziali non è attualmente disponibile. Sebbene i
-  concetti siano ancora validi, gli esempi di codice non funzioneranno.
-</Callout>
+## Come trasferire token in modo confidenziale da un token account a un altro
 
-## Come trasferire token in modo confidenziale da un account token a un altro
-
-Per trasferire token in modo confidenziale da un account token a un altro, sia
-il mittente che il destinatario devono avere account token configurati con lo
+Per trasferire token in modo confidenziale da un token account a un altro, sia
+il mittente che il destinatario devono avere token account configurati con lo
 stato _rs`ConfidentialTransferAccount`_ e approvati per i trasferimenti
-confidenziali. L'account token del mittente deve inoltre avere un saldo
-confidenziale disponibile da trasferire.
+confidenziali. Il token account del mittente deve inoltre disporre di un saldo
+confidenziale disponibile da cui trasferire.
 
 Per trasferire token in modo confidenziale:
 
-1. Crea
+1. Creare
    [tre prove](https://github.com/solana-program/token-2022/blob/d073cb89dbcd430387b5c6fb4b7157911351e4a3/confidential-transfer/proof-generation/src/transfer.rs#L35)
    lato client:
 
-   **Prova di uguaglianza
+   **Equality Proof
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
    Verifica che il nuovo testo cifrato del saldo disponibile dopo il
-   trasferimento corrisponda al suo
-   [commitment di Pedersen](https://en.wikipedia.org/wiki/Commitment_scheme),
+   trasferimento corrisponda al relativo
+   [impegno di Pedersen](https://en.wikipedia.org/wiki/Commitment_scheme),
    garantendo che il nuovo saldo disponibile dell'account sorgente sia calcolato
    correttamente come `new_balance = current_balance - transfer_amount`.
 
-   **Prova di validità del testo cifrato
+   **Ciphertext Validity Proof
    ([BatchedGroupedCiphertext3HandlesValidityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_grouped_ciphertext_validity/handles_3.rs#L63))**:
-   Verifica che i testi cifrati dell'importo del trasferimento siano generati
-   correttamente per tutte e tre le parti (sorgente, destinazione e revisore),
-   garantendo che l'importo del trasferimento sia crittografato correttamente
-   con la chiave pubblica di ciascuna parte.
+   Verifica che i testi cifrati dell'importo del trasferimento siano
+   correttamente generati per tutte e tre le parti (sorgente, destinazione e
+   revisore), garantendo che l'importo del trasferimento sia correttamente
+   cifrato con la chiave pubblica di ciascuna parte.
 
-   **Prova di intervallo
+   **Range Proof
    ([BatchedRangeProofU128Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u128.rs#L37))**:
    Verifica che il nuovo saldo disponibile e l'importo del trasferimento
-   (suddiviso in bit bassi/alti) siano tutti non negativi e compresi in un
+   (suddiviso in bit bassi/alti) siano tutti non negativi e rientranti in un
    intervallo specificato.
 
-2. Per ogni prova:
-   - Invoca il programma di prova ZK ElGamal per verificare i dati della prova.
-   - Memorizza i metadati specifici della prova in un account "context state"
+2. Per ciascuna prova:
+   - Invocare il programma di prova ZK ElGamal per verificare i dati della
+     prova.
+   - Memorizzare i metadati specifici della prova in un account "context state"
      della prova da utilizzare in altre istruzioni.
 
-3. Invoca l'istruzione
+3. Invocare l'istruzione
    [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604),
-   fornendo gli account context state della prova.
+   fornendo gli account di stato del contesto della prova.
 
-4. Chiudi gli account di stato del contesto di prova per recuperare i SOL
-   utilizzati per crearli.
+4. Chiudere gli account di stato del contesto della prova per recuperare il SOL
+   utilizzato per crearli.
 
-Il seguente diagramma mostra i passaggi coinvolti nel trasferimento di token
-dall'account token di un mittente all'account token di un destinatario.
+Il diagramma seguente mostra i passaggi necessari per trasferire token dal token
+account del mittente al token account del destinatario.
 
 ```mermaid title="Transfer Tokens"
 sequenceDiagram
@@ -87,18 +81,19 @@ sequenceDiagram
     deactivate ElGamal
 ```
 
-### Istruzioni richieste
+### Istruzioni Richieste
 
-Per trasferire token in modo confidenziale da un account token a un altro, devi:
+Per trasferire token in modo confidenziale da un token account a un altro, è
+necessario:
 
-- Generare una prova di uguaglianza, una prova di validità del testo cifrato e
-  una prova di intervallo lato client
+- Generare una equality proof, una ciphertext validity proof e una range proof
+  lato client
 - Invocare il programma di prova Zk ElGamal per verificare le prove e
-  inizializzare gli account di "stato del contesto"
+  inizializzare gli account "context state"
 - Invocare l'istruzione
   [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604)
-  fornendo i tre account di prova.
-- Chiudere i tre account di prova per recuperare il rent.
+  fornendo i tre account delle prove.
+- Chiudere i tre account delle prove per recuperare il rent.
 
 Il crate `spl_token_client` fornisce i seguenti metodi:
 
@@ -108,23 +103,23 @@ Il crate `spl_token_client` fornisce i seguenti metodi:
 - Il metodo `confidential_transfer_close_context_state_account` che chiude un
   account di prova.
 
-### Codice di esempio
+### Codice di Esempio
 
-Il seguente esempio dimostra come trasferire token in modo confidenziale tra
-account token.
+L'esempio seguente mostra come trasferire token in modo riservato tra token
+account.
 
-Per eseguire l'esempio, avvia un validatore locale con il Token Extension
-Program clonato da mainnet utilizzando il seguente comando. Devi avere la Solana
-CLI installata per avviare il validatore locale.
+Per eseguire l'esempio, avvia un validator locale con il Token Extensions
+Program clonato dalla mainnet utilizzando il comando seguente. È necessario
+avere la Solana CLI installata per avviare il validator locale.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Al momento della scrittura, i trasferimenti confidenziali non sono abilitati
-  sul validatore locale predefinito. Devi clonare il Token Extension Program di
-  mainnet per eseguire il codice di esempio.
+  Al momento della stesura, i Trasferimenti Riservati non sono abilitati sul
+  validator locale predefinito. È necessario clonare il Token Extensions Program
+  dalla mainnet per eseguire il codice di esempio.
 </Callout>
 
 <CodeTabs>

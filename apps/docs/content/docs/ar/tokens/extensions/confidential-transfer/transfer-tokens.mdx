@@ -3,56 +3,50 @@ title: تحويل الرموز
 description: تعلم كيفية تحويل الرموز بشكل خاص من حساب رموز إلى آخر.
 ---
 
-<Callout type="warn">
-  برنامج ZK ElGamal معطل مؤقتاً على الشبكة الرئيسية وشبكة التطوير حيث يخضع
-  لتدقيق أمني. هذا يعني أن ملحق التحويلات السرية غير متاح حالياً. بينما المفاهيم
-  لا تزال صالحة، فإن أمثلة الكود لن تعمل.
-</Callout>
+## كيفية نقل الرموز المميزة بشكل سري من token account إلى آخر
 
-## كيفية تحويل الرموز بشكل سري من حساب رموز إلى آخر
+لنقل الرموز المميزة بشكل سري من token account إلى آخر، يجب على كلٍّ من المُرسِل
+والمُستقبِل امتلاك token accounts مُهيَّأة بحالة
+_rs`ConfidentialTransferAccount`_ ومُعتمَدة لعمليات النقل السري. كما يجب أن
+يمتلك token account الخاص بالمُرسِل رصيداً سرياً متاحاً للنقل.
 
-لتحويل الرموز بشكل سري من حساب رموز إلى آخر، يجب أن يكون لدى كل من المرسل
-والمستقبل حسابات رموز مهيأة بحالة _rs`ConfidentialTransferAccount`_ ومعتمدة
-للتحويلات السرية. يجب أيضاً أن يكون لدى حساب رموز المرسل رصيد سري متاح للتحويل
-منه.
-
-لتحويل الرموز بشكل سري:
+لنقل الرموز المميزة بشكل سري:
 
 1. أنشئ
    [ثلاثة إثباتات](https://github.com/solana-program/token-2022/blob/d073cb89dbcd430387b5c6fb4b7157911351e4a3/confidential-transfer/proof-generation/src/transfer.rs#L35)
-   من جانب العميل:
+   على جانب العميل:
 
    **إثبات المساواة
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
-   يتحقق من أن نص الرصيد المتاح الجديد المشفر بعد التحويل يطابق
+   يتحقق من أن نص التشفير الخاص بالرصيد المتاح الجديد بعد عملية النقل يطابق
    [التزام Pedersen](https://en.wikipedia.org/wiki/Commitment_scheme) المقابل
-   له، مما يضمن حساب الرصيد المتاح الجديد لحساب المصدر بشكل صحيح كـ
+   له، مما يضمن احتساب الرصيد المتاح الجديد للحساب المصدر بشكل صحيح على هيئة
    `new_balance = current_balance - transfer_amount`.
 
-   **إثبات صحة النص المشفر
+   **إثبات صحة نص التشفير
    ([BatchedGroupedCiphertext3HandlesValidityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_grouped_ciphertext_validity/handles_3.rs#L63))**:
-   يتحقق من أن نصوص مبلغ التحويل المشفرة تم إنشاؤها بشكل صحيح لجميع الأطراف
-   الثلاثة (المصدر، الوجهة، والمدقق)، مما يضمن تشفير مبلغ التحويل بشكل صحيح تحت
-   المفتاح العام لكل طرف.
+   يتحقق من أن نصوص تشفير مبلغ النقل قد تم توليدها بشكل صحيح لجميع الأطراف
+   الثلاثة (المصدر، والوجهة، والمدقق)، مما يضمن تشفير مبلغ النقل بشكل صحيح
+   باستخدام المفتاح العام لكل طرف.
 
    **إثبات النطاق
    ([BatchedRangeProofU128Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u128.rs#L37))**:
-   يتحقق من أن الرصيد المتاح الجديد ومبلغ التحويل (مقسم إلى بتات منخفضة/عالية)
-   جميعها غير سالبة وضمن نطاق محدد.
+   يتحقق من أن الرصيد المتاح الجديد ومبلغ النقل (المقسَّم إلى بتات منخفضة/عالية)
+   كلاهما غير سالب وضمن نطاق محدد.
 
 2. لكل إثبات:
    - استدعِ برنامج إثبات ZK ElGamal للتحقق من بيانات الإثبات.
-   - خزّن البيانات الوصفية الخاصة بالإثبات في حساب "حالة سياق الإثبات"
-     لاستخدامها في تعليمات أخرى.
+   - خزِّن البيانات الوصفية الخاصة بالإثبات في حساب "حالة السياق" لاستخدامها في
+     التعليمات الأخرى.
 
 3. استدعِ تعليمة
-   [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604)،
+   [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604)
    مع توفير حسابات حالة سياق الإثبات.
 
-4. أغلق حسابات حالة سياق الإثبات لاسترداد SOL المستخدم لإنشائها.
+4. أغلق حسابات حالة سياق الإثبات لاسترداد SOL المُستخدَم في إنشائها.
 
-يوضح الرسم التخطيطي التالي الخطوات المتضمنة في تحويل الرموز من حساب رمز المرسل
-إلى حساب رمز المستقبل.
+يوضح المخطط التالي الخطوات المتبعة في نقل الرموز المميزة من token account الخاص
+بالمُرسِل إلى token account الخاص بالمُستقبِل.
 
 ```mermaid title="Transfer Tokens"
 sequenceDiagram
@@ -82,17 +76,16 @@ sequenceDiagram
 
 ### التعليمات المطلوبة
 
-لتحويل الرموز بشكل سري من حساب رمز إلى آخر، يجب عليك:
+لنقل الرموز المميزة بشكل سري من token account إلى آخر، يجب عليك:
 
-- إنشاء إثبات المساواة وإثبات صحة النص المشفر وإثبات النطاق من جانب العميل
-- استدعاء برنامج إثبات Zk ElGamal للتحقق من الإثباتات وتهيئة حسابات "حالة
-  السياق"
+- توليد إثبات مساواة، وإثبات صحة نص تشفير، وإثبات نطاق على جانب العميل
+- استدعاء برنامج Zk ElGamal للتحقق من الإثباتات وتهيئة حسابات "حالة السياق"
 - استدعاء تعليمة
   [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604)
-  مع توفير حسابات الإثبات الثلاثة.
-- إغلاق حسابات الإثبات الثلاثة لاسترداد الإيجار.
+  مع توفير حسابات الإثباتات الثلاثة.
+- إغلاق حسابات الإثباتات الثلاثة لاسترداد rent.
 
-يوفر صندوق `spl_token_client` الطرق التالية:
+يوفر الـ `spl_token_client` الطرق التالية:
 
 - طريقة `confidential_transfer_create_context_state_account` التي تنشئ حساب
   إثبات.
@@ -102,19 +95,20 @@ sequenceDiagram
 
 ### مثال على الكود
 
-يوضح المثال التالي كيفية تحويل الرموز بشكل سري بين حسابات الرموز.
+يوضح المثال التالي كيفية نقل الرموز بشكل سري بين token account.
 
-لتشغيل المثال، ابدأ مدقق محلي مع برنامج Token Extension المستنسخ من الشبكة
-الرئيسية باستخدام الأمر التالي. يجب أن يكون لديك Solana CLI مثبتاً لبدء المدقق
-المحلي.
+لتشغيل المثال، ابدأ تشغيل validator محلي مع Token Extensions Program المستنسخ من
+الشبكة الرئيسية باستخدام الأمر التالي. يجب أن يكون لديك سولانا CLI مثبتاً لبدء
+تشغيل الـ validator المحلي.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  في وقت كتابة هذا، لم يتم تفعيل التحويلات السرية على المدقق المحلي الافتراضي.
-  يجب عليك استنساخ برنامج Token Extension من الشبكة الرئيسية لتشغيل مثال الكود.
+  في وقت كتابة هذا المحتوى، لم يتم تفعيل ميزة التحويلات السرية في الـ validator
+  المحلي الافتراضي. يجب عليك استنساخ Token Extensions Program من الشبكة الرئيسية
+  لتشغيل الكود المثال.
 </Callout>
 
 <CodeTabs>

@@ -3,16 +3,9 @@ title: Tokenien nosto
 description: Opi nostamaan tokeneita luottamuksellisesta tilasta.
 ---
 
-<Callout type="warn">
-  ZK ElGamal -ohjelma on väliaikaisesti poistettu käytöstä mainnetissä ja
-  devnetissä turvallisuusauditoinnin ajaksi. Tämä tarkoittaa, että
-  luottamuksellisten siirtojen laajennus ei ole tällä hetkellä käytettävissä.
-  Vaikka konseptit ovat edelleen päteviä, koodiesimerkit eivät toimi.
-</Callout>
-
 ## Kuinka nostaa tokeneita luottamuksellisesta käytettävissä olevasta saldosta
 
-Nostaaksesi tokeneita luottamuksellisesta käytettävissä olevasta saldosta
+Tokeneiden nostamiseksi luottamuksellisesta käytettävissä olevasta saldosta
 julkiseen saldoon:
 
 1. Luo
@@ -21,30 +14,30 @@ julkiseen saldoon:
 
    **Yhtäläisyystodiste
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
-   Varmistaa, että noston jälkeen jäljellä oleva käytettävissä olevan saldon
-   salausteksti vastaa sen vastaavaa
+   Varmistaa, että jäljellä oleva käytettävissä olevan saldon salateksti noston
+   jälkeen vastaa sitä vastaavaa
    [Pedersen-sitoumusta](https://en.wikipedia.org/wiki/Commitment_scheme),
-   varmistaen että tilin uusi käytettävissä oleva saldo lasketaan oikein
+   varmistaen, että tilin uusi käytettävissä oleva saldo lasketaan oikein
    muodossa `remaining_balance = current_balance - withdraw_amount`.
 
-   **Arvoaluetodiste
+   **Aluetodiste
    ([BatchedRangeProofU64Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u64.rs#L37))**:
-   Varmistaa, että noston jälkeen jäljellä oleva käytettävissä oleva saldo on
-   ei-negatiivinen ja määritetyllä arvoalueella.
+   Varmistaa, että jäljellä oleva käytettävissä oleva saldo noston jälkeen on
+   ei-negatiivinen ja määritetyllä alueella.
 
-2. Jokaiselle todisteelle:
-   - Kutsu ZK ElGamal -todistusohjelmaa todistustietojen vahvistamiseksi.
-   - Tallenna todistekohtaiset metatiedot todisteen "kontekstitila"-tilille
+2. Kutakin todistetta varten:
+   - Käynnistä ZK ElGamal -todistusohjelma todisteen datan vahvistamiseksi.
+   - Tallenna todiste-kohtainen metatiedot todisteen "kontekstitila"-tilille
      käytettäväksi muissa ohjeissa.
 
-3. Kutsu
+3. Käynnistä
    [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
-   -ohjetta tarjoten kaksi todistustiliä.
+   -ohje antamalla kaksi todistustiliä.
 
 4. Sulje todistustilit palauttaaksesi niiden luomiseen käytetyn SOL:n.
 
-Seuraava kaavio näyttää vaiheet, jotka liittyvät tokenien nostamiseen
-luottamuksellisesta käytettävissä olevasta saldosta julkiseen saldoon:
+Seuraava kaavio näyttää luottamuksellisesta käytettävissä olevasta saldosta
+julkiseen saldoon nostamiseen liittyvät vaiheet:
 
 ```mermaid title="Withdraw Tokens"
 sequenceDiagram
@@ -73,23 +66,24 @@ sequenceDiagram
 
 ### Vaaditut ohjeet
 
-Nostaaksesi tokeneita luottamuksellisesta käytettävissä olevasta saldosta
-julkiseen saldoon, sinun täytyy:
+Tokeneiden nostamiseksi luottamuksellisesta käytettävissä olevasta saldosta
+julkiseen saldoon sinun täytyy:
 
-- Luoda yhtäläisyystodiste ja arvoaluetodiste asiakaspuolella
-- Kutsua ZK ElGamal -todistusohjelmaa todisteiden vahvistamiseksi ja
+- Luo yhtäläisyystodiste ja aluetodiste asiakaspuolella
+- Käynnistä Zk ElGamal -todistusohjelma todisteiden vahvistamiseksi ja
   "kontekstitila"-tilien alustamiseksi
-- Kutsua
+- Käynnistä
   [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
-  -ohjetta tarjoten kaksi todistustiliä.
-- Sulkea kaksi todistustiliä vuokran palauttamiseksi.
+  -ohje antamalla kaksi todistustiliä.
+- Sulje kaksi todistustiliä palauttaaksesi rent.
 
-Crate `spl_token_client` tarjoaa seuraavat metodit:
+`spl_token_client` -paketti tarjoaa seuraavat menetelmät:
 
-- Metodi `confidential_transfer_create_context_state_account`, joka luo
+- `confidential_transfer_create_context_state_account` -menetelmä, joka luo
   todistustilin.
-- Metodi `confidential_transfer_withdraw`, joka kutsuu ohjetta `Withdraw`.
-- Metodi `confidential_transfer_close_context_state_account`, joka sulkee
+- `confidential_transfer_withdraw` -menetelmä, joka käynnistää `Withdraw`
+  -ohjeen.
+- `confidential_transfer_close_context_state_account` -menetelmä, joka sulkee
   todistustilin.
 
 ### Esimerkkikoodi
@@ -97,19 +91,18 @@ Crate `spl_token_client` tarjoaa seuraavat metodit:
 Seuraava esimerkki havainnollistaa, kuinka tokeneita nostetaan
 luottamuksellisesta käytettävissä olevasta saldosta julkiseen saldoon.
 
-Esimerkin suorittamiseksi käynnistä paikallinen validaattori, jossa on
-mainnetistä kloonattu Token Extension Program, käyttämällä seuraavaa komentoa.
-Sinulla on oltava Solana CLI asennettuna paikallisen validaattorin
-käynnistämiseksi.
+Suorittaaksesi esimerkin, käynnistä paikallinen validator Token Extension
+Program kloonattuna mainnetistä käyttämällä seuraavaa komentoa. Sinulla täytyy
+olla Solana CLI asennettuna käynnistääksesi paikallisen validatorin.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Tätä kirjoitettaessa luottamukselliset siirrot eivät ole käytössä
-  oletusarvoisessa paikallisessa validaattorissa. Sinun on kloonattava mainnetin
-  Token Extension Program esimerkkikoodin suorittamiseksi.
+  Kirjoitushetkellä Confidential Transfers ei ole käytössä oletuspaikallisessa
+  validatorissa. Sinun täytyy kloonata mainnetin Token Extension Program
+  suorittaaksesi esimerkkikoodin.
 </Callout>
 
 <CodeTabs>

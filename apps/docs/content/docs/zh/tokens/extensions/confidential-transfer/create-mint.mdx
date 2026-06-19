@@ -3,18 +3,13 @@ title: 创建 Token Mint
 description: 了解如何使用机密转账扩展创建 token mint。
 ---
 
-<Callout type="warn">
-  由于正在进行安全审计，ZK ElGamal Program 目前在主网和 devnet 上暂时禁用。
-  这意味着机密转账扩展当前不可用。虽然相关概念依然适用，但代码示例将无法运行。
-</Callout>
+## 如何创建带有机密转账扩展的 mint
 
-## 如何使用机密转账扩展创建 mint
-
-机密转账扩展通过在 mint
-account 中添加额外状态，实现了私密的 token 转账。本节将介绍如何启用该扩展来创建 token
+机密转账扩展通过向 mint
+account 添加额外状态来实现私密代币转账。本节介绍如何创建启用此扩展的 token
 mint。
 
-下图展示了使用机密转账扩展创建 mint 的步骤：
+下图展示了使用机密转账扩展创建 mint 所涉及的步骤：
 
 ```mermaid title="Create Mint with Confidential Transfer Extension"
 sequenceDiagram
@@ -30,9 +25,9 @@ sequenceDiagram
 
 ### 机密转账 Mint 状态
 
-该扩展会在 mint account 中添加
+该扩展将
 [ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)
-状态：
+状态添加到 mint account：
 
 ```rust title="Confidential Mint State"
 #[repr(C)]
@@ -60,45 +55,45 @@ pub struct ConfidentialTransferMint {
 
 _rs`ConfidentialTransferMint`_ 包含三个配置字段：
 
-- **authority**：有权更改 mint 的机密转账设置并在关闭自动审批时批准新机密账户的账户。
+- **authority**：有权更改 mint 的机密转账设置的账户，以及在禁用自动审批时批准新机密账户的账户。
 
-- **auto_approve_new_accounts**：为 true 时，用户可默认创建启用机密转账的 token
-  account。为 false 时，authority 必须先批准每个新 token
-  account，才能用于机密转账。
+- **auto_approve_new_accounts**：设置为 true 时，用户可以默认创建启用机密转账的 token
+  account。设置为 false 时，authority 必须在每个新 token
+  account 用于机密转账之前对其进行审批。
 
-- **auditor_elgamal_pubkey**：可选的审计员，可解密机密交易中的转账金额，为合规提供机制，同时对公众保持隐私。
+- **auditor_elgamal_pubkey**：一个可选的审计员，可以解密机密交易中的转账金额，在对公众保持隐私的同时提供合规机制。
 
 ### 所需指令
 
-启用机密转账的 mint 创建需要在单笔交易中包含三条指令：
+创建启用机密转账的 mint 需要在单笔交易中包含三条指令：
 
 1. **创建 Mint Account**：调用 System Program 的 _rs`CreateAccount`_
-   指令以创建 mint account。
+   指令来创建 mint account。
 
-2. **初始化机密转账扩展**：调用 Token Extension Program 的
+2. **初始化机密转账扩展**：调用 Token Extensions Program 的
    [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
    指令，为 mint 配置 _rs`ConfidentialTransferMint`_ 状态。
 
-3. **初始化 Mint**：调用 Token Extension Program 的
-   _rs`Instruction::InitializeMint`_ 指令，初始化标准 mint 状态。
+3. **初始化 Mint**：调用 Token Extensions Program 的
+   _rs`Instruction::InitializeMint`_ 指令来初始化标准 mint 状态。
 
-虽然你可以手动编写这些指令，但 `spl_token_client` crate提供了一个 `create_mint`
-方法，可以在一次函数调用中构建并发送包含所有三条指令的交易，具体示例如下。
+虽然您可以手动编写这些指令，但 `spl_token_client` crate 提供了 `create_mint`
+方法，可在单次函数调用中构建并发送包含全部三条指令的交易，如下方示例所示。
 
 ### 示例代码
 
-以下代码演示了如何创建带有机密转账扩展的 mint。
+以下代码演示了如何使用 Confidential Transfer 扩展创建铸币账户。
 
-要运行此示例，请使用以下命令启动一个本地 validator，并从主网克隆 Token Extension
-Program。你需要先安装 Solana CLI 才能启动本地 validator。
+要运行此示例，请使用以下命令启动一个本地 validator，并从主网克隆 Token
+Extensions Program。您必须安装 Solana CLI 才能启动本地 validator。
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  截至目前，默认的本地 validator 尚未启用机密转账功能。你需要克隆主网的 Token
-  Extension Program 才能运行示例代码。
+  在撰写本文时，默认本地 validator 尚未启用 Confidential
+  Transfers。您必须克隆主网的 Token Extensions Program 才能运行示例代码。
 </Callout>
 
 <CodeTabs>

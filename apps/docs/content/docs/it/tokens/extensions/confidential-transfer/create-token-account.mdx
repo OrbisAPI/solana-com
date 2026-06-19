@@ -4,21 +4,14 @@ description:
   Scopri come creare un token account con l'estensione Confidential Transfer.
 ---
 
-<Callout type="warn">
-  Il programma ZK ElGamal è temporaneamente disabilitato su mainnet e devnet in
-  quanto è in corso un audit di sicurezza. Ciò significa che l'estensione
-  confidential transfers non è attualmente disponibile. Sebbene i concetti siano
-  ancora validi, gli esempi di codice non funzioneranno.
-</Callout>
-
 ## Come creare un token account con l'estensione Confidential Transfer
 
-L'estensione Confidential Transfer abilita trasferimenti di token privati
-aggiungendo uno stato extra al token account. Questa sezione spiega come creare
-un token account con questa estensione abilitata.
+L'estensione Confidential Transfer consente trasferimenti di token privati
+aggiungendo stato extra al token account. Questa sezione spiega come creare un
+token account con questa estensione abilitata.
 
-Il seguente diagramma mostra i passaggi coinvolti nella creazione di un token
-account con l'estensione Confidential Transfer:
+Il seguente diagramma mostra i passaggi necessari per creare un token account
+con l'estensione Confidential Transfer:
 
 ```mermaid title="Create Token Account with Confidential Transfer Extension"
 sequenceDiagram
@@ -51,7 +44,7 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Stato del Confidential Transfer Token Account
+### Stato del Token Account con Confidential Transfer
 
 L'estensione aggiunge lo stato
 [ConfidentialTransferAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L75-L122)
@@ -108,78 +101,79 @@ pub struct ConfidentialTransferAccount {
 ```
 
 Il _rs`ConfidentialTransferAccount`_ contiene diversi campi per gestire i
-confidential transfers:
+trasferimenti riservati:
 
-- **approved**: lo stato di approvazione dell'account per i confidential
-  transfers. Se la configurazione `auto_approve_new_accounts` del mint account è
-  impostata come `true`, tutti i token account sono automaticamente approvati
-  per i confidential transfers.
+- **approved**: Lo stato di approvazione dell'account per i trasferimenti
+  riservati. Se la configurazione `auto_approve_new_accounts` del mint account è
+  impostata su `true`, tutti i token account vengono approvati automaticamente
+  per i trasferimenti riservati.
 
-- **elgamal_pubkey**: la chiave pubblica ElGamal utilizzata per crittografare i
-  saldi e gli importi dei trasferimenti.
+- **elgamal_pubkey**: La chiave pubblica ElGamal utilizzata per cifrare i saldi
+  e gli importi dei trasferimenti.
 
-- **pending_balance_lo**: i 16 bit inferiori crittografati del saldo in sospeso.
-  Il saldo è diviso in parti alte e basse per una decrittazione efficiente.
+- **pending_balance_lo**: I 16 bit inferiori cifrati del saldo in sospeso. Il
+  saldo è suddiviso in parte alta e parte bassa per una decrittazione
+  efficiente.
 
-- **pending_balance_hi**: i 48 bit superiori crittografati del saldo in sospeso.
-  Il saldo è diviso in parti alte e basse per una decrittazione efficiente.
+- **pending_balance_hi**: I 48 bit superiori cifrati del saldo in sospeso. Il
+  saldo è suddiviso in parte alta e parte bassa per una decrittazione
+  efficiente.
 
-- **available_balance**: il saldo crittografato disponibile per i trasferimenti.
+- **available_balance**: Il saldo cifrato disponibile per i trasferimenti.
 
-- **decryptable_available_balance**: il saldo disponibile crittografato con una
-  chiave Advanced Encryption Standard (AES) per una decrittazione efficiente da
-  parte del proprietario dell'account.
+- **decryptable_available_balance**: Il saldo disponibile cifrato con una chiave
+  AES (Advanced Encryption Standard) per una decrittazione efficiente da parte
+  del proprietario dell'account.
 
-- **allow_confidential_credits**: se true, consente i trasferimenti
-  confidenziali in entrata.
+- **allow_confidential_credits**: Se true, consente i trasferimenti riservati in
+  entrata.
 
-- **allow_non_confidential_credits**: se true, consente i trasferimenti non
-  confidenziali in entrata.
+- **allow_non_confidential_credits**: Se true, consente i trasferimenti non
+  riservati in entrata.
 
-- **pending_balance_credit_counter**: conta i crediti del saldo in sospeso in
+- **pending_balance_credit_counter**: Conta i crediti del saldo in sospeso in
   entrata dalle istruzioni di deposito e trasferimento.
 
-- **maximum_pending_balance_credit_counter**: il limite di conteggio dei crediti
-  in sospeso prima di richiedere un'istruzione _rs`ApplyPendingBalance`_ per
+- **maximum_pending_balance_credit_counter**: Il limite massimo di crediti in
+  sospeso prima di richiedere un'istruzione _rs`ApplyPendingBalance`_ per
   convertire il saldo in sospeso nel saldo disponibile.
 
-- **expected_pending_balance_credit_counter**: il valore
-  `pending_balance_credit_counter` fornito dal client tramite i dati
-  dell'istruzione l'ultima volta che l'istruzione _rs`ApplyPendingBalance`_ è
-  stata elaborata.
+- **expected_pending_balance_credit_counter**: Il valore
+  `pending_balance_credit_counter` fornito dal client tramite instruction data
+  l'ultima volta che l'istruzione _rs`ApplyPendingBalance`_ è stata elaborata.
 
-- **actual_pending_balance_credit_counter**: il valore
+- **actual_pending_balance_credit_counter**: Il valore
   `pending_balance_credit_counter` sul token account al momento in cui l'ultima
   istruzione _rs`ApplyPendingBalance`_ è stata elaborata.
 
 <Callout type="info">
   **Saldo in sospeso vs saldo disponibile**
 
-I saldi confidenziali sono separati in saldi in sospeso e disponibili per
+I saldi riservati sono suddivisi in saldi in sospeso e saldi disponibili per
 prevenire attacchi DoS. Senza questa separazione, un attaccante potrebbe inviare
-ripetutamente token a un token account, bloccando la capacità del proprietario
-del token account di trasferire token. Il proprietario del token account non
-sarebbe in grado di trasferire token perché il saldo crittografato cambierebbe
-tra il momento in cui la transazione viene inviata e quando viene elaborata,
-risultando in una transazione fallita.
+ripetutamente token a un token account, impedendo al proprietario del token
+account di trasferire token. Il proprietario del token account non sarebbe in
+grado di trasferire token perché il saldo crittografato cambierebbe tra il
+momento in cui la transazione viene inviata e quello in cui viene elaborata,
+causando il fallimento della transazione.
 
-Tutti i depositi e gli importi di trasferimento vengono inizialmente aggiunti al
-saldo in sospeso. I proprietari di token account devono utilizzare l'istruzione
-_rs`ApplyPendingBalance`_ per convertire il saldo in sospeso nel saldo
-disponibile. I trasferimenti o depositi in entrata non influenzano il saldo
-disponibile di un token account.
+Tutti i depositi e gli importi dei trasferimenti vengono inizialmente aggiunti
+al saldo in sospeso. I proprietari del token account devono utilizzare
+l'istruzione _rs`ApplyPendingBalance`_ per convertire il saldo in sospeso in
+saldo disponibile. I trasferimenti in entrata o i depositi non influiscono sul
+saldo disponibile di un token account.
 
 </Callout>
 
 <Callout type="info">
-  **Divisione alto/basso del saldo in sospeso**
+  **Suddivisione alto/basso del saldo in sospeso**
 
-Il saldo in sospeso confidenziale è diviso in `pending_balance_lo` e
-`pending_balance_hi` perché la decrittazione ElGamal richiede più calcoli per
-numeri più grandi. Puoi trovare l'implementazione dell'aritmetica del testo
-cifrato
+Il saldo in sospeso riservato è suddiviso in `pending_balance_lo` e
+`pending_balance_hi` perché la decrittografia ElGamal richiede più elaborazione
+per numeri più grandi. L'implementazione dell'aritmetica del testo cifrato è
+disponibile
 [qui](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/ciphertext-arithmetic/src/lib.rs#L54),
-che viene utilizzata nell'istruzione _rs`ApplyPendingBalance`_
+utilizzata nell'istruzione _rs`ApplyPendingBalance`_
 [qui](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1180-L1184).
 
 </Callout>
@@ -188,96 +182,96 @@ che viene utilizzata nell'istruzione _rs`ApplyPendingBalance`_
   **Contatori di credito del saldo in sospeso**
 
 Quando si chiama l'istruzione _rs`ApplyPendingBalance`_ per convertire il saldo
-in sospeso nel saldo disponibile:
+in sospeso in saldo disponibile:
 
-1. Il client cerca i saldi in sospeso e disponibili correnti, cripta la somma e
-   fornisce un `decryptable_available_balance` criptato utilizzando la chiave
-   AES del proprietario del token account.
+1. Il client recupera i saldi in sospeso e disponibili correnti, cifra la somma
+   e fornisce un `decryptable_available_balance` crittografato utilizzando la
+   chiave AES del proprietario del token account.
 
-2. I contatori di credito in sospeso previsti ed effettivi tracciano le
-   modifiche al valore del contatore tra il momento in cui l'istruzione
-   _rs`ApplyPendingBalance`_ viene creata e processata:
+2. I contatori di credito in sospeso attesi ed effettivi tracciano le modifiche
+   al valore del contatore tra il momento in cui l'istruzione
+   _rs`ApplyPendingBalance`_ viene creata e quello in cui viene elaborata:
    - `expected_pending_balance_credit_counter`: Il valore
      `pending_balance_credit_counter` quando il client crea l'istruzione
      _rs`ApplyPendingBalance`_
    - `actual_pending_balance_credit_counter`: Il valore
-     `pending_balance_credit_counter` sul token account nel momento in cui
-     l'istruzione _rs`ApplyPendingBalance`_ viene processata
+     `pending_balance_credit_counter` sul token account al momento in cui
+     l'istruzione _rs`ApplyPendingBalance`_ viene elaborata
 
-Contatori previsti/effettivi corrispondenti indicano che il
-`decryptable_available_balance` corrisponde al `available_balance`.
+Contatori attesi/effettivi corrispondenti indicano che
+`decryptable_available_balance` corrisponde a `available_balance`.
 
-Quando si recupera lo stato di un token account per leggere il
-`decryptable_available_balance`, valori diversi dei contatori previsti/effettivi
-richiedono al client di cercare le recenti istruzioni di deposito/trasferimento
+Quando si recupera lo stato di un token account per leggere
+`decryptable_available_balance`, valori diversi dei contatori attesi/effettivi
+richiedono al client di cercare le istruzioni recenti di deposito/trasferimento
 corrispondenti alla differenza del contatore per calcolare il saldo corretto.
 
-**Processo di riconciliazione del saldo**
+**Processo di Riconciliazione del Saldo**
 
-Quando i contatori del saldo in sospeso previsti ed effettivi differiscono,
-segui questi passaggi per riconciliare il `decryptable_available_balance`:
+Quando i contatori del saldo in attesa atteso ed effettivo differiscono, segui
+questi passaggi per riconciliare `decryptable_available_balance`:
 
-1. Inizia con il `decryptable_available_balance` dal token account
+1. Inizia con `decryptable_available_balance` dal token account
 2. Recupera le transazioni più recenti includendo le istruzioni di deposito e
-   trasferimento fino alla differenza del contatore (effettivo - previsto):
+   trasferimento fino alla differenza del contatore (effettivo - atteso):
    - Aggiungi gli importi pubblici dalle istruzioni di deposito
-   - Decripta e aggiungi gli importi ciphertext di destinazione dalle istruzioni
-     di trasferimento
+   - Decifra e aggiungi gli importi del testo cifrato di destinazione dalle
+     istruzioni di trasferimento
 
 </Callout>
 
-### Istruzioni richieste
+### Istruzioni Richieste
 
 La creazione di un token account con l'estensione Confidential Transfer richiede
 tre istruzioni:
 
-1. **Creare il token account**: Invoca l'istruzione
+1. **Crea il Token Account**: Invoca l'istruzione
    _rs`AssociatedTokenAccountInstruction:Create`_ dell'Associated Token Program
    per creare il token account.
 
-2. **Rialloca lo spazio dell'account**: invoca l'istruzione
-   _rs`TokenInstruction::Reallocate`_ del Token Extension Program per aggiungere
-   spazio per lo stato _rs`ConfidentialTransferAccount`_.
+2. **Ridimensiona lo Spazio dell'Account**: Invoca l'istruzione
+   _rs`TokenInstruction::Reallocate`_ del Token Extensions Program per
+   aggiungere spazio per lo stato _rs`ConfidentialTransferAccount`_.
 
-3. **Configura i trasferimenti confidenziali**: invoca l'istruzione
+3. **Configura i Trasferimenti Riservati**: Invoca l'istruzione
    [ConfidentialTransferInstruction::ConfigureAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L201)
-   del Token Extension Program per inizializzare lo stato
+   del Token Extensions Program per inizializzare lo stato
    _rs`ConfidentialTransferAccount`_.
 
 <Callout type="info">
 
-**Solo il proprietario del token account può configurare un token account per
-trasferimenti confidenziali**.
+**Solo il proprietario del token account può configurare un token account per i
+trasferimenti riservati**.
 
 L'istruzione _rs`ConfigureAccount`_ richiede la generazione lato client di
-chiavi di crittografia e dati di prova che possono essere generati solo dal
+chiavi di cifratura e dati di prova che possono essere generati solo dal
 proprietario del token account.
 
-Il _rs`PubkeyValidityProofData`_ crea una prova che verifica la validità di una
-chiave ElGamal. Per i dettagli di implementazione, vedi:
+L'istruzione _rs`PubkeyValidityProofData`_ crea una prova che verifica la
+validità di una chiave ElGamal. Per i dettagli sull'implementazione, vedi:
 
 - [PubkeyValidityProofData](https://github.com/anza-xyz/agave/blob/b39a9764005ac8596b7e14e61d381305ce57ecaa/zk-sdk/src/zk_elgamal_proof_program/proof_data/pubkey_validity.rs#L58)
 - [PubkeyValidityProof](https://github.com/anza-xyz/agave/blob/b39a9764005ac8596b7e14e61d381305ce57ecaa/zk-sdk/src/sigma_proofs/pubkey_validity.rs#L65)
 
 </Callout>
 
-### Codice di esempio
+### Codice di Esempio
 
-Il seguente codice dimostra come creare un Associated Token Account con
+Il codice seguente mostra come creare un associated token account con
 l'estensione Confidential Transfer,
 
 Per eseguire l'esempio, avvia un validator locale con il Token Extensions
-Program clonato dalla mainnet usando il seguente comando. Devi avere la CLI di
-Solana installata per avviare il validator locale.
+Program clonato dalla mainnet utilizzando il comando seguente. È necessario
+avere la Solana CLI installata per avviare il validator locale.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Al momento della stesura, i Confidential Transfers non sono abilitati sul
-  validator locale predefinito. Devi clonare il Token Extensions Program dalla
-  mainnet per eseguire il codice di esempio.
+  Al momento della stesura, i Trasferimenti Riservati non sono abilitati sul
+  validator locale predefinito. È necessario clonare il Token Extensions Program
+  della mainnet per eseguire il codice di esempio.
 </Callout>
 
 <CodeTabs>

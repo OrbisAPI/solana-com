@@ -3,28 +3,21 @@ title: Deposit Token
 description: Pelajari cara melakukan deposit token ke status konfidensial.
 ---
 
-<Callout type="warn">
-  Program ZK ElGamal sementara dinonaktifkan di mainnet dan devnet karena sedang
-  menjalani audit keamanan. Ini berarti ekstensi transfer konfidensial saat ini
-  tidak tersedia. Meskipun konsepnya masih valid, contoh kode tidak akan
-  berjalan.
-</Callout>
+## Cara menyetor token ke saldo tertunda rahasia
 
-## Cara menyetor token ke saldo konfidensial tertunda
+Sebelum token dapat ditransfer secara rahasia, saldo token publik harus
+dikonversi ke saldo rahasia. Konversi ini terjadi dalam dua tahap:
 
-Sebelum token dapat ditransfer secara konfidensial, saldo token publik harus
-dikonversi menjadi saldo konfidensial. Konversi ini terjadi dalam dua tahap:
-
-1. **Saldo Konfidensial Tertunda**: Awalnya, token "disetor" dari saldo publik
-   ke saldo konfidensial "tertunda".
-2. **Saldo Konfidensial Tersedia**: Saldo tertunda kemudian "diterapkan" ke
-   saldo tersedia, membuat token tersedia untuk transfer konfidensial.
+1. **Saldo Tertunda Rahasia**: Awalnya, token "disetor" dari saldo publik ke
+   saldo rahasia "tertunda".
+2. **Saldo Tersedia Rahasia**: Saldo tertunda kemudian "diterapkan" ke saldo
+   tersedia, sehingga token tersedia untuk transfer rahasia.
 
 Bagian ini menjelaskan tahap pertama: menyetor saldo token publik ke saldo
-konfidensial tertunda.
+tertunda rahasia.
 
 Diagram berikut menunjukkan langkah-langkah yang terlibat dalam menyetor token
-dari saldo publik ke saldo konfidensial tertunda:
+dari saldo publik ke saldo tertunda rahasia:
 
 ```mermaid title="Deposit Tokens"
 sequenceDiagram
@@ -44,20 +37,19 @@ sequenceDiagram
 
 ### Instruksi yang Diperlukan
 
-Untuk mengkonversi saldo publik menjadi saldo konfidensial tertunda, panggil
-[ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386)
-instruksi. Jumlah
-[maksimum](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
+Untuk mengonversi saldo publik ke saldo tertunda rahasia, panggil instruksi
+[ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386).
+[Jumlah maksimum](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
 per instruksi deposit dibatasi hingga 2^48.
 
 Crate `spl_token_client` menyediakan metode `confidential_transfer_deposit` yang
 membangun dan mengirim transaksi dengan instruksi `Deposit`, seperti yang
-ditunjukkan dalam contoh di bawah ini.
+ditunjukkan pada contoh di bawah ini.
 
 ### Contoh Kode
 
-Contoh berikut menunjukkan cara menyetor saldo token publik ke saldo
-konfidensial tertunda.
+Contoh berikut menunjukkan cara menyetor saldo token publik ke saldo tertunda
+rahasia.
 
 Untuk menjalankan contoh, mulai validator lokal dengan Token Extensions Program
 yang dikloning dari mainnet menggunakan perintah berikut. Anda harus memiliki
@@ -68,9 +60,9 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 ```
 
 <Callout type="info">
-  Pada saat penulisan, Confidential Transfers belum diaktifkan pada validator
-  lokal default. Anda harus mengkloning Token Extensions Program dari mainnet
-  untuk menjalankan kode contoh.
+  Pada saat penulisan ini, Confidential Transfers belum diaktifkan pada
+  validator lokal default. Anda harus mengkloning Token Extensions Program
+  mainnet untuk menjalankan kode contoh.
 </Callout>
 
 <CodeTabs>

@@ -4,21 +4,14 @@ description:
   Leer hoe je een token account aanmaakt met de Confidential Transfer-extensie.
 ---
 
-<Callout type="warn">
-  Het ZK ElGamal-programma is tijdelijk uitgeschakeld op het mainnet en devnet
-  omdat het een beveiligingsaudit ondergaat. Dit betekent dat de confidential
-  transfers-extensie momenteel niet beschikbaar is. Hoewel de concepten nog
-  steeds geldig zijn, zullen de codevoorbeelden niet werken.
-</Callout>
-
 ## Hoe maak je een token account aan met de Confidential Transfer-extensie
 
-De Confidential Transfer-extensie maakt privé-tokentransfers mogelijk door extra
-status toe te voegen aan het token account. Deze sectie legt uit hoe je een
-token account aanmaakt met deze extensie ingeschakeld.
+De Confidential Transfer-extensie maakt privétokenoverdrachten mogelijk door
+extra toestand toe te voegen aan het token account. In dit gedeelte wordt
+uitgelegd hoe je een token account aanmaakt met deze extensie ingeschakeld.
 
-Het volgende diagram toont de stappen die betrokken zijn bij het aanmaken van
-een token account met de Confidential Transfer-extensie:
+Het volgende diagram toont de stappen voor het aanmaken van een token account
+met de Confidential Transfer-extensie:
 
 ```mermaid title="Create Token Account with Confidential Transfer Extension"
 sequenceDiagram
@@ -51,11 +44,11 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Confidential Transfer token account-status
+### Toestand van het Confidential Transfer token account
 
 De extensie voegt de
-[ConfidentialTransferAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L75-L122)-status
-toe aan het token account:
+[ConfidentialTransferAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L75-L122)
+toestand toe aan het token account:
 
 ```rust title="Confidential Token Account State"
 #[repr(C)]
@@ -107,48 +100,49 @@ pub struct ConfidentialTransferAccount {
 }
 ```
 
-De _rs`ConfidentialTransferAccount`_ bevat verschillende velden om confidential
-transfers te beheren:
+De _rs`ConfidentialTransferAccount`_ bevat verschillende velden voor het beheren
+van vertrouwelijke overdrachten:
 
-- **approved**: De goedkeuringsstatus van het account voor confidential
-  transfers. Als de `auto_approve_new_accounts`-configuratie van het mint
-  account is ingesteld als `true`, worden alle token accounts automatisch
-  goedgekeurd voor confidential transfers.
+- **approved**: De goedkeuringsstatus van het account voor vertrouwelijke
+  overdrachten. Als de configuratie `auto_approve_new_accounts` van het mint
+  account is ingesteld op `true`, worden alle token accounts automatisch
+  goedgekeurd voor vertrouwelijke overdrachten.
 
-- **elgamal_pubkey**: De ElGamal publieke sleutel die wordt gebruikt om saldi en
-  transferbedragen te versleutelen.
+- **elgamal_pubkey**: De openbare ElGamal-sleutel die wordt gebruikt om saldi en
+  overdrachtsbedragen te versleutelen.
 
 - **pending_balance_lo**: De versleutelde lagere 16 bits van het openstaande
-  saldo. Het saldo wordt opgesplitst in hoge en lage delen voor efficiënte
+  saldo. Het saldo wordt opgesplitst in een hoog en laag deel voor efficiënte
   ontsleuteling.
 
 - **pending_balance_hi**: De versleutelde hogere 48 bits van het openstaande
-  saldo. Het saldo wordt opgesplitst in hoge en lage delen voor efficiënte
+  saldo. Het saldo wordt opgesplitst in een hoog en laag deel voor efficiënte
   ontsleuteling.
 
 - **available_balance**: Het versleutelde saldo dat beschikbaar is voor
-  transfers.
+  overdrachten.
 
 - **decryptable_available_balance**: Het beschikbare saldo versleuteld met een
   Advanced Encryption Standard (AES)-sleutel voor efficiënte ontsleuteling door
   de accounteigenaar.
 
-- **allow_confidential_credits**: Indien waar, staat inkomende vertrouwelijke
-  overdrachten toe.
+- **allow_confidential_credits**: Indien waar, worden inkomende vertrouwelijke
+  overdrachten toegestaan.
 
-- **allow_non_confidential_credits**: Indien waar, staat inkomende
-  niet-vertrouwelijke overdrachten toe.
+- **allow_non_confidential_credits**: Indien waar, worden inkomende
+  niet-vertrouwelijke overdrachten toegestaan.
 
-- **pending_balance_credit_counter**: Telt inkomende wachtende saldo credits van
-  deposit en transfer instructies.
+- **pending_balance_credit_counter**: Telt inkomende tegoedbijschrijvingen op
+  het openstaande saldo van stortings- en overdrachtsinstructies.
 
-- **maximum_pending_balance_credit_counter**: De tellimiet van wachtende credits
-  voordat een _rs`ApplyPendingBalance`_ instructie vereist is om het wachtende
-  saldo om te zetten naar het beschikbare saldo.
+- **maximum_pending_balance_credit_counter**: De teller die aangeeft hoeveel
+  openstaande tegoeden zijn toegestaan voordat een
+  _rs`ApplyPendingBalance`_-instructie vereist is om het openstaande saldo om te
+  zetten naar het beschikbare saldo.
 
-- **expected_pending_balance_credit_counter**: De
-  `pending_balance_credit_counter` waarde verstrekt door de client via de
-  instruction data de laatste keer dat de _rs`ApplyPendingBalance`_ instructie
+- **expected_pending_balance_credit_counter**: De waarde
+  `pending_balance_credit_counter` die door de client is opgegeven via de
+  instruction data de laatste keer dat de _rs`ApplyPendingBalance`_-instructie
   werd verwerkt.
 
 - **actual_pending_balance_credit_counter**: De `pending_balance_credit_counter`
@@ -156,31 +150,30 @@ transfers te beheren:
   _rs`ApplyPendingBalance`_ instructie werd verwerkt.
 
 <Callout type="info">
-  **Wachtend vs beschikbaar saldo**
+  **Uitstaand vs Beschikbaar Saldo**
 
-Vertrouwelijke saldi worden gescheiden in wachtende en beschikbare saldi om
-DoS-aanvallen te voorkomen. Zonder deze scheiding zou een aanvaller
-herhaaldelijk tokens kunnen sturen naar een token account, waardoor de
-mogelijkheid van de token account eigenaar om tokens over te dragen wordt
-geblokkeerd. De token account eigenaar zou geen tokens kunnen overdragen omdat
-het versleutelde saldo zou veranderen tussen het moment waarop de transactie
-wordt ingediend en wanneer deze wordt verwerkt, wat resulteert in een mislukte
-transactie.
+Vertrouwelijke saldi worden opgesplitst in uitstaande en beschikbare saldi om
+DoS-aanvallen te voorkomen. Zonder deze splitsing zou een aanvaller
+herhaaldelijk tokens naar een token account kunnen sturen, waardoor de eigenaar
+van het token account geen tokens meer kan overdragen. De eigenaar van het token
+account zou geen tokens kunnen overdragen omdat het versleutelde saldo zou
+veranderen tussen het moment waarop de transactie wordt ingediend en wanneer
+deze wordt verwerkt, wat resulteert in een mislukte transactie.
 
-Alle deposits en transfer bedragen worden aanvankelijk toegevoegd aan het
-wachtende saldo. Token account eigenaren moeten de _rs`ApplyPendingBalance`_
-instructie gebruiken om het wachtende saldo om te zetten naar het beschikbare
-saldo. Inkomende overdrachten of deposits hebben geen invloed op het beschikbare
-saldo van een token account.
+Alle stortingen en overdrachtsbedragen worden aanvankelijk toegevoegd aan het
+uitstaande saldo. Eigenaren van token accounts moeten de
+_rs`ApplyPendingBalance`_ instructie gebruiken om het uitstaande saldo om te
+zetten naar het beschikbare saldo. Inkomende overdrachten of stortingen hebben
+geen invloed op het beschikbare saldo van een token account.
 
 </Callout>
 
 <Callout type="info">
-  **Wachtend saldo hoog/laag splitsing**
+  **Splitsing Uitstaand Saldo Hoog/Laag**
 
-Het vertrouwelijke wachtende saldo is gesplitst in `pending_balance_lo` en
-`pending_balance_hi` omdat ElGamal-decryptie meer berekening vereist voor
-grotere getallen. Je kunt de ciphertext arithmetic implementatie vinden
+Het vertrouwelijke uitstaande saldo wordt opgesplitst in `pending_balance_lo` en
+`pending_balance_hi` omdat ElGamal-ontsleuteling meer berekening vereist voor
+grote getallen. De implementatie van de cijfertekst-rekenkunde is te vinden
 [hier](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/ciphertext-arithmetic/src/lib.rs#L54),
 die wordt gebruikt in de _rs`ApplyPendingBalance`_ instructie
 [hier](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1180-L1184).
@@ -188,16 +181,16 @@ die wordt gebruikt in de _rs`ApplyPendingBalance`_ instructie
 </Callout>
 
 <Callout type="info">
-  **Wachtende saldo credittellers**
+  **Tellers voor Uitstaand Saldo-credits**
 
-Bij het aanroepen van de _rs`ApplyPendingBalance`_ instructie om het wachtende
+Bij het aanroepen van de _rs`ApplyPendingBalance`_ instructie om het uitstaande
 saldo om te zetten naar het beschikbare saldo:
 
-1. De client zoekt de huidige wachtende en beschikbare saldi op, versleutelt de
+1. De client zoekt de huidige uitstaande en beschikbare saldi op, versleutelt de
    som, en levert een `decryptable_available_balance` versleuteld met de
-   AES-sleutel van de token account eigenaar.
+   AES-sleutel van de eigenaar van het token account.
 
-2. De verwachte en werkelijke wachtende credittellers volgen wijzigingen in de
+2. De verwachte en werkelijke uitstaande credittellers volgen wijzigingen in de
    tellerwaarde tussen het moment waarop de _rs`ApplyPendingBalance`_ instructie
    wordt aangemaakt en verwerkt:
    - `expected_pending_balance_credit_counter`: De
@@ -208,57 +201,59 @@ saldo om te zetten naar het beschikbare saldo:
      dat de _rs`ApplyPendingBalance`_ instructie wordt verwerkt
 
 Overeenkomende verwachte/werkelijke tellers geven aan dat de
-`decryptable_available_balance` overeenkomt met het `available_balance`.
+`decryptable_available_balance` overeenstemt met de `available_balance`.
 
 Bij het ophalen van de status van een token account om de
-`decryptable_available_balance` te lezen, vereisen verschillende
-verwachte/werkelijke tellerwaarden dat de client recente deposit/transfer
-instructies opzoekt die overeenkomen met het tellerverschil om het juiste saldo
-te berekenen.
+`decryptable_available_balance` te lezen, vereisen verschillende waarden van de
+verwachte/werkelijke tellers dat de client recente storting- en
+overdrachtsinstructies opzoekt die overeenkomen met het tellerverschil om het
+correcte saldo te berekenen.
 
-**Saldo reconciliatieproces**
+**Saldovereveningsproces**
 
-Wanneer de verwachte en werkelijke wachtende saldotellers verschillen, volg deze
-stappen om de `decryptable_available_balance` te reconciliëren:
+Wanneer de verwachte en werkelijke tellers voor het uitstaande saldo
+verschillen, volg dan deze stappen om de `decryptable_available_balance` te
+vereffenen:
 
 1. Begin met de `decryptable_available_balance` van het token account
-2. Haal de meest recente transacties op inclusief deposit en transfer
-   instructies tot het tellerverschil (werkelijk - verwacht):
-   - Voeg publieke bedragen toe van deposit instructies
-   - Ontsleutel en voeg bestemmings-ciphertext bedragen toe van transfer
-     instructies
+2. Haal de meest recente transacties op, inclusief storting- en
+   overdrachtsinstructies tot aan het tellerverschil (werkelijk - verwacht):
+   - Tel publieke bedragen op uit stortingsinstructies
+   - Ontsleutel en tel bestemmingsversleutelde bedragen op uit
+     overdrachtsinstructies
 
 </Callout>
 
 ### Vereiste instructies
 
-Het aanmaken van een token account met de Confidential Transfer extensie vereist
+Het aanmaken van een token account met de Confidential Transfer-extensie vereist
 drie instructies:
 
 1. **Maak het token account aan**: Roep de
-   _rs`AssociatedTokenAccountInstruction:Create`_ instructie van het Associated
+   _rs`AssociatedTokenAccountInstruction:Create`_-instructie van het Associated
    Token Program aan om het token account aan te maken.
 
-2. **Accountruimte opnieuw toewijzen**: Roep de Token Extension Program's
-   _rs`TokenInstruction::Reallocate`_ instructie aan om ruimte toe te voegen
-   voor de _rs`ConfidentialTransferAccount`_ status.
+2. **Herbestem accountruimte**: Roep de
+   _rs`TokenInstruction::Reallocate`_-instructie van het Token Extensions
+   Program aan om ruimte toe te voegen voor de
+   _rs`ConfidentialTransferAccount`_-status.
 
-3. **Confidential Transfers configureren**: Roep de Token Extension Program's
-   [ConfidentialTransferInstruction::ConfigureAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L201)
-   instructie aan om de _rs`ConfidentialTransferAccount`_ status te
-   initialiseren.
+3. **Configureer vertrouwelijke overdrachten**: Roep de
+   [ConfidentialTransferInstruction::ConfigureAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L201)-instructie
+   van het Token Extensions Program aan om de
+   _rs`ConfidentialTransferAccount`_-status te initialiseren.
 
 <Callout type="info">
 
 **Alleen de eigenaar van het token account kan een token account configureren
-voor confidential transfers**.
+voor vertrouwelijke overdrachten**.
 
-De _rs`ConfigureAccount`_ instructie vereist client-side generatie van
-encryptiesleutels en bewijsgegevens die alleen door de eigenaar van het token
-account kunnen worden gegenereerd.
+De _rs`ConfigureAccount`_-instructie vereist dat de client
+versleutelingssleutels en bewijsgegevens genereert die alleen door de eigenaar
+van het token account kunnen worden aangemaakt.
 
-De _rs`PubkeyValidityProofData`_ creëert een bewijs dat verifieert dat een
-ElGamal-sleutel geldig is. Voor implementatiedetails, zie:
+De _rs`PubkeyValidityProofData`_ maakt een bewijs aan dat verifieert of een
+ElGamal-sleutel geldig is. Zie voor implementatiedetails:
 
 - [PubkeyValidityProofData](https://github.com/anza-xyz/agave/blob/b39a9764005ac8596b7e14e61d381305ce57ecaa/zk-sdk/src/zk_elgamal_proof_program/proof_data/pubkey_validity.rs#L58)
 - [PubkeyValidityProof](https://github.com/anza-xyz/agave/blob/b39a9764005ac8596b7e14e61d381305ce57ecaa/zk-sdk/src/sigma_proofs/pubkey_validity.rs#L65)
@@ -267,12 +262,13 @@ ElGamal-sleutel geldig is. Voor implementatiedetails, zie:
 
 ### Voorbeeldcode
 
-De volgende code demonstreert hoe je een Associated Token Account aanmaakt met
-de Confidential Transfer extensie.
+De volgende code laat zien hoe je een associated token account aanmaakt met de
+Confidential Transfer-extensie,
 
 Om het voorbeeld uit te voeren, start je een lokale validator met het Token
-Extension Program gekloond van mainnet met het volgende commando. Je moet de
-Solana CLI geïnstalleerd hebben om de lokale validator te starten.
+Extensions Program dat gekloond is van mainnet met behulp van de volgende
+opdracht. Je moet de Solana CLI geïnstalleerd hebben om de lokale validator te
+starten.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
@@ -280,8 +276,8 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 
 <Callout type="info">
   Op het moment van schrijven is Confidential Transfers niet ingeschakeld op de
-  standaard lokale validator. Je moet het mainnet Token Extension Program klonen
-  om de voorbeeldcode uit te voeren.
+  standaard lokale validator. Je moet het mainnet Token Extensions Program
+  klonen om de voorbeeldcode uit te voeren.
 </Callout>
 
 <CodeTabs>

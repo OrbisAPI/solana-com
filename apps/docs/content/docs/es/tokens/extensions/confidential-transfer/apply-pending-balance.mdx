@@ -5,23 +5,15 @@ description:
   disponibles.
 ---
 
-<Callout type="warn">
-  El programa ZK ElGamal está temporalmente deshabilitado en mainnet y devnet
-  mientras se somete a una auditoría de seguridad. Esto significa que la
-  extensión de transferencias confidenciales no está disponible actualmente.
-  Aunque los conceptos siguen siendo válidos, los ejemplos de código no
-  funcionarán.
-</Callout>
-
 ## Cómo aplicar el saldo pendiente al saldo disponible
 
 Antes de que los tokens puedan transferirse de forma confidencial, el saldo
 público de tokens debe convertirse en un saldo confidencial. Esta conversión
 ocurre en dos etapas:
 
-1. **Saldo pendiente confidencial**: Inicialmente, los tokens se "depositan"
+1. **Saldo Pendiente Confidencial**: Inicialmente, los tokens se "depositan"
    desde el saldo público a un saldo confidencial "pendiente".
-2. **Saldo disponible confidencial**: El saldo pendiente se "aplica" luego al
+2. **Saldo Disponible Confidencial**: El saldo pendiente se "aplica" entonces al
    saldo disponible, haciendo que los tokens estén disponibles para
    transferencias confidenciales.
 
@@ -30,7 +22,7 @@ disponible.
 
 Cuando los tokens se "depositan" desde el saldo público o cuando los tokens se
 transfieren confidencialmente de un token account a otro, los tokens se añaden
-inicialmente al saldo pendiente confidencial. Antes de que los tokens puedan
+inicialmente al saldo confidencial pendiente. Antes de que los tokens puedan
 usarse para transferencias confidenciales, el saldo pendiente debe "aplicarse"
 al saldo disponible.
 
@@ -52,7 +44,7 @@ CC->>BB: Transfer
 B->>BB: Apply
 ```
 
-El siguiente diagrama muestra los pasos involucrados en aplicar el saldo
+El siguiente diagrama muestra los pasos involucrados en la aplicación del saldo
 pendiente al saldo disponible:
 
 ```mermaid title="Apply Pending Balance"
@@ -74,33 +66,33 @@ sequenceDiagram
     Note over TokenAccount: Tokens now in available confidential balance<br>ready for confidential transfers
 ```
 
-### Instrucción requerida
+### Instrucción Requerida
 
 Para convertir un saldo pendiente en un saldo disponible, invoca la instrucción
 [ConfidentialTransferInstruction::ApplyPendingBalance](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1152).
 
 El crate `spl_token_client` proporciona un método
 `confidential_transfer_apply_pending_balance` que construye y envía una
-transacción con la instrucción `ApplyPendingBalance`, como se demuestra en el
+transacción con la instrucción `ApplyPendingBalance`, como se muestra en el
 ejemplo a continuación.
 
-### Código de ejemplo
+### Código de Ejemplo
 
-El siguiente ejemplo demuestra cómo aplicar el saldo pendiente confidencial al
-saldo disponible confidencial.
+El siguiente ejemplo muestra cómo aplicar el saldo confidencial pendiente al
+saldo confidencial disponible.
 
-Para ejecutar el ejemplo, inicia un validador local con el Token Extension
-Program clonado desde mainnet usando el siguiente comando. Debes tener instalada
-la CLI de Solana para iniciar el validador local.
+Para ejecutar el ejemplo, inicia un validator local con el Token Extensions
+Program clonado desde mainnet usando el siguiente comando. Debes tener el Solana
+CLI instalado para iniciar el validator local.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Al momento de escribir esto, las transferencias confidenciales no están
-  habilitadas en el validador local predeterminado. Debes clonar el Token
-  Extension Program de mainnet para ejecutar el código de ejemplo.
+  En el momento de redactar este documento, las Transferencias Confidenciales no
+  están habilitadas en el validator local predeterminado. Debes clonar el Token
+  Extensions Program de mainnet para ejecutar el código de ejemplo.
 </Callout>
 
 <CodeTabs>

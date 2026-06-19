@@ -3,32 +3,25 @@ title: Token einzahlen
 description: Erfahre, wie du Token in den vertraulichen Status einzahlen kannst.
 ---
 
-<Callout type="warn">
-  Das ZK ElGamal Programm ist vorübergehend auf dem Mainnet und Devnet
-  deaktiviert, während es einem Sicherheitsaudit unterzogen wird. Das bedeutet,
-  dass die Erweiterung für vertrauliche Überweisungen derzeit nicht verfügbar
-  ist. Während die Konzepte weiterhin gültig sind, werden die Code- Beispiele
-  nicht funktionieren.
-</Callout>
-
-## Wie man Token auf ein vertrauliches ausstehende Guthaben einzahlt
+## So werden Token auf das vertrauliche ausstehende Guthaben eingezahlt
 
 Bevor Token vertraulich übertragen werden können, muss das öffentliche
 Token-Guthaben in ein vertrauliches Guthaben umgewandelt werden. Diese
-Umwandlung erfolgt in zwei Stufen:
+Umwandlung erfolgt in zwei Schritten:
 
-1. **Vertrauliches ausstehende Guthaben**: Zunächst werden Token vom
-   öffentlichen Guthaben auf ein "ausstehende" vertrauliches Guthaben
-   "eingezahlt".
-2. **Vertrauliches verfügbares Guthaben**: Das ausstehende Guthaben wird dann
-   auf das verfügbare Guthaben "angewendet", wodurch die Token für vertrauliche
-   Überweisungen verfügbar werden.
+1. **Vertrauliches ausstehendes Guthaben**: Zunächst werden Token vom
+   öffentlichen Guthaben auf ein „ausstehendes“ vertrauliches Guthaben
+   „eingezahlt“.
+2. **Vertrauliches verfügbares Guthaben**: Das ausstehende Guthaben wird
+   anschließend auf das verfügbare Guthaben „angewendet“, wodurch die Token für
+   vertrauliche Übertragungen verfügbar werden.
 
-Dieser Abschnitt erklärt die erste Stufe: Das Einzahlen des öffentlichen
+Dieser Abschnitt erläutert die erste Stufe: das Einzahlen des öffentlichen
 Token-Guthabens auf das vertrauliche ausstehende Guthaben.
 
 Das folgende Diagramm zeigt die Schritte, die beim Einzahlen von Token vom
-öffentlichen Guthaben auf das vertrauliche ausstehende Guthaben beteiligt sind:
+öffentlichen Guthaben auf das vertrauliche ausstehende Guthaben erforderlich
+sind:
 
 ```mermaid title="Deposit Tokens"
 sequenceDiagram
@@ -48,34 +41,35 @@ sequenceDiagram
 
 ### Erforderliche Anweisung
 
-Um ein öffentliches Guthaben in ein vertrauliches ausstehende Guthaben
+Um ein öffentliches Guthaben in ein vertrauliches ausstehendes Guthaben
 umzuwandeln, rufen Sie die
 [ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386)
-Anweisung auf. Der
-[maximale Betrag](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
+Anweisungen auf. Der
+[Maximalbetrag](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
 pro Einzahlungsanweisung ist auf 2^48 begrenzt.
 
-Die `spl_token_client` Crate bietet eine `confidential_transfer_deposit`
-Methode, die eine Transaktion mit der `Deposit` Anweisung erstellt und sendet,
-wie im folgenden Beispiel demonstriert.
+Das `spl_token_client`-Crate stellt eine `confidential_transfer_deposit`-Methode
+bereit, die eine Transaktion mit der `Deposit`- Anweisungen erstellt und sendet,
+wie im folgenden Beispiel gezeigt.
 
 ### Beispielcode
 
-Das folgende Beispiel zeigt, wie man öffentliches Token-Guthaben auf
-vertrauliches ausstehende Guthaben einzahlt.
+Das folgende Beispiel zeigt, wie das öffentliche Token-Guthaben auf das
+vertrauliche ausstehende Guthaben eingezahlt wird.
 
-Um das Beispiel auszuführen, starten Sie einen lokalen Validator mit dem Token
-Extensions Program, das vom Mainnet geklont wurde, mit dem folgenden Befehl. Sie
-müssen die Solana CLI installiert haben, um den lokalen Validator zu starten.
+Um das Beispiel auszuführen, starten Sie einen lokalen Validatoren mit dem Token
+Extensions Program, der vom Mainnet geklont wurde, indem Sie den folgenden
+Befehl verwenden. Sie müssen die Solana CLI installiert haben, um den lokalen
+Validatoren zu starten.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Zum Zeitpunkt des Schreibens sind die vertraulichen Überweisungen auf dem
-  Standard-lokalen-Validator nicht aktiviert. Sie müssen das Token Extensions
-  Program vom Mainnet klonen, um den Beispielcode auszuführen.
+  Zum Zeitpunkt der Erstellung ist Confidential Transfers beim standardmäßigen
+  lokalen Validatoren nicht aktiviert. Sie müssen das Mainnet Token Extensions
+  Program klonen, um den Beispielcode auszuführen.
 </Callout>
 
 <CodeTabs>

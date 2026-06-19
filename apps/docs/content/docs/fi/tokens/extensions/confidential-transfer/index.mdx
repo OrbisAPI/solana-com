@@ -5,33 +5,26 @@ description:
   ominaisuuksien lisäämiseen token mint- ja token account -tileille.
 ---
 
-<Callout type="warn">
-  ZK ElGamal -ohjelma on väliaikaisesti poistettu käytöstä mainnetissä ja
-  devnetissä turvallisuusauditoinnin ajaksi. Tämä tarkoittaa, että confidential
-  transfers -laajennus ei ole tällä hetkellä käytettävissä. Vaikka konseptit
-  ovat edelleen päteviä, koodiesimerkit eivät toimi.
-</Callout>
+## Mitä ovat luottamukselliset siirrot?
 
-## Mitä ovat Confidential Transfer -siirrot?
-
-Confidential transfer -siirrot mahdollistavat tokenien siirtämisen token
-accountien välillä paljastamatta siirtosummaa. Tämä on hyödyllistä yksityisyyttä
-suojaavissa transaktioissa. Vain siirtosummat ja token-saldot ovat yksityisiä.
-Token account -osoitteet pysyvät julkisina.
+Luottamukselliset siirrot mahdollistavat tokenien siirtämisen token account
+-tilien välillä paljastamatta siirron määrää. Tämä on hyödyllistä yksityisyyttä
+suojaavissa transaktioissa. Ainoastaan siirron määrät ja token-saldot ovat
+yksityisiä. token account -osoitteet pysyvät julkisina.
 
 - [Protokollan yleiskatsaus](https://www.solana-program.com/docs/confidential-balances/overview) -
-  Tietoja taustalla olevasta kryptografisesta protokollasta
+  Tiedot taustalla olevasta kryptografisesta protokollasta
 - [Pikaopas](https://www.solana-program.com/docs/confidential-balances#setup) -
-  Asennus ja peruskomentorivitoiminnot
-- [Confidential Balances -keittokirja](https://github.com/solana-developers/Confidential-Balances-Sample) -
+  Asennus ja perus-CLI-komennot
+- [Confidential Balances Cookbook](https://github.com/solana-developers/Confidential-Balances-Sample) -
   Koodiesimerkkejä Confidential Transfer -laajennuksen käytöstä
 
 ### Miten se toimii?
 
 Confidential Transfer -laajennus lisää
 [ohjeita](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
-Token Extension -ohjelmaan, jotka mahdollistavat tokenien siirtämisen tilien
-välillä paljastamatta siirtosummaa.
+Token Extensions Program -ohjelmaan, jonka avulla voit siirtää tokeneita tilien
+välillä paljastamatta siirron määrää.
 
 ```mermaid title="Confidential Transfer Basic Overview"
     sequenceDiagram
@@ -53,33 +46,33 @@ välillä paljastamatta siirtosummaa.
 
 Luottamuksellisten token-siirtojen peruskulku on seuraava:
 
-1. Luo mint account confidential transfer -laajennuksella.
-2. Luo token accountit confidential transfer -laajennuksella lähettäjälle ja
-   vastaanottajalle.
-3. Mintaa tokeneita lähettäjän tilille.
+1. Luo mint account Confidential Transfer -laajennuksella.
+2. Luo token account -tilit Confidential Transfer -laajennuksella lähettäjälle
+   ja vastaanottajalle.
+3. Luo tokeneita lähettäjän tilille.
 4. **Talleta** lähettäjän julkinen saldo **luottamukselliseen odottavaan
    saldoon**.
-5. **Käytä** lähettäjän odottava saldo **luottamukselliseen käytettävissä
+5. **Sovella** lähettäjän odottava saldo **luottamukselliseen käytettävissä
    olevaan saldoon**.
-6. **Siirrä** luottamuksellisesti tokeneita lähettäjän token accountista
-   vastaanottajan token accountiin.
-7. **Käytä** vastaanottajan odottava saldo **luottamukselliseen käytettävissä
+6. **Siirrä** tokenit luottamuksellisesti lähettäjän token account -tililtä
+   vastaanottajan token account -tilille.
+7. **Sovella** vastaanottajan odottava saldo **luottamukselliseen käytettävissä
    olevaan saldoon**.
 8. **Nosta** vastaanottajan luottamuksellinen käytettävissä oleva saldo
-   **julkiseen saldoon**.
+   **julkiseksi saldoksi**.
 
-Lisätietoja luottamuksellisen siirron kulun vaiheista löydät vastaavista
-sivuista:
+Lisätietoja luottamuksellisen siirron vaiheiden yksityiskohdista löydät
+vastaavista sivuista:
 
 <Cards>
   <Card
-    title="Luo Mint Account"
+    title="Luo mint account"
     href="/docs/tokens/extensions/confidential-transfer/create-mint"
   >
     Kuinka luoda mint account Confidential Transfer -laajennuksella
   </Card>
   <Card
-    title="Luo Token Account"
+    title="Luo token account"
     href="/docs/tokens/extensions/confidential-transfer/create-token-account"
   >
     Kuinka määrittää token account Confidential Transfer -laajennuksella
@@ -91,10 +84,10 @@ sivuista:
     Kuinka tallettaa tokeneita luottamukselliseen odottavaan saldoon
   </Card>
   <Card
-    title="Käytä odottava saldo"
+    title="Sovella odottavaa saldoa"
     href="/docs/tokens/extensions/confidential-transfer/apply-pending-balance"
   >
-    Kuinka siirtää odottava saldo käytettävissä olevaan luottamukselliseen
+    Kuinka soveltaa odottavaa saldoa käytettävissä olevaan luottamukselliseen
     saldoon
   </Card>
   <Card
@@ -107,19 +100,26 @@ sivuista:
     title="Siirrä tokeneita"
     href="/docs/tokens/extensions/confidential-transfer/transfer-tokens"
   >
-    Kuinka siirtää tokeneita luottamuksellisesti token accounts -tilien välillä
+    Kuinka siirtää tokeneita luottamuksellisesti token account -tilien välillä
+  </Card>
+  <Card
+    title="Integrointiopas"
+    href="/docs/tokens/extensions/confidential-transfer/integration-guide"
+  >
+    Kuinka lompakot, selaimet ja pörssit voivat tukea luottamuksellisia
+    siirtotokeneita
   </Card>
   <Card
     title="Liikkeeseenlaskijan opas"
     href="/docs/tokens/extensions/confidential-transfer/issuer-guide"
   >
-    Kuinka laskea liikkeelle ja hallinnoida luottamuksellista siirto-tokenia
+    Kuinka laskea liikkeelle ja hallita luottamuksellista siirtotokenia
     (hyväksymiskäytäntö, tarkastajat, maksut, luonti ja poltto)
   </Card>
 </Cards>
 
-Alla oleva kaavio näyttää yksityiskohtaisen sekvenssin luottamuksellisten
-tokensiirtojen peruskulusta:
+Alla oleva kaavio näyttää yksityiskohtaisen tapahtumasarjan luottamuksellisten
+tokensiirtojen perusvirralle:
 
 ```mermaid title="Confidential Transfer Detailed Overview"
 sequenceDiagram
@@ -267,21 +267,21 @@ sequenceDiagram
 ### Esimerkkikoodi
 
 Alla oleva Rust-esimerkki näyttää luottamuksellisten tokensiirtojen vaiheet,
-jotka vastaavat edeltävää kaaviota. Vaiheet on erotettu apufunktioihin selkeyden
-vuoksi.
+jotka vastaavat edellistä kaaviota. Vaiheet on eroteltu selkeyden vuoksi
+apufunktioihin.
 
-Esimerkin suorittamiseksi käynnistä paikallinen validaattori, jossa Token
-Extension Program on kloonattu mainnetistä käyttäen seuraavaa komentoa. Sinulla
-on oltava Solana CLI asennettuna paikallisen validaattorin käyttämiseksi.
+Suorittaaksesi esimerkin, käynnistä paikallinen validator Token Extension
+Program kloonattuna mainnetistä seuraavalla komennolla. Sinulla on oltava Solana
+CLI asennettuna paikallisen validatorin käyttämiseksi.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Tätä kirjoitettaessa luottamukselliset siirrot eivät ole käytössä
-  oletusarvoisessa paikallisessa validaattorissa. Sinun on kloonattava mainnetin
-  Token Extension Program esimerkkikoodin suorittamiseksi.
+  Kirjoitushetkellä Confidential Transfers ei ole käytössä oletuspaikallisessa
+  validatorissa. Sinun täytyy kloonata mainnet Token Extension Program
+  suorittaaksesi esimerkkikoodin.
 </Callout>
 
 <CodeTabs>
@@ -1162,26 +1162,26 @@ tokio = { version = "1.44.2", features = ["full"] }
 
 </CodeTabs>
 
-## Luottamuksellisten siirtojen ohjeet
+## Luottamuksellisen siirron ohjeet
 
-Täydellinen lista luottamuksellisten siirtojen laajennuksen
+Täydellinen luettelo Confidential Transfer -laajennuksen
 [ohjeista](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
 on seuraava:
 
-| Ohje                                | Kuvaus                                                                                                                                                                      |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _rs`InitializeMint`_                | Asettaa mint accountin luottamuksellisia siirtoja varten. Tämä ohje on sisällytettävä samaan transaktioon kuin _rs`TokenInstruction::InitializeMint`_ -ohje.                |
-| _rs`UpdateMint`_                    | Päivittää mintin luottamuksellisten siirtojen asetukset.                                                                                                                    |
-| _rs`ConfigureAccount`_              | Asettaa token accountin luottamuksellisia siirtoja varten.                                                                                                                  |
-| _rs`ApproveAccount`_                | Hyväksyy token accountin luottamuksellisia siirtoja varten, jos mint vaatii hyväksynnän uusille token accounteille.                                                         |
-| _rs`EmptyAccount`_                  | Tyhjentää odottavan ja käytettävissä olevan luottamuksellisen saldon, jotta token accountin sulkeminen on mahdollista.                                                      |
-| _rs`Deposit`_                       | Muuntaa julkisen tokensaldon odottavaksi luottamukselliseksi saldoksi.                                                                                                      |
-| _rs`Withdraw`_                      | Muuntaa käytettävissä olevan luottamuksellisen saldon takaisin julkiseksi saldoksi.                                                                                         |
-| _rs`Transfer`_                      | Siirtää tokeneita token accountien välillä luottamuksellisesti.                                                                                                             |
-| _rs`ApplyPendingBalance`_           | Muuntaa odottavan saldon käytettävissä olevaksi saldoksi talletusten tai siirtojen jälkeen.                                                                                 |
-| _rs`EnableConfidentialCredits`_     | Sallii token accountin vastaanottaa luottamuksellisia tokensiirtoja.                                                                                                        |
-| _rs`DisableConfidentialCredits`_    | Estää saapuvat luottamukselliset siirrot, mutta sallii edelleen julkiset siirrot.                                                                                           |
-| _rs`EnableNonConfidentialCredits`_  | Sallii token accountin vastaanottaa julkisia tokensiirtoja.                                                                                                                 |
-| _rs`DisableNonConfidentialCredits`_ | Estää tavalliset siirrot, jotta account vastaanottaa vain luottamuksellisia siirtoja.                                                                                       |
-| _rs`TransferWithFee`_               | Siirtää tokeneita token accountien välillä luottamuksellisesti maksulla.                                                                                                    |
-| _rs`ConfigureAccountWithRegistry`_  | Vaihtoehtoinen tapa konfiguroida token accounteja luottamuksellisia siirtoja varten käyttäen _rs`ElGamalRegistry`_ -accountia _rs`VerifyPubkeyValidity`_ -todisteen sijaan. |
+| Ohje                                | Kuvaus                                                                                                                                                                   |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| _rs`InitializeMint`_                | Määrittää mint accountin luottamuksellisia siirtoja varten. Tämä ohje on sisällytettävä samaan transaktioon kuin _rs`TokenInstruction::InitializeMint`_ -ohje.           |
+| _rs`UpdateMint`_                    | Päivittää luottamuksellisen siirron asetukset mintille.                                                                                                                  |
+| _rs`ConfigureAccount`_              | Määrittää token accountin luottamuksellisia siirtoja varten.                                                                                                             |
+| _rs`ApproveAccount`_                | Hyväksyy token accountin luottamuksellisia siirtoja varten, jos mint edellyttää hyväksyntää uusille token accounteille.                                                  |
+| _rs`EmptyAccount`_                  | Tyhjentää odottavan ja käytettävissä olevan luottamuksellisen saldon token accountin sulkemisen mahdollistamiseksi.                                                      |
+| _rs`Deposit`_                       | Muuntaa julkisen tokensaldon odottavaksi luottamukselliseksi saldoksi.                                                                                                   |
+| _rs`Withdraw`_                      | Muuntaa käytettävissä olevan luottamuksellisen saldon takaisin julkiseksi saldoksi.                                                                                      |
+| _rs`Transfer`_                      | Siirtää tokeneita token accountien välillä luottamuksellisesti.                                                                                                          |
+| _rs`ApplyPendingBalance`_           | Muuntaa odottavan saldon käytettävissä olevaksi saldoksi talletusten tai siirtojen jälkeen.                                                                              |
+| _rs`EnableConfidentialCredits`_     | Sallii token accountin vastaanottaa luottamuksellisia tokensiirtoja.                                                                                                     |
+| _rs`DisableConfidentialCredits`_    | Estää saapuvat luottamukselliset siirrot samalla kun julkiset siirrot ovat edelleen sallittuja.                                                                          |
+| _rs`EnableNonConfidentialCredits`_  | Sallii token accountin vastaanottaa julkisia tokensiirtoja.                                                                                                              |
+| _rs`DisableNonConfidentialCredits`_ | Estää tavalliset siirrot, jolloin tili vastaanottaa vain luottamuksellisia siirtoja.                                                                                     |
+| _rs`TransferWithFee`_               | Siirtää tokeneita token accountien välillä luottamuksellisesti maksun kanssa.                                                                                            |
+| _rs`ConfigureAccountWithRegistry`_  | Vaihtoehtoinen tapa määrittää token accountit luottamuksellisia siirtoja varten käyttämällä _rs`ElGamalRegistry`_ -tiliä _rs`VerifyPubkeyValidity`_ -todistuksen sijaan. |

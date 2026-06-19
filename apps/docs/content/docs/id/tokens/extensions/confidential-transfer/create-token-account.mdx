@@ -4,18 +4,11 @@ description:
   Pelajari cara membuat token account dengan ekstensi Confidential Transfer.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program sementara dinonaktifkan di mainnet dan devnet karena sedang
-  menjalani audit keamanan. Ini berarti ekstensi confidential transfers saat ini
-  tidak tersedia. Meskipun konsepnya masih valid, contoh kode tidak akan
-  berjalan.
-</Callout>
-
 ## Cara membuat token account dengan ekstensi Confidential Transfer
 
 Ekstensi Confidential Transfer memungkinkan transfer token secara privat dengan
-menambahkan state tambahan ke token account. Bagian ini menjelaskan cara membuat
-token account dengan ekstensi ini diaktifkan.
+menambahkan status tambahan ke token account. Bagian ini menjelaskan cara
+membuat token account dengan ekstensi ini diaktifkan.
 
 Diagram berikut menunjukkan langkah-langkah yang terlibat dalam membuat token
 account dengan ekstensi Confidential Transfer:
@@ -51,7 +44,7 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### State Confidential Transfer Token Account
+### Status Token Account Confidential Transfer
 
 Ekstensi ini menambahkan state
 [ConfidentialTransferAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L75-L122)
@@ -107,41 +100,41 @@ pub struct ConfidentialTransferAccount {
 }
 ```
 
-_rs`ConfidentialTransferAccount`_ berisi beberapa field untuk mengelola
-confidential transfers:
+_rs`ConfidentialTransferAccount`_ berisi beberapa field untuk mengelola transfer
+konfidensial:
 
-- **approved**: Status persetujuan account untuk confidential transfers. Jika
+- **approved**: Status persetujuan akun untuk transfer konfidensial. Jika
   konfigurasi `auto_approve_new_accounts` pada mint account diatur sebagai
-  `true`, semua token account secara otomatis disetujui untuk confidential
-  transfers.
+  `true`, semua token account disetujui secara otomatis untuk transfer
+  konfidensial.
 
 - **elgamal_pubkey**: Kunci publik ElGamal yang digunakan untuk mengenkripsi
   saldo dan jumlah transfer.
 
-- **pending_balance_lo**: 16 bit terendah dari pending balance yang dienkripsi.
-  Saldo dibagi menjadi bagian tinggi dan rendah untuk dekripsi yang efisien.
+- **pending_balance_lo**: 16 bit bawah terenkripsi dari saldo tertunda. Saldo
+  dibagi menjadi bagian tinggi dan rendah untuk dekripsi yang efisien.
 
-- **pending_balance_hi**: 48 bit tertinggi dari pending balance yang dienkripsi.
-  Saldo dibagi menjadi bagian tinggi dan rendah untuk dekripsi yang efisien.
+- **pending_balance_hi**: 48 bit atas terenkripsi dari saldo tertunda. Saldo
+  dibagi menjadi bagian tinggi dan rendah untuk dekripsi yang efisien.
 
 - **available_balance**: Saldo terenkripsi yang tersedia untuk transfer.
 
-- **decryptable_available_balance**: Saldo tersedia yang dienkripsi dengan kunci
+- **decryptable_available_balance**: Saldo yang tersedia dienkripsi dengan kunci
   Advanced Encryption Standard (AES) untuk dekripsi yang efisien oleh pemilik
-  account.
+  akun.
 
-- **allow_confidential_credits**: Jika true, mengizinkan transfer konfidensial
-  masuk.
+- **allow_confidential_credits**: Jika bernilai true, mengizinkan transfer
+  konfidensial yang masuk.
 
-- **allow_non_confidential_credits**: Jika true, mengizinkan transfer
-  non-konfidensial masuk.
+- **allow_non_confidential_credits**: Jika bernilai true, mengizinkan transfer
+  non-konfidensial yang masuk.
 
-- **pending_balance_credit_counter**: Menghitung kredit saldo tertunda masuk
-  dari instruksi deposit dan transfer.
+- **pending_balance_credit_counter**: Menghitung kredit saldo tertunda yang
+  masuk dari instruksi deposit dan transfer.
 
 - **maximum_pending_balance_credit_counter**: Batas jumlah kredit tertunda
-  sebelum memerlukan instruksi _rs`ApplyPendingBalance`_ untuk mengonversi saldo
-  tertunda menjadi saldo tersedia.
+  sebelum mengharuskan instruksi _rs`ApplyPendingBalance`_ untuk mengonversi
+  saldo tertunda menjadi saldo yang tersedia.
 
 - **expected_pending_balance_credit_counter**: Nilai
   `pending_balance_credit_counter` yang diberikan oleh klien melalui instruction
@@ -152,28 +145,28 @@ confidential transfers:
   _rs`ApplyPendingBalance`_ terakhir diproses.
 
 <Callout type="info">
-  **Saldo tertunda vs saldo tersedia**
+  **Saldo Tertunda vs Saldo Tersedia**
 
-Saldo konfidensial dipisahkan menjadi saldo tertunda dan saldo tersedia untuk
+Saldo rahasia dipisahkan menjadi saldo tertunda dan saldo tersedia untuk
 mencegah serangan DoS. Tanpa pemisahan ini, penyerang dapat berulang kali
-mengirim token ke token account, memblokir kemampuan pemilik token account untuk
-mentransfer token. Pemilik token account tidak akan dapat mentransfer token
-karena saldo terenkripsi akan berubah antara saat transaksi dikirim dan saat
-diproses, mengakibatkan transaksi gagal.
+mengirim token ke token account, menghalangi kemampuan pemilik token account
+untuk menstransfer token. Pemilik token account tidak akan dapat mentransfer
+token karena saldo terenkripsi akan berubah antara saat transaksi diajukan dan
+saat diproses, mengakibatkan transaksi gagal.
 
 Semua deposit dan jumlah transfer awalnya ditambahkan ke saldo tertunda. Pemilik
 token account harus menggunakan instruksi _rs`ApplyPendingBalance`_ untuk
-mengonversi saldo tertunda menjadi saldo tersedia. Transfer atau deposit masuk
-tidak memengaruhi saldo tersedia token account.
+mengonversi saldo tertunda menjadi saldo tersedia. Transfer masuk atau deposit
+tidak memengaruhi saldo tersedia pada token account.
 
 </Callout>
 
 <Callout type="info">
-  **Pemisahan tinggi/rendah saldo tertunda**
+  **Pemisahan Saldo Tertunda Tinggi/Rendah**
 
-Saldo tertunda konfidensial dibagi menjadi `pending_balance_lo` dan
-`pending_balance_hi` karena dekripsi ElGamal memerlukan lebih banyak komputasi
-untuk angka yang lebih besar. Anda dapat menemukan implementasi aritmatika
+Saldo tertunda rahasia dibagi menjadi `pending_balance_lo` dan
+`pending_balance_hi` karena dekripsi ElGamal memerlukan komputasi lebih banyak
+untuk angka yang lebih besar. Anda dapat menemukan implementasi aritmetika
 ciphertext
 [di sini](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/ciphertext-arithmetic/src/lib.rs#L54),
 yang digunakan dalam instruksi _rs`ApplyPendingBalance`_
@@ -182,7 +175,7 @@ yang digunakan dalam instruksi _rs`ApplyPendingBalance`_
 </Callout>
 
 <Callout type="info">
-  **Penghitung kredit saldo tertunda**
+  **Penghitung Kredit Saldo Tertunda**
 
 Saat memanggil instruksi _rs`ApplyPendingBalance`_ untuk mengonversi saldo
 tertunda menjadi saldo tersedia:
@@ -191,8 +184,8 @@ tertunda menjadi saldo tersedia:
    dan menyediakan `decryptable_available_balance` yang dienkripsi menggunakan
    kunci AES pemilik token account.
 
-2. Penghitung kredit tertunda yang diharapkan dan aktual melacak perubahan pada
-   nilai penghitung antara saat instruksi _rs`ApplyPendingBalance`_ dibuat dan
+2. Penghitung kredit tertunda yang diharapkan dan aktual melacak perubahan nilai
+   penghitung antara saat instruksi _rs`ApplyPendingBalance`_ dibuat dan
    diproses:
    - `expected_pending_balance_credit_counter`: Nilai
      `pending_balance_credit_counter` saat klien membuat instruksi
@@ -201,65 +194,65 @@ tertunda menjadi saldo tersedia:
      `pending_balance_credit_counter` pada token account pada saat instruksi
      _rs`ApplyPendingBalance`_ diproses
 
-Penghitung yang diharapkan/aktual yang cocok menunjukkan bahwa
+Pencocokkan antara penghitung yang diharapkan/aktual menunjukkan bahwa
 `decryptable_available_balance` sesuai dengan `available_balance`.
 
-Saat mengambil state token account untuk membaca
-`decryptable_available_balance`, nilai penghitung yang diharapkan/aktual yang
-berbeda mengharuskan klien untuk mencari instruksi deposit/transfer terbaru yang
-sesuai dengan perbedaan penghitung untuk menghitung saldo yang benar.
+Saat mengambil status token account untuk membaca
+`decryptable_available_balance`, perbedaan nilai penghitung yang
+diharapkan/aktual mengharuskan klien untuk mencari instruksi deposit/transfer
+terbaru yang sesuai dengan selisih penghitung untuk menghitung saldo yang benar.
 
-**Proses rekonsiliasi saldo**
+**Proses Rekonsiliasi Saldo**
 
 Ketika penghitung saldo tertunda yang diharapkan dan aktual berbeda, ikuti
 langkah-langkah berikut untuk merekonsiliasi `decryptable_available_balance`:
 
 1. Mulai dengan `decryptable_available_balance` dari token account
 2. Ambil transaksi terbaru termasuk instruksi deposit dan transfer hingga
-   perbedaan penghitung (aktual - diharapkan):
+   selisih penghitung (aktual - yang diharapkan):
    - Tambahkan jumlah publik dari instruksi deposit
    - Dekripsi dan tambahkan jumlah ciphertext tujuan dari instruksi transfer
 
 </Callout>
 
-### Instruksi yang diperlukan
+### Instruksi yang Diperlukan
 
 Membuat token account dengan ekstensi Confidential Transfer memerlukan tiga
 instruksi:
 
-1. **Buat token account**: Panggil instruksi
+1. **Buat Token Account**: Panggil instruksi
    _rs`AssociatedTokenAccountInstruction:Create`_ dari Associated Token Program
    untuk membuat token account.
 
-2. **Realokasi ruang account**: Panggil instruksi
+2. **Realokasi Ruang Akun**: Panggil instruksi
    _rs`TokenInstruction::Reallocate`_ dari Token Extension Program untuk
-   menambahkan ruang bagi state _rs`ConfidentialTransferAccount`_.
+   menambahkan ruang bagi status _rs`ConfidentialTransferAccount`_.
 
-3. **Konfigurasi Confidential Transfers**: Panggil instruksi
+3. **Konfigurasi Confidential Transfer**: Panggil instruksi
    [ConfidentialTransferInstruction::ConfigureAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L201)
-   dari Token Extension Program untuk menginisialisasi state
+   dari Token Extension Program untuk menginisialisasi status
    _rs`ConfidentialTransferAccount`_.
 
 <Callout type="info">
 
-**Hanya pemilik token account yang dapat mengkonfigurasi token account untuk
-confidential transfers**.
+**Hanya pemilik token account yang dapat mengonfigurasi token account untuk
+confidential transfer**.
 
 Instruksi _rs`ConfigureAccount`_ memerlukan pembuatan kunci enkripsi dan data
-proof di sisi klien yang hanya dapat dibuat oleh pemilik token account.
+bukti di sisi klien yang hanya dapat dibuat oleh pemilik token account.
 
-_rs`PubkeyValidityProofData`_ membuat proof yang memverifikasi bahwa kunci
-ElGamal valid. Untuk detail implementasi, lihat:
+Instruksi _rs`PubkeyValidityProofData`_ membuat bukti yang memverifikasi bahwa
+kunci ElGamal adalah valid. Untuk detail implementasi, lihat:
 
 - [PubkeyValidityProofData](https://github.com/anza-xyz/agave/blob/b39a9764005ac8596b7e14e61d381305ce57ecaa/zk-sdk/src/zk_elgamal_proof_program/proof_data/pubkey_validity.rs#L58)
 - [PubkeyValidityProof](https://github.com/anza-xyz/agave/blob/b39a9764005ac8596b7e14e61d381305ce57ecaa/zk-sdk/src/sigma_proofs/pubkey_validity.rs#L65)
 
 </Callout>
 
-### Contoh kode
+### Contoh Kode
 
-Kode berikut mendemonstrasikan cara membuat Associated Token Account dengan
-ekstensi Confidential Transfer.
+Kode berikut menunjukkan cara membuat Associated Token Account dengan extensi
+Confidential Transfer,
 
 Untuk menjalankan contoh ini, mulai validator lokal dengan Token Extension
 Program yang dikloning dari mainnet menggunakan perintah berikut. Anda harus
@@ -270,9 +263,9 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 ```
 
 <Callout type="info">
-  Pada saat penulisan, Confidential Transfers belum diaktifkan pada validator
-  lokal default. Anda harus mengkloning Token Extension Program dari mainnet
-  untuk menjalankan contoh kode.
+  Pada saat penulisan ini, Confidential Transfers belum diaktifkan pada
+  validator lokal default. Anda harus mengkloning Token Extensions Program
+  mainnet untuk menjalankan contoh kode.
 </Callout>
 
 <CodeTabs>

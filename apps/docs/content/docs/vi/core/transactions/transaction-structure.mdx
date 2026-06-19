@@ -64,36 +64,41 @@ Mỗi `Signature` là một chữ ký Ed25519 64 byte của `Message` đã đư�
 [tài khoản người ký](#account-addresses) được tham chiếu bởi các lệnh của giao
 dịch.
 
-Chữ ký đầu tiên trong mảng thuộc về **người trả phí**, tài khoản trả
+Mỗi chữ ký được tạo ra bởi một khóa riêng tư. Khóa đó nằm ở đâu — một keypair
+cục bộ, một HSM hoặc KMS trên đám mây, hay một dịch vụ ví được quản lý — là một
+quyết định thiết kế trong môi trường sản xuất. Xem
+[Ký trong Môi trường Sản xuất](/docs/core/transactions/signing-in-production).
+
+Chữ ký đầu tiên trong mảng thuộc về **người trả phí**, tài khoản chi trả
 [phí cơ bản và phí ưu tiên](/docs/core/fees/fee-structure#base-fee) của giao
-dịch. Chữ ký đầu tiên này cũng đóng vai trò là **ID giao dịch**, được sử dụng để
+dịch. Chữ ký đầu tiên này cũng đóng vai trò là **ID giao dịch**, được dùng để
 tra cứu giao dịch trên mạng. ID giao dịch thường được gọi là **chữ ký giao
 dịch**.
 
 Yêu cầu đối với người trả phí:
 
-- Phải là tài khoản đầu tiên trong thông điệp (chỉ số 0) và là người ký.
-- Phải là tài khoản thuộc sở hữu của System Program hoặc tài khoản nonce (được
-  xác thực bởi
+- Phải là tài khoản đầu tiên trong tin nhắn (chỉ số 0) và là người ký.
+- Phải là tài khoản thuộc sở hữu của System Program hoặc một tài khoản nonce
+  (được xác thực bởi
   [`validate_fee_payer`](https://github.com/anza-xyz/agave/blob/v3.1.8/svm/src/account_loader.rs#L369-L417)).
-- Phải có đủ lamports để chi trả `rent_exempt_minimum + total_fee`; nếu không
+- Phải có đủ lamport để trang trải `rent_exempt_minimum + total_fee`; nếu không
   giao dịch sẽ thất bại với lỗi _rs`InsufficientFundsForFee`_.
 
-## Thông điệp
+## Tin nhắn
 
-Trường `message` là một struct
+Trường `message` là một
 [`Message`](https://github.com/anza-xyz/solana-sdk/blob/clock%40v2.2.3/message/src/legacy.rs#L161)
-chứa payload của giao dịch:
+struct chứa tải trọng của giao dịch:
 
 <WithMentions>
 
-- [`header`](mention:message-header): [Header](#header) của thông điệp
-- [`account_keys`](mention:account-addresses): Một mảng các
+- [`header`](mention:message-header): [Tiêu đề](#header) tin nhắn
+- [`account_keys`](mention:account-addresses): Một mảng
   [địa chỉ tài khoản](#account-addresses) được yêu cầu bởi các lệnh của giao
   dịch
 - [`recent_blockhash`](mention:recent-blockhash): Một
-  [blockhash](#recent-blockhash) đóng vai trò như dấu thời gian cho giao dịch
-- [`instructions`](mention:instructions): Một mảng các [lệnh](#instructions)
+  [blockhash](#recent-blockhash) đóng vai trò là dấu thời gian cho giao dịch
+- [`instructions`](mention:instructions): Một mảng [lệnh](#instructions)
 
 ```rust title="Message"
 pub struct Message {
@@ -120,20 +125,20 @@ pub struct Message {
 
 </WithMentions>
 
-### Header
+### Tiêu đề
 
 <WithMentions>
 
-Trường `header` là một struct
+Trường `header` là một
 [`MessageHeader`](https://github.com/anza-xyz/solana-sdk/blob/clock%40v2.2.3/message/src/lib.rs#L109)
-với ba trường `u8` phân chia mảng `account_keys` thành các nhóm quyền:
+struct với ba trường `u8` phân chia mảng `account_keys` thành các nhóm quyền:
 
 - [`num_required_signatures`](mention:num_required_signatures): Tổng số chữ ký
-  được yêu cầu bởi giao dịch.
-- [`num_readonly_signed_accounts`](mention:num_readonly_signed_accounts): Số
-  lượng tài khoản đã ký chỉ đọc.
+  mà giao dịch yêu cầu.
+- [`num_readonly_signed_accounts`](mention:num_readonly_signed_accounts): Số tài
+  khoản đã ký chỉ có quyền đọc.
 - [`num_readonly_unsigned_accounts`](mention:num_readonly_unsigned_accounts): Số
-  lượng tài khoản chưa ký chỉ đọc.
+  tài khoản chưa ký chỉ có quyền đọc.
 
 ```rust title="MessageHeader"
 pub struct MessageHeader {
@@ -157,15 +162,15 @@ pub struct MessageHeader {
 
 </WithMentions>
 
-![Sơ đồ hiển thị ba phần của message header](/assets/docs/core/transactions/message_header.png)
+![Sơ đồ hiển thị ba phần của tiêu đề tin nhắn](/assets/docs/core/transactions/message_header.png)
 
 ### Địa chỉ tài khoản
 
 Trường
 [`account_keys`](https://github.com/anza-xyz/solana-sdk/blob/clock%40v2.2.3/message/src/legacy.rs#L168)
-là một mảng được mã hóa compact các khóa công khai. Mỗi mục xác định một tài
+là một mảng được mã hóa nhỏ gọn gồm các khóa công khai. Mỗi mục xác định một tài
 khoản được sử dụng bởi ít nhất một trong các lệnh của giao dịch. Mảng phải bao
-gồm mọi tài khoản và phải tuân theo thứ tự nghiêm ngặt này:
+gồm mọi tài khoản và phải tuân theo thứ tự nghiêm ngặt sau:
 
 1. Người ký + Có thể ghi
 2. Người ký + Chỉ đọc
@@ -173,9 +178,9 @@ gồm mọi tài khoản và phải tuân theo thứ tự nghiêm ngặt này:
 4. Không phải người ký + Chỉ đọc
 
 <Callout>
-  Thứ tự nghiêm ngặt này cho phép mảng `account_keys` được kết hợp với ba số đếm
-  trong [`header`](#header) của thông điệp để xác định quyền cho mỗi tài khoản
-  mà không cần lưu trữ các cờ metadata cho từng tài khoản. Các số đếm trong
+  Thứ tự nghiêm ngặt này cho phép mảng `account_keys` kết hợp với ba giá trị đếm
+  trong [`header`](#header) của thông điệp để xác định quyền cho từng tài khoản
+  mà không cần lưu trữ cờ metadata cho từng tài khoản. Các giá trị đếm trong
   header phân chia mảng thành bốn nhóm quyền được liệt kê ở trên.
 </Callout>
 
@@ -183,38 +188,38 @@ gồm mọi tài khoản và phải tuân theo thứ tự nghiêm ngặt này:
 
 ### Blockhash gần đây
 
-Trường `recent_blockhash` là một hash 32 byte phục vụ hai mục đích:
+Trường `recent_blockhash` là một hàm băm 32 byte phục vụ hai mục đích:
 
 1. **Dấu thời gian**: chứng minh giao dịch được tạo gần đây.
-2. **Loại bỏ trùng lặp**: ngăn chặn cùng một giao dịch được xử lý hai lần.
+2. **Khử trùng lặp**: ngăn cùng một giao dịch được xử lý hai lần.
 
-Một blockhash hết hạn sau 150 slot. Nếu blockhash không còn hợp lệ khi giao dịch
-đến, nó sẽ bị từ chối với _rs`BlockhashNotFound`_, trừ khi đó là một
-[giao dịch durable nonce](/docs/core/transactions/durable-nonces) hợp lệ.
+Một blockhash sẽ hết hạn sau 150 slot. Nếu blockhash không còn hợp lệ khi giao
+dịch đến, nó sẽ bị từ chối với _rs`BlockhashNotFound`_, trừ khi đó là một
+[giao dịch nonce bền vững](/docs/core/transactions/durable-nonces) hợp lệ.
 
 <Callout>
   Phương thức RPC [`getLatestBlockhash`](/docs/rpc/http/getlatestblockhash) cho
-  phép bạn lấy blockhash hiện tại và chiều cao block cuối cùng mà tại đó
-  blockhash sẽ còn hợp lệ.
+  phép bạn lấy blockhash hiện tại và chiều cao khối cuối cùng mà blockhash còn
+  hợp lệ.
 </Callout>
 
-### Lệnh
+### Hướng dẫn
 
 Trường
 [`instructions`](https://github.com/anza-xyz/solana-sdk/blob/clock%40v2.2.3/message/src/legacy.rs#L176)
-là một mảng được mã hóa compact của các struct
+là một mảng được mã hóa compact gồm các struct
 [`CompiledInstruction`](https://github.com/anza-xyz/solana-sdk/blob/clock%40v2.2.3/message/src/compiled_instruction.rs#L21).
 Mỗi _rs`CompiledInstruction`_ tham chiếu các tài khoản theo chỉ mục trong mảng
-`account_keys` thay vì bằng public key đầy đủ. Nó chứa:
+`account_keys` thay vì dùng public key đầy đủ. Nó chứa:
 
 <WithMentions>
 
-1. [`program_id_index`](mention:program-id-index): Chỉ mục trong `account_keys`
+1. [`program_id_index`](mention:program-id-index): Chỉ mục vào `account_keys`
    xác định chương trình cần gọi.
-2. [`accounts`](mention:account-indexes): Mảng các chỉ mục trong `account_keys`
-   chỉ định các tài khoản cần truyền cho chương trình.
-3. [`data`](mention:instruction-data): Mảng byte chứa instruction discriminator
-   và các đối số đã được serialize.
+2. [`accounts`](mention:account-indexes): Mảng các chỉ mục vào `account_keys`
+   chỉ định các tài khoản được truyền vào chương trình.
+3. [`data`](mention:instruction-data): Mảng byte chứa discriminator của lệnh và
+   các đối số được tuần tự hóa.
 
 ```rust title="CompiledInstruction"
 pub struct CompiledInstruction {
@@ -234,16 +239,16 @@ pub struct CompiledInstruction {
 
 </WithMentions>
 
-![Mảng compact của các lệnh](/assets/docs/core/transactions/compact_array_of_ixs.png)
+![Mảng compact các Instructions](/assets/docs/core/transactions/compact_array_of_ixs.png)
 
 ## Định dạng nhị phân của giao dịch
 
-Các giao dịch được serialize bằng cách sử dụng lược đồ mã hóa compact. Tất cả
-các mảng có độ dài biến đổi (chữ ký, khóa tài khoản, lệnh) đều được thêm tiền tố
-bằng mã hóa độ dài compact-u16. Định dạng này sử dụng 1 byte cho các giá trị
-0-127 và 2-3 byte cho các giá trị lớn hơn.
+Các giao dịch được tuần tự hóa bằng một sơ đồ mã hóa compact. Tất cả các mảng có
+độ dài thay đổi (chữ ký, khóa tài khoản, lệnh) đều được thêm tiền tố là độ dài
+mã hóa compact-u16. Định dạng này sử dụng 1 byte cho các giá trị từ 0-127 và 2-3
+byte cho các giá trị lớn hơn.
 
-**Bố cục giao dịch legacy** (trên đường truyền):
+**Cấu trúc giao dịch Legacy** (trên đường truyền):
 
 | Trường                    | Kích thước                   | Mô tả                                       |
 | ------------------------- | ---------------------------- | ------------------------------------------- |
@@ -258,20 +263,20 @@ bằng mã hóa độ dài compact-u16. Định dạng này sử dụng 1 byte c
 | `num_instructions`        | 1-3 byte (compact-u16)       | Số lượng lệnh                               |
 | `instructions`            | biến đổi                     | Mảng các [lệnh đã biên dịch](#instructions) |
 
-Mỗi instruction đã biên dịch được tuần tự hóa như sau:
+Mỗi lệnh đã biên dịch được tuần tự hóa như sau:
 
-| Trường             | Kích thước              | Mô tả                      |
-| ------------------ | ----------------------- | -------------------------- |
-| `program_id_index` | 1 byte                  | Chỉ mục trong account keys |
-| `num_accounts`     | 1-3 bytes (compact-u16) | Số lượng account indices   |
-| `account_indices`  | `num_accounts` x 1 byte | Chỉ mục account key        |
-| `data_len`         | 1-3 bytes (compact-u16) | Độ dài instruction data    |
-| `data`             | `data_len` bytes        | Instruction data không rõ  |
+| Trường             | Kích thước              | Mô tả                          |
+| ------------------ | ----------------------- | ------------------------------ |
+| `program_id_index` | 1 byte                  | Chỉ mục vào các khóa tài khoản |
+| `num_accounts`     | 1-3 byte (compact-u16)  | Số lượng chỉ mục tài khoản     |
+| `account_indices`  | `num_accounts` x 1 byte | Chỉ mục khóa tài khoản         |
+| `data_len`         | 1-3 byte (compact-u16)  | Độ dài của instruction data    |
+| `data`             | `data_len` byte         | instruction data mờ đục        |
 
 ### Tính toán kích thước
 
-Cho _rs`PACKET_DATA_SIZE`_ = 1.232 bytes, không gian khả dụng có thể được tính
-như sau:
+Với _rs`PACKET_DATA_SIZE`_ = 1.232 byte, không gian khả dụng có thể được tính
+toán:
 
 ```
 Total = 1232 bytes
@@ -285,42 +290,42 @@ Total = 1232 bytes
  - sum(instruction_sizes)         # per-instruction overhead + data
 ```
 
-## Ví dụ: giao dịch chuyển SOL
+## Ví dụ: Giao dịch chuyển SOL
 
-Sơ đồ dưới đây cho thấy cách các transaction và instruction hoạt động cùng nhau
-để cho phép người dùng tương tác với mạng lưới. Trong ví dụ này, SOL được chuyển
-từ một account này sang account khác.
+Sơ đồ dưới đây minh họa cách các giao dịch và lệnh phối hợp với nhau để cho phép
+người dùng tương tác với mạng. Trong ví dụ này, SOL được chuyển từ một tài khoản
+sang tài khoản khác.
 
 [Metadata](/docs/core/instructions/instruction-structure#account-metadata) của
-account người gửi cho biết rằng nó phải ký cho transaction. Điều này cho phép
-System Program trừ lamport. Cả account người gửi và người nhận đều phải có thể
-ghi được, để số dư lamport của chúng có thể thay đổi. Để thực thi instruction
-này, ví của người gửi gửi transaction chứa chữ ký của nó và message chứa
-instruction chuyển SOL.
+tài khoản người gửi cho biết tài khoản này phải ký cho giao dịch. Điều này cho
+phép System Program trừ lamport. Cả tài khoản người gửi và người nhận đều phải
+có quyền ghi để số dư lamport của họ có thể thay đổi. Để thực thi lệnh này, ví
+của người gửi gửi giao dịch chứa chữ ký của mình và thông điệp chứa lệnh chuyển
+SOL.
 
 ![Sơ đồ chuyển SOL](/assets/docs/core/transactions/sol-transfer.svg)
 
-Sau khi transaction được gửi, System Program xử lý instruction chuyển và cập
-nhật số dư lamport của cả hai account.
+Sau khi giao dịch được gửi đi, System Program xử lý lệnh chuyển và cập nhật số
+dư lamport của cả hai tài khoản.
 
 ![Sơ đồ quy trình chuyển SOL](/assets/docs/core/transactions/sol-transfer-process.svg)
 
 <Callout type="warn" title="Xác minh người nhận trước khi gửi SOL">
 
-Một lệnh chuyển của System Program sẽ thêm lamport vào **bất kỳ** tài khoản nào.
-Không có kiểm tra ở cấp độ giao thức nào đảm bảo rằng người nhận có thể chuyển
-SOL trở lại. lamport chỉ có thể được chuyển ra bởi chương trình sở hữu tài khoản
-đó, vì vậy việc gửi SOL đến một [token mint](/docs/tokens/basics/create-mint),
-một chương trình, hoặc một [PDA](/docs/core/pda) mà bạn không kiểm soát **có
-nguy cơ mất tiền vĩnh viễn** — chỉ có một authority được chỉ định bởi chương
-trình sở hữu mới có thể hoàn trả. SOL gửi đến một
+Lệnh chuyển của System Program thêm lamport vào **bất kỳ** tài khoản nào. Không
+có kiểm tra cấp độ giao thức nào xác nhận rằng người nhận có thể chuyển SOL trở
+lại. Lamport chỉ có thể được chuyển ra bởi chương trình sở hữu tài khoản, vì vậy
+việc gửi SOL đến [token mint](/docs/tokens/basics/create-mint), một chương
+trình, hoặc [PDA](/docs/core/pda) mà bạn không kiểm soát **có nguy cơ mất tiền
+vĩnh viễn** — chỉ có quyền hạn được chỉ định bởi chương trình sở hữu mới có thể
+hoàn trả. SOL gửi đến một
 [token account](/docs/tokens/basics/create-token-account) chỉ có thể được thu
 hồi bởi chủ sở hữu của tài khoản đó, không bao giờ là người gửi.
 
-Việc chuyển **token** SPL có tính tự bảo vệ một phần: Token Program từ chối một
-giao dịch chuyển mà các tài khoản không khớp với mint kỳ vọng. Việc chuyển
-**SOL** gốc không có biện pháp bảo vệ như vậy, vì vậy người gửi phải xác minh
-người nhận trước khi ký. Xem
+Các giao dịch chuyển **token** SPL có khả năng tự bảo vệ một phần: Token Program
+từ chối giao dịch chuyển có tài khoản không khớp với mint dự kiến. Các giao dịch
+chuyển **SOL** gốc không có cơ chế bảo vệ như vậy, vì vậy người gửi phải xác
+minh người nhận trước khi ký. Xem
 [Xác minh địa chỉ](/docs/payments/send-payments/verify-address) để biết logic
 phân loại đầy đủ.
 
@@ -545,7 +550,7 @@ async fn main() -> Result<()> {
 
 </CodeTabs>
 
-Ví dụ sau đây cho thấy cấu trúc của một giao dịch chứa một lệnh chuyển SOL duy
+Ví dụ sau đây hiển thị cấu trúc của một giao dịch chứa một lệnh chuyển SOL duy
 nhất.
 
 <CodeTabs storage="sol-transfer" flags="r">
@@ -695,9 +700,9 @@ async fn main() -> Result<()> {
 </CodeTabs>
 
 <WithMentions>
-Đoạn mã dưới đây hiển thị đầu ra từ các đoạn mã trước.
+Code bên dưới hiển thị đầu ra từ các đoạn code trước đó.
 Định dạng khác nhau giữa các SDK,
-nhưng hãy chú ý rằng mỗi lệnh đều chứa cùng thông tin bắt buộc.
+nhưng hãy lưu ý rằng mỗi lệnh đều chứa cùng thông tin bắt buộc.
 
 <CodeTabs storage="sol-transfer">
 
@@ -802,14 +807,13 @@ nhưng hãy chú ý rằng mỗi lệnh đều chứa cùng thông tin bắt bu�
 </CodeTabs>
 </WithMentions>
 
-### Xác minh người nhận trước khi chuyển
+### Xác minh người nhận trước khi chuyển tiền
 
-Vì một lệnh chuyển SOL có thể thành công vào bất kỳ tài khoản nào, hãy kiểm tra
-người nhận trước khi ký. Tải tài khoản và chỉ gửi đến ví System Program (hoặc
-một địa chỉ
-[trên đường cong](/docs/payments/send-payments/verify-address#on-curve-addresses)
-chưa được nạp tiền); từ chối các mint, token account, chương trình và PDA mà bạn
-không kiểm soát.
+Vì việc chuyển SOL thành công vào bất kỳ tài khoản nào, hãy kiểm tra người nhận
+trước khi ký. Tải tài khoản và chỉ gửi đến ví System Program (hoặc một địa chỉ
+[on-curve](/docs/payments/send-payments/verify-address#on-curve-addresses) chưa
+được cấp vốn); từ chối các mint, token account, chương trình và PDA mà bạn không
+kiểm soát.
 
 <CodeTabs flags="r">
 
@@ -866,18 +870,18 @@ await assertSafeSolRecipient(
 </CodeTabs>
 
 <Callout>
-  Đoạn mã này kiểm tra người nhận SOL gốc. Để xem toàn bộ phân loại cũng xử lý
-  các lệnh gửi SPL token (token account, ATA, Token-2022), hãy xem [Xác minh Địa
-  chỉ](/docs/payments/send-payments/verify-address).
+  Đoạn code này kiểm tra người nhận SOL gốc. Để xem phân loại đầy đủ cũng xử lý
+  các lần gửi token SPL (token account, ATA, Token-2022), hãy xem [Verify
+  Address](/docs/payments/send-payments/verify-address).
 </Callout>
 
 ## Lấy chi tiết giao dịch
 
-Sau khi gửi, hãy truy xuất chi tiết giao dịch bằng chữ ký giao dịch và phương
-thức RPC [getTransaction](/docs/rpc/http/gettransaction).
+Sau khi gửi, truy xuất chi tiết giao dịch bằng chữ ký giao dịch và phương thức
+RPC [getTransaction](/docs/rpc/http/gettransaction).
 
 <Callout>
-  Bạn cũng có thể tìm giao dịch bằng [Solana
+  Bạn cũng có thể tìm thấy giao dịch bằng cách sử dụng [Solana
   Explorer](https://explorer.solana.com).
 </Callout>
 

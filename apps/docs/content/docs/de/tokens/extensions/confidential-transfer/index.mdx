@@ -5,20 +5,12 @@ description:
   verwenden, um optionale Funktionen zu Token-Mints und Konten hinzuzufügen.
 ---
 
-<Callout type="warn">
-  Das ZK ElGamal-Programm ist vorübergehend im Mainnet und Devnet deaktiviert,
-  da es einem Sicherheitsaudit unterzogen wird. Dies bedeutet, dass die
-  Confidential Transfer-Erweiterung derzeit nicht verfügbar ist. Während die
-  Konzepte weiterhin gültig sind, werden die Code- Beispiele nicht
-  funktionieren.
-</Callout>
+## Was sind vertrauliche Transfers?
 
-## Was sind Confidential Transfers?
-
-Confidential Transfers ermöglichen es Ihnen, Token zwischen Token-Konten zu
-übertragen, ohne den Übertragungsbetrag offenzulegen. Dies ist nützlich für
-datenschutzwahrende Transaktionen. Nur die Übertragungsbeträge und
-Token-Guthaben sind privat. Die Token-Kontenadressen bleiben öffentlich.
+Vertrauliche Transfers ermöglichen es Ihnen, Token zwischen token accounts zu
+übertragen, ohne den Transferbetrag preiszugeben. Dies ist nützlich für
+datenschutzwahrende Transaktionen. Nur die Transferbeträge und Token-Guthaben
+sind privat. Die Adressen der token accounts bleiben öffentlich.
 
 - [Protokollübersicht](https://www.solana-program.com/docs/confidential-balances/overview) -
   Details zum zugrunde liegenden kryptografischen Protokoll
@@ -29,10 +21,11 @@ Token-Guthaben sind privat. Die Token-Kontenadressen bleiben öffentlich.
 
 ### Wie funktioniert es?
 
-Die Confidential Transfer-Erweiterung fügt
-[Anweisungen](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
-zum Token Extension-Programm hinzu, die es Ihnen ermöglichen, Token zwischen
-Konten zu übertragen, ohne den Übertragungsbetrag offenzulegen.
+Die Confidential Transfer-Erweiterung fügt dem Token Extensions Program
+Anweisungen hinzu
+([instructions](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)),
+die es ermöglichen, Token zwischen Konten zu übertragen, ohne den Transferbetrag
+preiszugeben.
 
 ```mermaid title="Confidential Transfer Basic Overview"
     sequenceDiagram
@@ -52,25 +45,25 @@ Konten zu übertragen, ohne den Übertragungsbetrag offenzulegen.
 
 ```
 
-Der grundlegende Ablauf vertraulicher Token-Übertragungen ist wie folgt:
+Der grundlegende Ablauf vertraulicher Token-Transfers ist wie folgt:
 
-1. Erstellen Sie ein Mint-Konto mit der Confidential Transfer-Erweiterung.
-2. Erstellen Sie Token-Konten mit Confidential Transfer-Erweiterung für Sender
-   und Empfänger.
-3. Prägen Sie Token zum Sender-Konto.
-4. **Einzahlen** des öffentlichen Guthabens des Senders in das **vertrauliche
+1. Erstelle ein mint account mit der Confidential Transfer-Erweiterung.
+2. Erstelle token accounts mit der Confidential Transfer-Erweiterung für den
+   Sender und den Empfänger.
+3. Präge Token auf das Sender-Konten.
+4. **Einzahlen** des öffentlichen Guthabens des Senders auf das **vertrauliche
    ausstehende Guthaben**.
 5. **Anwenden** des ausstehenden Guthabens des Senders auf das **vertrauliche
    verfügbare Guthaben**.
-6. Vertrauliche **Übertragung** von Token vom Sender-Token-Konto zum Empfänger-
-   Token-Konto.
+6. Vertrauliches **Übertragen** von Token vom Sender-token account zum
+   Empfänger-token account.
 7. **Anwenden** des ausstehenden Guthabens des Empfängers auf das **vertrauliche
    verfügbare Guthaben**.
-8. **Abheben** des vertraulichen verfügbaren Guthabens des Empfängers in das
+8. **Abheben** des vertraulichen verfügbaren Guthabens des Empfängers auf das
    **öffentliche Guthaben**.
 
-Weitere Details zu den Schritten im vertraulichen Überweisungsablauf finden Sie
-auf den entsprechenden Seiten:
+Weitere Details zu den Schritten im vertraulichen Transfer-Ablauf finden Sie auf
+den entsprechenden Seiten:
 
 <Cards>
   <Card
@@ -93,17 +86,17 @@ auf den entsprechenden Seiten:
     So zahlen Sie Token auf das vertrauliche ausstehende Guthaben ein
   </Card>
   <Card
-    title="Ausstehenden Saldo anwenden"
+    title="Ausstehendes Guthaben anwenden"
     href="/docs/tokens/extensions/confidential-transfer/apply-pending-balance"
   >
-    So wenden Sie den ausstehenden Saldo auf das verfügbare vertrauliche
+    So wenden Sie das ausstehende Guthaben auf das verfügbare vertrauliche
     Guthaben an
   </Card>
   <Card
     title="Token abheben"
     href="/docs/tokens/extensions/confidential-transfer/withdraw-tokens"
   >
-    So heben Sie Token vom verfügbaren vertraulichen Guthaben ab
+    So heben Sie Token vom vertraulichen verfügbaren Guthaben ab
   </Card>
   <Card
     title="Token übertragen"
@@ -112,16 +105,23 @@ auf den entsprechenden Seiten:
     So übertragen Sie Token vertraulich zwischen token accounts
   </Card>
   <Card
-    title="Herausgeberleitfaden"
+    title="Integrationsleitfaden"
+    href="/docs/tokens/extensions/confidential-transfer/integration-guide"
+  >
+    So können Wallets, Explorer und Börsen vertrauliche Transfer-Token
+    unterstützen
+  </Card>
+  <Card
+    title="Emittentenleitfaden"
     href="/docs/tokens/extensions/confidential-transfer/issuer-guide"
   >
-    So geben Sie einen Confidential Transfer-Token aus und betreiben ihn
+    So emittieren und betreiben Sie einen vertraulichen Transfer-Token
     (Genehmigungsrichtlinie, Prüfer, Fee, Prägen und Verbrennen)
   </Card>
 </Cards>
 
 Das folgende Diagramm zeigt eine detaillierte Abfolge des grundlegenden Ablaufs
-für vertrauliche Token-Überweisungen:
+für vertrauliche Token-Transfers:
 
 ```mermaid title="Confidential Transfer Detailed Overview"
 sequenceDiagram
@@ -268,21 +268,22 @@ sequenceDiagram
 
 ### Beispielcode
 
-Das folgende Rust-Beispiel zeigt die Schritte für vertrauliche
-Token-Überweisungen entsprechend dem vorherigen Diagramm. Die Schritte sind zur
-besseren Übersicht in Hilfsfunktionen unterteilt.
+Das folgende Rust-Beispiel zeigt die Schritte für vertrauliche Token-Transfers,
+die dem vorangegangenen Diagramm entsprechen. Die Schritte sind zur besseren
+Übersichtlichkeit in Hilfsfunktionen aufgeteilt.
 
-Um das Beispiel auszuführen, starten Sie einen lokalen Validator mit dem Token
-Extensions Program, das vom Mainnet geklont wurde, mit folgendem Befehl. Sie
-müssen die Solana CLI installiert haben, um den lokalen Validator zu verwenden.
+Um das Beispiel auszuführen, starten Sie einen lokalen Validatoren mit dem Token
+Extensions Program, das von Mainnet geklont wurde, mithilfe des folgenden
+Befehls. Sie müssen die Solana CLI installiert haben, um den lokalen Validatoren
+zu verwenden.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Zum Zeitpunkt der Erstellung ist Confidential Transfers auf dem
-  standardmäßigen lokalen Validator nicht aktiviert. Sie müssen das Mainnet
+  Zum Zeitpunkt der Erstellung dieser Dokumentation sind Confidential Transfers
+  im standardmäßigen lokalen Validatoren nicht aktiviert. Sie müssen das Mainnet
   Token Extensions Program klonen, um den Beispielcode auszuführen.
 </Callout>
 
@@ -1164,26 +1165,26 @@ tokio = { version = "1.44.2", features = ["full"] }
 
 </CodeTabs>
 
-## Confidential Transfer-Anweisungen
+## Anweisungen für vertrauliche Transfers
 
-Die vollständige Liste der Confidential Transfer-Erweiterungs-
-[Anweisungen](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
+Die vollständige Liste der Anweisungen der Confidential Transfer-Erweiterung
+[instructions](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
 lautet wie folgt:
 
-| Anweisung                           | Beschreibung                                                                                                                                                                                    |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _rs`InitializeMint`_                | Richtet ein Mint-Konto für vertrauliche Überweisungen ein. Diese Anweisung muss in derselben Transaktion wie die _rs`TokenInstruction::InitializeMint`_ Anweisung enthalten sein.               |
-| _rs`UpdateMint`_                    | Aktualisiert die Einstellungen für vertrauliche Überweisungen für ein Mint.                                                                                                                     |
-| _rs`ConfigureAccount`_              | Richtet ein Token-Konto für vertrauliche Überweisungen ein.                                                                                                                                     |
-| _rs`ApproveAccount`_                | Genehmigt ein Token-Konto für vertrauliche Überweisungen, wenn das Mint eine Genehmigung für neue Token-Konten erfordert.                                                                       |
-| _rs`EmptyAccount`_                  | Leert die ausstehenden und verfügbaren vertraulichen Guthaben, um das Schließen eines Token-Kontos zu ermöglichen.                                                                              |
-| _rs`Deposit`_                       | Wandelt öffentliches Token-Guthaben in ausstehendes vertrauliches Guthaben um.                                                                                                                  |
-| _rs`Withdraw`_                      | Wandelt verfügbares vertrauliches Guthaben zurück in öffentliches Guthaben um.                                                                                                                  |
-| _rs`Transfer`_                      | Überträgt Token vertraulich zwischen Token-Konten.                                                                                                                                              |
-| _rs`ApplyPendingBalance`_           | Wandelt ausstehendes Guthaben nach Einzahlungen oder Überweisungen in verfügbares Guthaben um.                                                                                                  |
-| _rs`EnableConfidentialCredits`_     | Ermöglicht einem Token-Konto den Empfang vertraulicher Token-Überweisungen.                                                                                                                     |
-| _rs`DisableConfidentialCredits`_    | Blockiert eingehende vertrauliche Überweisungen, während öffentliche Überweisungen weiterhin möglich sind.                                                                                      |
-| _rs`EnableNonConfidentialCredits`_  | Ermöglicht einem Token-Konto den Empfang öffentlicher Token-Überweisungen.                                                                                                                      |
-| _rs`DisableNonConfidentialCredits`_ | Blockiert reguläre Überweisungen, damit das Konto nur vertrauliche Überweisungen empfangen kann.                                                                                                |
-| _rs`TransferWithFee`_               | Überträgt Token vertraulich zwischen Token-Konten mit einer Gebühr.                                                                                                                             |
-| _rs`ConfigureAccountWithRegistry`_  | Alternative Methode zur Konfiguration von Token-Konten für vertrauliche Überweisungen unter Verwendung eines _rs`ElGamalRegistry`_ Kontos anstelle eines _rs`VerifyPubkeyValidity`_ Nachweises. |
+| Instruction                         | Beschreibung                                                                                                                                                                                 |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _rs`InitializeMint`_                | Richtet das mint account für vertrauliche Transfers ein. Diese Anweisung muss in derselben Transaktion wie die _rs`TokenInstruction::InitializeMint`_-Anweisung enthalten sein.              |
+| _rs`UpdateMint`_                    | Aktualisiert die Einstellungen für vertrauliche Transfers eines Mint.                                                                                                                        |
+| _rs`ConfigureAccount`_              | Richtet ein token account für vertrauliche Transfers ein.                                                                                                                                    |
+| _rs`ApproveAccount`_                | Genehmigt ein token account für vertrauliche Transfers, wenn der Mint eine Genehmigung für neue token accounts erfordert.                                                                    |
+| _rs`EmptyAccount`_                  | Leert die ausstehenden und verfügbaren vertraulichen Salden, um das Schließen eines token account zu ermöglichen.                                                                            |
+| _rs`Deposit`_                       | Konvertiert den öffentlichen Token-Saldo in einen ausstehenden vertraulichen Saldo.                                                                                                          |
+| _rs`Withdraw`_                      | Konvertiert den verfügbaren vertraulichen Saldo zurück in einen öffentlichen Saldo.                                                                                                          |
+| _rs`Transfer`_                      | Überträgt Token vertraulich zwischen token accounts.                                                                                                                                         |
+| _rs`ApplyPendingBalance`_           | Konvertiert ausstehende Salden nach Einzahlungen oder Transfers in verfügbare Salden.                                                                                                        |
+| _rs`EnableConfidentialCredits`_     | Ermöglicht einem token account, vertrauliche Token-Transfers zu empfangen.                                                                                                                   |
+| _rs`DisableConfidentialCredits`_    | Blockiert eingehende vertrauliche Transfers und erlaubt weiterhin öffentliche Transfers.                                                                                                     |
+| _rs`EnableNonConfidentialCredits`_  | Ermöglicht einem token account, öffentliche Token-Transfers zu empfangen.                                                                                                                    |
+| _rs`DisableNonConfidentialCredits`_ | Blockiert reguläre Transfers, damit Konten ausschließlich vertrauliche Transfers empfangen.                                                                                                  |
+| _rs`TransferWithFee`_               | Überträgt Token vertraulich mit einer Gebühr zwischen token accounts.                                                                                                                        |
+| _rs`ConfigureAccountWithRegistry`_  | Alternativer Weg zur Konfiguration von token accounts für vertrauliche Transfers, wobei ein _rs`ElGamalRegistry`_-Konto anstelle eines _rs`VerifyPubkeyValidity`_-Nachweises verwendet wird. |

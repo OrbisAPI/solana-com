@@ -5,33 +5,26 @@ description:
   додавання опціональних функцій до mint та token account.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program тимчасово вимкнено на mainnet та devnet, оскільки проходить
-  аудит безпеки. Це означає, що розширення конфіденційних переказів наразі
-  недоступне. Хоча концепції залишаються актуальними, приклади коду не
-  працюватимуть.
-</Callout>
-
 ## Що таке конфіденційні перекази?
 
-Конфіденційні перекази дозволяють переказувати токени між token account без
-розкриття суми переказу. Це корисно для транзакцій, що зберігають
-конфіденційність. Лише суми переказів та баланси токенів є приватними. Адреси
-token account залишаються публічними.
+Конфіденційні перекази дозволяють переказувати токени між token accounts, не
+розкриваючи суму переказу. Це корисно для транзакцій із захистом приватності.
+Лише суми переказів і баланси токенів є приватними. Адреси token account
+залишаються публічними.
 
 - [Огляд протоколу](https://www.solana-program.com/docs/confidential-balances/overview) -
-  Деталі базового криптографічного протоколу
-- [Посібник швидкого старту](https://www.solana-program.com/docs/confidential-balances#setup) -
-  Налаштування та базові команди CLI
+  Деталі щодо базового криптографічного протоколу
+- [Посібник із швидкого старту](https://www.solana-program.com/docs/confidential-balances#setup) -
+  Налаштування та основні команди CLI
 - [Cookbook конфіденційних балансів](https://github.com/solana-developers/Confidential-Balances-Sample) -
-  Фрагменти коду про те, як використовувати розширення Confidential Transfer
+  Фрагменти коду для використання розширення Confidential Transfer
 
 ### Як це працює?
 
 Розширення Confidential Transfer додає
 [інструкції](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
-до програми Token Extension, які дозволяють переказувати токени між account без
-розкриття суми переказу.
+до Token Extensions Program, що дозволяє переказувати токени між акаунтами, не
+розкриваючи суму переказу.
 
 ```mermaid title="Confidential Transfer Basic Overview"
     sequenceDiagram
@@ -51,44 +44,44 @@ token account залишаються публічними.
 
 ```
 
-Базовий процес конфіденційних переказів токенів виглядає наступним чином:
+Основний процес конфіденційних переказів токенів виглядає так:
 
-1. Створіть mint account з розширенням конфіденційних переказів.
-2. Створіть token account з розширенням конфіденційних переказів для відправника
-   та одержувача.
-3. Створіть токени на рахунок відправника.
-4. **Депонуйте** публічний баланс відправника до **конфіденційного очікуваного
-   балансу**.
+1. Створіть mint account із розширенням конфіденційного переказу.
+2. Створіть token accounts із розширенням конфіденційного переказу для
+   відправника та одержувача.
+3. Випустіть токени на акаунт відправника.
+4. **Внесіть** публічний баланс відправника на **конфіденційний очікуваний
+   баланс**.
 5. **Застосуйте** очікуваний баланс відправника до **конфіденційного доступного
    балансу**.
-6. Конфіденційно **переказуйте** токени з token account відправника на token
+6. Конфіденційно **перекажіть** токени з token account відправника на token
    account одержувача.
 7. **Застосуйте** очікуваний баланс одержувача до **конфіденційного доступного
    балансу**.
-8. **Виведіть** конфіденційний доступний баланс одержувача до **публічного
-   балансу**.
+8. **Виведіть** конфіденційний доступний баланс одержувача на **публічний
+   баланс**.
 
-Для отримання детальної інформації про кроки в процесі конфіденційного переказу
-дивіться відповідні сторінки:
+Докладніше про кроки процесу конфіденційного переказу дивіться на відповідних
+сторінках:
 
 <Cards>
   <Card
-    title="Створити mint account"
+    title="Створити Mint Account"
     href="/docs/tokens/extensions/confidential-transfer/create-mint"
   >
-    Як створити mint account з розширенням Confidential Transfer
+    Як створити mint account із розширенням Confidential Transfer
   </Card>
   <Card
-    title="Створити token account"
+    title="Створити Token Account"
     href="/docs/tokens/extensions/confidential-transfer/create-token-account"
   >
-    Як налаштувати token account з розширенням Confidential Transfer
+    Як налаштувати token account із розширенням Confidential Transfer
   </Card>
   <Card
-    title="Поповнення токенів"
+    title="Внести токени"
     href="/docs/tokens/extensions/confidential-transfer/deposit-tokens"
   >
-    Як поповнити токени на конфіденційний очікуваний баланс
+    Як внести токени на конфіденційний очікуваний баланс
   </Card>
   <Card
     title="Застосувати очікуваний баланс"
@@ -97,23 +90,30 @@ token account залишаються публічними.
     Як застосувати очікуваний баланс до доступного конфіденційного балансу
   </Card>
   <Card
-    title="Виведення токенів"
+    title="Вивести токени"
     href="/docs/tokens/extensions/confidential-transfer/withdraw-tokens"
   >
     Як вивести токени з конфіденційного доступного балансу
   </Card>
   <Card
-    title="Переказ токенів"
+    title="Перекласти токени"
     href="/docs/tokens/extensions/confidential-transfer/transfer-tokens"
   >
     Як конфіденційно переказувати токени між token accounts
+  </Card>
+  <Card
+    title="Посібник з інтеграції"
+    href="/docs/tokens/extensions/confidential-transfer/integration-guide"
+  >
+    Як гаманці, браузери та біржі можуть підтримувати токени конфіденційних
+    переказів
   </Card>
   <Card
     title="Посібник емітента"
     href="/docs/tokens/extensions/confidential-transfer/issuer-guide"
   >
     Як випускати та керувати токеном конфіденційного переказу (політика
-    підтвердження, аудитори, комісії, емісія та спалення)
+    підтвердження, аудитори, комісії, випуск і спалення)
   </Card>
 </Cards>
 
@@ -265,22 +265,22 @@ sequenceDiagram
 
 ### Приклад коду
 
-Приклад на Rust нижче показує кроки для конфіденційних переказів токенів,
-відповідно до попередньої діаграми. Кроки розділені на допоміжні функції для
-зручності.
+Наведений нижче приклад на Rust демонструє кроки для конфіденційних переказів
+токенів, що відповідають попередній діаграмі. Для зручності кроки розділені на
+допоміжні функції.
 
-Щоб запустити приклад, запустіть локальний validator з Token Extension Program,
-клонованою з mainnet, використовуючи наступну команду. У вас має бути
-встановлений Solana CLI для використання локального validator.
+Щоб запустити приклад, запустіть локальний validator із Token Extensions
+Program, клонованою з mainnet, використовуючи наведену нижче команду. Для
+використання локального validator необхідно встановити Solana CLI.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  На момент написання конфіденційні перекази не ввімкнені на стандартному
-  локальному validator. Ви повинні клонувати Token Extension Program з mainnet,
-  щоб запустити приклад коду.
+  На момент написання цього матеріалу Confidential Transfers не було увімкнено в
+  стандартному локальному validator. Для запуску прикладу коду необхідно
+  клонувати Token Extension Program з mainnet.
 </Callout>
 
 <CodeTabs>
@@ -1163,24 +1163,24 @@ tokio = { version = "1.44.2", features = ["full"] }
 
 ## Інструкції конфіденційного переказу
 
-Повний список
-[інструкцій](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
-розширення конфіденційного переказу наступний:
+Повний список інструкцій розширення Confidential Transfer
+[instructions](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
+наведено нижче:
 
-| Інструкція                          | Опис                                                                                                                                                                   |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _rs`InitializeMint`_                | Налаштовує mint account для конфіденційних переказів. Ця інструкція має бути включена в ту саму транзакцію, що й інструкція _rs`TokenInstruction::InitializeMint`_.    |
-| _rs`UpdateMint`_                    | Оновлює налаштування конфіденційного переказу для mint.                                                                                                                |
-| _rs`ConfigureAccount`_              | Налаштовує token account для конфіденційних переказів.                                                                                                                 |
-| _rs`ApproveAccount`_                | Схвалює token account для конфіденційних переказів, якщо mint вимагає схвалення для нових token accounts.                                                              |
-| _rs`EmptyAccount`_                  | Очищає очікуваний та доступний конфіденційні баланси, щоб дозволити закриття token account.                                                                            |
-| _rs`Deposit`_                       | Конвертує публічний баланс токенів у очікуваний конфіденційний баланс.                                                                                                 |
-| _rs`Withdraw`_                      | Конвертує доступний конфіденційний баланс назад у публічний баланс.                                                                                                    |
-| _rs`Transfer`_                      | Конфіденційно переказує токени між token accounts.                                                                                                                     |
-| _rs`ApplyPendingBalance`_           | Конвертує очікуваний баланс у доступний баланс після внесень або переказів.                                                                                            |
-| _rs`EnableConfidentialCredits`_     | Дозволяє token account отримувати конфіденційні перекази токенів.                                                                                                      |
-| _rs`DisableConfidentialCredits`_    | Блокує вхідні конфіденційні перекази, але все ще дозволяє публічні перекази.                                                                                           |
-| _rs`EnableNonConfidentialCredits`_  | Дозволяє token account отримувати публічні перекази токенів.                                                                                                           |
-| _rs`DisableNonConfidentialCredits`_ | Блокує звичайні перекази, щоб рахунок отримував лише конфіденційні перекази.                                                                                           |
-| _rs`TransferWithFee`_               | Конфіденційно переказує токени між token accounts з комісією.                                                                                                          |
-| _rs`ConfigureAccountWithRegistry`_  | Альтернативний спосіб налаштування token accounts для конфіденційних переказів з використанням _rs`ElGamalRegistry`_ account замість _rs`VerifyPubkeyValidity`_ proof. |
+| Інструкція                          | Опис                                                                                                                                                                             |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _rs`InitializeMint`_                | Налаштовує mint account для конфіденційних переказів. Ця інструкція має бути включена в ту саму транзакцію, що й інструкція _rs`TokenInstruction::InitializeMint`_.              |
+| _rs`UpdateMint`_                    | Оновлює налаштування конфіденційних переказів для mint.                                                                                                                          |
+| _rs`ConfigureAccount`_              | Налаштовує token account для конфіденційних переказів.                                                                                                                           |
+| _rs`ApproveAccount`_                | Схвалює token account для конфіденційних переказів, якщо mint вимагає підтвердження для нових token account.                                                                     |
+| _rs`EmptyAccount`_                  | Очищає очікуваний та доступний конфіденційні баланси для можливості закриття token account.                                                                                      |
+| _rs`Deposit`_                       | Конвертує публічний баланс токенів у очікуваний конфіденційний баланс.                                                                                                           |
+| _rs`Withdraw`_                      | Конвертує доступний конфіденційний баланс назад у публічний баланс.                                                                                                              |
+| _rs`Transfer`_                      | Конфіденційно переказує токени між token account.                                                                                                                                |
+| _rs`ApplyPendingBalance`_           | Конвертує очікуваний баланс у доступний баланс після депозитів або переказів.                                                                                                    |
+| _rs`EnableConfidentialCredits`_     | Дозволяє token account отримувати конфіденційні перекази токенів.                                                                                                                |
+| _rs`DisableConfidentialCredits`_    | Блокує вхідні конфіденційні перекази, дозволяючи при цьому публічні перекази.                                                                                                    |
+| _rs`EnableNonConfidentialCredits`_  | Дозволяє token account отримувати публічні перекази токенів.                                                                                                                     |
+| _rs`DisableNonConfidentialCredits`_ | Блокує звичайні перекази, щоб token account міг отримувати лише конфіденційні перекази.                                                                                          |
+| _rs`TransferWithFee`_               | Конфіденційно переказує токени між token account з комісією.                                                                                                                     |
+| _rs`ConfigureAccountWithRegistry`_  | Альтернативний спосіб налаштування token account для конфіденційних переказів з використанням облікового запису _rs`ElGamalRegistry`_ замість доказу _rs`VerifyPubkeyValidity`_. |

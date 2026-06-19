@@ -5,30 +5,23 @@ description:
   uygulanacağını öğrenin.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Programı, güvenlik denetiminden geçerken mainnet ve devnet'te
-  geçici olarak devre dışı bırakılmıştır. Bu, gizli transfer uzantısının şu anda
-  kullanılamadığı anlamına gelir. Kavramlar hala geçerli olsa da, kod örnekleri
-  çalışmayacaktır.
-</Callout>
+## Bekleyen bakiye kullanılabilir bakiyeye nasıl uygulanır
 
-## Bekleyen bakiyeyi kullanılabilir bakiyeye uygulama
-
-Token'lar gizli olarak transfer edilmeden önce, genel token bakiyesinin gizli
+Tokenlar gizli olarak transfer edilebilmeden önce, genel token bakiyesinin gizli
 bakiyeye dönüştürülmesi gerekir. Bu dönüşüm iki aşamada gerçekleşir:
 
-1. **Gizli bekleyen bakiye**: Başlangıçta, token'lar genel bakiyeden "bekleyen"
+1. **Gizli Bekleyen Bakiye**: Başlangıçta, tokenlar genel bakiyeden "bekleyen"
    gizli bakiyeye "yatırılır".
-2. **Gizli kullanılabilir bakiye**: Bekleyen bakiye daha sonra kullanılabilir
-   bakiyeye "uygulanır" ve token'ları gizli transferler için kullanılabilir hale
-   getirir.
+2. **Gizli Kullanılabilir Bakiye**: Bekleyen bakiye daha sonra kullanılabilir
+   bakiyeye "uygulanır" ve tokenlar gizli transferler için kullanılabilir hale
+   gelir.
 
-Bu bölüm ikinci aşamayı açıklar: bekleyen bakiyeyi kullanılabilir bakiyeye
-uygulama.
+Bu bölüm ikinci aşamayı açıklar: bekleyen bakiyenin kullanılabilir bakiyeye
+uygulanması.
 
-Token'lar genel bakiyeden "yatırıldığında" veya token'lar bir token hesabından
-diğerine gizli olarak transfer edildiğinde, token'lar başlangıçta gizli bekleyen
-bakiyeye eklenir. Token'lar gizli transferler için kullanılmadan önce, bekleyen
+Tokenlar genel bakiyeden "yatırıldığında" veya bir token account'tan diğerine
+gizli olarak transfer edildiğinde, tokenlar başlangıçta gizli bekleyen bakiyeye
+eklenir. Tokenlar gizli transferler için kullanılabilmeden önce, bekleyen
 bakiyenin kullanılabilir bakiyeye "uygulanması" gerekir.
 
 ```mermaid title="Apply Pending Balance"
@@ -49,8 +42,8 @@ CC->>BB: Transfer
 B->>BB: Apply
 ```
 
-Aşağıdaki diyagram, bekleyen bakiyeyi kullanılabilir bakiyeye uygulama
-adımlarını gösterir:
+Aşağıdaki diyagram, bekleyen bakiyenin kullanılabilir bakiyeye uygulanmasında
+yer alan adımları göstermektedir:
 
 ```mermaid title="Apply Pending Balance"
 sequenceDiagram
@@ -71,33 +64,33 @@ sequenceDiagram
     Note over TokenAccount: Tokens now in available confidential balance<br>ready for confidential transfers
 ```
 
-### Gerekli talimat
+### Gerekli Talimat
 
 Bekleyen bakiyeyi kullanılabilir bakiyeye dönüştürmek için
 [ConfidentialTransferInstruction::ApplyPendingBalance](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1152)
 talimatını çağırın.
 
 `spl_token_client` crate'i, aşağıdaki örnekte gösterildiği gibi
-`ApplyPendingBalance` talimatıyla bir işlem oluşturan ve gönderen bir
-`confidential_transfer_apply_pending_balance` yöntemi sağlar.
+`ApplyPendingBalance` talimatını içeren bir işlem oluşturup gönderen
+`confidential_transfer_apply_pending_balance` metodunu sağlar.
 
-### Örnek kod
+### Örnek Kod
 
 Aşağıdaki örnek, gizli bekleyen bakiyenin gizli kullanılabilir bakiyeye nasıl
 uygulanacağını göstermektedir.
 
-Örneği çalıştırmak için, aşağıdaki komutu kullanarak mainnet'ten klonlanan Token
-Extension Program ile yerel bir validator başlatın. Yerel validator'ı başlatmak
-için Solana CLI'nin yüklü olması gerekir.
+Örneği çalıştırmak için, aşağıdaki komutu kullanarak mainnet'ten klonlanmış
+Token Extension Program ile yerel bir validator başlatın. Yerel validator'ı
+başlatmak için Solana CLI'nin kurulu olması gerekmektedir.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Bu yazının yazıldığı sırada, Confidential Transfers varsayılan yerel
+  Bu yazının hazırlandığı sırada, Gizli Transferler varsayılan yerel
   validator'da etkin değildir. Örnek kodu çalıştırmak için mainnet Token
-  Extension Program'ı klonlamanız gerekir.
+  Extension Program'ı klonlamanız gerekmektedir.
 </Callout>
 
 <CodeTabs>

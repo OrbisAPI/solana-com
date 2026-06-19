@@ -44,16 +44,7 @@ menggunakan _rs`AuthorityType::PermissionedBurn`_. Menetapkan authority ke
 `None` akan menonaktifkan permissioned burning dan mengaktifkan kembali
 instruksi burn standar. Data ekstensi itu sendiri tetap berada di mint.
 
-<Callout type="warn" title="Ketersediaan">
-  Permissioned burn tersedia dalam Token-2022
-  [`program@v11.0.0`](https://github.com/solana-program/token-2022/releases/tag/program%40v11.0.0).
-  Saat ini tersedia di devnet dan dijadwalkan untuk diaktifkan di mainnet pada
-  Juni 2026. Token Extension Program di-deploy secara terpisah ke setiap
-  kluster, jadi pastikan deployment di kluster yang Anda targetkan menyertakan
-  v11.0.0 atau yang lebih baru.
-</Callout>
-
-Test validator lokal juga menyertakan build Token-2022 yang lebih lama, sehingga
+Test validator lokal juga menyertakan build Token-2022 versi lama, sehingga
 untuk menjalankan contoh-contoh di halaman ini, muat program v11.0.0 dari devnet
 ke dalam test validator Anda:
 
@@ -74,16 +65,16 @@ Untuk membuat mint dengan burn berbasis izin dan membakar token:
 3. Buat token account dan mint token.
 4. Burn dengan _rs`PermissionedBurnInstruction::BurnChecked`_ yang
    ditandatangani oleh pemilik token account dan burn authority.
-5. Secara opsional nonaktifkan pembakaran berbasis izin dengan
-   _rs`SetAuthority`_ menggunakan _rs`AuthorityType::PermissionedBurn`_ dan
-   otoritas `None`, yang mengaktifkan kembali instruksi burn standar. Contoh
-   kode lengkap di bawah menunjukkan langkah ini.
+5. Secara opsional nonaktifkan permissioned burning dengan _rs`SetAuthority`_
+   menggunakan _rs`AuthorityType::PermissionedBurn`_ dan otoritas `None`, yang
+   mengaktifkan kembali instruksi burn standar. Contoh kode lengkap di bawah ini
+   menampilkan langkah ini.
 
 <ScrollyCoding>
 
 ## !!steps Hitung ukuran akun
 
-Hitung ukuran mint account untuk mint dasar ditambah ekstensi
+Hitung ukuran mint account untuk base mint ditambah ekstensi
 _rs`PermissionedBurnConfig`_. Ini adalah ukuran yang digunakan dalam
 _rs`CreateAccount`_.
 
@@ -149,7 +140,7 @@ const mintRent = await client.rpc
 
 ## !!steps Buat mint account
 
-Buat mint account dengan ruang dan lamport yang telah dihitung.
+Buat mint account dengan space dan lamport yang telah dihitung.
 
 <CodePlaceholder title="Example" />
 
@@ -365,10 +356,10 @@ await client.sendTransaction([
 ]);
 ```
 
-## !!steps Bakar dengan otoritas burn
+## !!steps Bakar dengan otoritas bakar
 
 Bakar token dengan _rs`PermissionedBurnInstruction::BurnChecked`_ yang
-ditandatangani oleh pemilik token account maupun otoritas burn.
+ditandatangani oleh pemilik token account dan otoritas bakar.
 
 <CodePlaceholder title="Example" />
 
@@ -463,22 +454,22 @@ await client.sendTransaction([
 
 ### Referensi Sumber
 
-| Item                                           | Deskripsi                                                                                                                                 | Sumber                                                                                                                                         |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| _rs`PermissionedBurnConfig`_                   | Ekstensi mint yang menyimpan otoritas yang diperlukan untuk ikut menandatangani setiap operasi burn pada mint.                            | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/mod.rs#L16-L25)         |
-| _rs`PermissionedBurnInstruction::Initialize`_  | Instruksi yang menginisialisasi konfigurasi permissioned burn sebelum _rs`InitializeMint`_.                                               | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L41-L49) |
-| _rs`PermissionedBurnInstruction::Burn`_        | Instruksi burn yang memerlukan tanda tangan dari otoritas burn serta pemilik atau delegasi token account.                                 | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L50-L71) |
-| _rs`PermissionedBurnInstruction::BurnChecked`_ | Instruksi burn dengan pemeriksaan desimal yang menggunakan akun yang sama dengan _rs`PermissionedBurnInstruction::Burn`_.                 | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L72-L79) |
-| _rs`AuthorityType::PermissionedBurn`_          | Diskriminator otoritas yang digunakan bersama _rs`SetAuthority`_ untuk merotasi atau menonaktifkan otoritas burn pada mint.               | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/instruction.rs#L1276-L1277)                         |
-| _rs`process_initialize`_                       | Logika prosesor yang menginisialisasi _rs`PermissionedBurnConfig`_ pada mint yang belum diinisialisasi dan menyimpan otoritas burn.       | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/extension/permissioned_burn/processor.rs#L29-L47)     |
-| _rs`process_burn`_                             | Logika prosesor yang menolak operasi burn standar ketika otoritas burn telah ditetapkan dan memverifikasi tanda tangan otoritas tersebut. | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L1114-L1179)                             |
-| _rs`process_set_authority`_                    | Logika prosesor yang memvalidasi dan merotasi otoritas burn ketika _rs`AuthorityType::PermissionedBurn`_ digunakan.                       | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L996-L1008)                              |
+| Item                                           | Deskripsi                                                                                                                            | Sumber                                                                                                                                         |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| _rs`PermissionedBurnConfig`_                   | Ekstensi mint yang menyimpan otoritas yang diperlukan untuk menandatangani setiap pembakaran bersama pada mint.                      | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/mod.rs#L16-L25)         |
+| _rs`PermissionedBurnInstruction::Initialize`_  | Instruksi yang menginisialisasi konfigurasi pembakaran bersyarat sebelum _rs`InitializeMint`_.                                       | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L41-L49) |
+| _rs`PermissionedBurnInstruction::Burn`_        | Instruksi bakar yang memerlukan tanda tangan dari otoritas bakar dan pemilik atau delegasi token account.                            | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L50-L71) |
+| _rs`PermissionedBurnInstruction::BurnChecked`_ | Instruksi bakar dengan pemeriksaan desimal yang menggunakan akun yang sama dengan _rs`PermissionedBurnInstruction::Burn`_.           | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L72-L79) |
+| _rs`AuthorityType::PermissionedBurn`_          | Diskriminator otoritas yang digunakan bersama _rs`SetAuthority`_ untuk merotasi atau menonaktifkan otoritas bakar pada mint.         | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/instruction.rs#L1276-L1277)                         |
+| _rs`process_initialize`_                       | Logika prosesor yang menginisialisasi _rs`PermissionedBurnConfig`_ pada mint yang belum diinisialisasi dan menyimpan otoritas bakar. | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/extension/permissioned_burn/processor.rs#L29-L47)     |
+| _rs`process_burn`_                             | Logika prosesor yang menolak pembakaran standar ketika otoritas bakar telah diatur dan memverifikasi tanda tangan otoritas.          | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L1114-L1179)                             |
+| _rs`process_set_authority`_                    | Logika prosesor yang memvalidasi dan merotasi otoritas bakar ketika _rs`AuthorityType::PermissionedBurn`_ digunakan.                 | [Sumber](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L996-L1008)                              |
 
 ### Typescript
 
 Contoh `Kit` di bawah ini menggunakan instruksi yang dihasilkan secara langsung.
-Paket `@solana/spl-token` legacy yang telah diterbitkan belum menyertakan
-dukungan burn dengan izin, sehingga tidak ada contoh legacy yang disertakan.
+Paket `@solana/spl-token` legacy yang diterbitkan belum menyertakan dukungan
+burn dengan izin, sehingga tidak ada contoh legacy yang disertakan.
 
 #### Kit
 

@@ -3,29 +3,22 @@ title: Gửi Token
 description: Tìm hiểu cách gửi token vào trạng thái bảo mật.
 ---
 
-<Callout type="warn">
-  Chương trình ZK ElGamal hiện đang tạm thời bị vô hiệu hóa trên mainnet và
-  devnet khi nó đang trải qua quá trình kiểm tra bảo mật. Điều này có nghĩa là
-  tiện ích mở rộng chuyển khoản bảo mật hiện không khả dụng. Mặc dù các khái
-  niệm vẫn hợp lệ, nhưng các ví dụ mã sẽ không chạy được.
-</Callout>
-
-## Cách gửi token vào số dư bảo mật đang chờ xử lý
+## Cách nạp token vào số dư chờ bảo mật
 
 Trước khi token có thể được chuyển một cách bảo mật, số dư token công khai phải
 được chuyển đổi thành số dư bảo mật. Quá trình chuyển đổi này diễn ra qua hai
 giai đoạn:
 
-1. **Số dư bảo mật đang chờ xử lý**: Ban đầu, token được "gửi" từ số dư công
-   khai vào số dư bảo mật "đang chờ xử lý".
-2. **Số dư bảo mật khả dụng**: Số dư đang chờ xử lý sau đó được "áp dụng" vào số
-   dư khả dụng, làm cho token có thể sử dụng cho các giao dịch bảo mật.
+1. **Số dư chờ bảo mật**: Ban đầu, token được "nạp" từ số dư công khai vào số dư
+   bảo mật "chờ xử lý".
+2. **Số dư khả dụng bảo mật**: Số dư chờ xử lý sau đó được "áp dụng" vào số dư
+   khả dụng, giúp token sẵn sàng cho các giao dịch chuyển bảo mật.
 
-Phần này giải thích giai đoạn đầu tiên: gửi số dư token công khai vào số dư bảo
-mật đang chờ xử lý.
+Phần này giải thích giai đoạn đầu tiên: nạp số dư token công khai vào số dư chờ
+bảo mật.
 
-Sơ đồ sau đây cho thấy các bước liên quan đến việc gửi token từ số dư công khai
-vào số dư bảo mật đang chờ xử lý:
+Sơ đồ sau đây mô tả các bước liên quan đến việc nạp token từ số dư công khai vào
+số dư chờ bảo mật:
 
 ```mermaid title="Deposit Tokens"
 sequenceDiagram
@@ -45,20 +38,18 @@ sequenceDiagram
 
 ### Lệnh yêu cầu
 
-Để chuyển đổi số dư công khai thành số dư bảo mật đang chờ xử lý, gọi
-[ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386)
-lệnh.
+Để chuyển đổi số dư công khai thành số dư chờ bảo mật, hãy gọi lệnh
+[ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386).
 [Số lượng tối đa](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
-cho mỗi lệnh gửi được giới hạn ở 2^48.
+cho mỗi lệnh nạp bị giới hạn ở mức 2^48.
 
-Crate `spl_token_client` cung cấp phương thức `confidential_transfer_deposit` để
-xây dựng và gửi giao dịch với lệnh `Deposit`, như được minh họa trong ví dụ dưới
-đây.
+Crate `spl_token_client` cung cấp phương thức `confidential_transfer_deposit`
+giúp xây dựng và gửi một giao dịch với lệnh `Deposit`, như được minh họa trong
+ví dụ bên dưới.
 
 ### Mã ví dụ
 
-Ví dụ sau đây minh họa cách gửi số dư token công khai vào số dư bảo mật đang chờ
-xử lý.
+Ví dụ sau đây minh họa cách nạp số dư token công khai vào số dư chờ bảo mật.
 
 Để chạy ví dụ, hãy khởi động một validator cục bộ với Token Extensions Program
 được sao chép từ mainnet bằng lệnh sau. Bạn phải cài đặt Solana CLI để khởi động
@@ -69,9 +60,9 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 ```
 
 <Callout type="info">
-  Tại thời điểm viết bài, Chuyển khoản Bảo mật chưa được kích hoạt trên
-  validator cục bộ mặc định. Bạn phải sao chép Token Extension Program từ mạng
-  chính để chạy mã ví dụ.
+  Tại thời điểm viết bài, Chuyển khoản bảo mật chưa được kích hoạt trên
+  validator cục bộ mặc định. Bạn phải sao chép Token Extensions Program từ
+  mainnet để chạy mã ví dụ.
 </Callout>
 
 <CodeTabs>

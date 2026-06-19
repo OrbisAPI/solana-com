@@ -44,39 +44,30 @@ _rs`AuthorityType::PermissionedBurn`_. Ustawienie organu na `None` wyłącza
 kontrolowane spalanie i ponownie włącza standardowe instrukcje spalania. Dane
 rozszerzenia pozostają na mincie.
 
-<Callout type="warn" title="Dostępność">
-  Kontrolowane spalanie jest dostępne w Token-2022
-  [`program@v11.0.0`](https://github.com/solana-program/token-2022/releases/tag/program%40v11.0.0).
-  Jest dostępne na devnet już dziś i ma zostać uruchomione na mainnecie w
-  czerwcu 2026 r. Token Extensions Program jest wdrażany osobno dla każdego
-  klastra, dlatego upewnij się, że wdrożenie na docelowym klastrze obejmuje
-  wersję v11.0.0 lub nowszą.
-</Callout>
-
-Lokalny test validator zawiera również starszą kompilację Token-2022, więc aby
-uruchomić przykłady z tej strony, załaduj program v11.0.0 z devnet do swojego
-test validator:
+Lokalny test validator zawiera również starszą kompilację Token-2022, dlatego
+aby uruchomić przykłady z tej strony, załaduj program v11.0.0 z devnet do
+swojego test validatora:
 
 ```shell title="Terminal"
 solana program dump -u devnet TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb token_2022.so
 solana-test-validator --reset --bpf-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb token_2022.so
 ```
 
-## Jak utworzyć Mint i Burn z uprawnieniami
+## Jak tworzyć mint account i spalać tokeny z uprawnieniami
 
-Aby utworzyć mint z uprawnionym spalaniem i spalić tokeny:
+Aby utworzyć mint account z uprawnionym spalaniem i spalić tokeny:
 
-1. Oblicz rozmiar mint account i rent potrzebny dla mint oraz rozszerzenia
-   _rs`PermissionedBurnConfig`_.
-2. Utwórz mint account za pomocą _rs`CreateAccount`_, zainicjalizuj
-   _rs`PermissionedBurnConfig`_ i zainicjalizuj mint za pomocą
+1. Oblicz rozmiar mint account oraz rent potrzebny dla mint account i
+   rozszerzenia _rs`PermissionedBurnConfig`_.
+2. Utwórz mint account za pomocą _rs`CreateAccount`_, zainicjuj
+   _rs`PermissionedBurnConfig`_, a następnie zainicjuj mint account za pomocą
    _rs`InitializeMint`_.
-3. Utwórz token account i wybij tokeny.
-4. Spal za pomocą _rs`PermissionedBurnInstruction::BurnChecked`_ podpisanego
-   zarówno przez właściciela token account, jak i przez organ uprawniony do
+3. Utwórz token account i mintuj tokeny.
+4. Spalaj za pomocą _rs`PermissionedBurnInstruction::BurnChecked`_ podpisanego
+   zarówno przez właściciela token account, jak i przez upoważnienie do
    spalania.
-5. Opcjonalnie wyłącz uprawione spalanie za pomocą _rs`SetAuthority`_ używając
-   _rs`AuthorityType::PermissionedBurn`_ i autorytetu `None`, co ponownie włącza
+5. Opcjonalnie wyłącz uprawnione spalanie za pomocą _rs`SetAuthority`_, używając
+   _rs`AuthorityType::PermissionedBurn`_ i uprawnień `None`, co ponownie włącza
    standardowe instrukcje spalania. Pełne przykłady kodu poniżej pokazują ten
    krok.
 
@@ -84,7 +75,7 @@ Aby utworzyć mint z uprawnionym spalaniem i spalić tokeny:
 
 ## !!steps Oblicz rozmiar konta
 
-Oblicz rozmiar mint account dla bazowego mint plus rozszerzenie
+Oblicz rozmiar mint account dla podstawowego mint account plus rozszerzenie
 _rs`PermissionedBurnConfig`_. Jest to rozmiar używany w _rs`CreateAccount`_.
 
 <CodePlaceholder title="Example" />
@@ -115,7 +106,7 @@ const mintSpace = BigInt(getMintSize([permissionedBurnExtension]));
 
 ## !!steps Oblicz rent
 
-Oblicz rent używając rozmiaru potrzebnego dla mint plus rozszerzenie
+Oblicz rent używając rozmiaru potrzebnego dla mint account plus rozszerzenie
 _rs`PermissionedBurnConfig`_.
 
 <CodePlaceholder title="Example" />
@@ -149,7 +140,7 @@ const mintRent = await client.rpc
 
 ## !!steps Utwórz mint account
 
-Utwórz mint account z obliczoną przestrzenią i lamports.
+Utwórz mint account z obliczoną przestrzenią i lamportami.
 
 <CodePlaceholder title="Example" />
 
@@ -190,10 +181,10 @@ await client.sendTransaction([
 ]);
 ```
 
-## !!steps Zainicjalizuj PermissionedBurn
+## !!steps Zainicjuj PermissionedBurn
 
-Zainicjalizuj rozszerzenie _rs`PermissionedBurnConfig`_ na mint z organem
-uprawnionym do spalania.
+Zainicjuj rozszerzenie _rs`PermissionedBurnConfig`_ na mint account z
+upoważnieniem do spalania.
 
 <CodePlaceholder title="Example" />
 
@@ -238,9 +229,9 @@ await client.sendTransaction([
 ]);
 ```
 
-## !!steps Zainicjalizuj mint
+## !!steps Zainicjuj mint account
 
-Zainicjalizuj mint za pomocą _rs`InitializeMint`_ w tej samej transakcji.
+Zainicjuj mint account za pomocą _rs`InitializeMint`_ w tej samej transakcji.
 
 <CodePlaceholder title="Example" />
 
@@ -295,7 +286,7 @@ await client.sendTransaction([
 
 Utwórz token account dla płatnika i wybij do niego tokeny.
 
-<CodePlaceholder title="Przykład" />
+<CodePlaceholder title="Example" />
 
 ```ts !! title="Example"
 const client = await createClient()
@@ -365,12 +356,13 @@ await client.sendTransaction([
 ]);
 ```
 
-## !!steps Spalanie z uprawnieniem burn authority
+## !!steps Spalaj z uprawnieniem spalania
 
-Spalaj tokeny przy użyciu _rs`PermissionedBurnInstruction::BurnChecked`_
-podpisanego zarówno przez właściciela token account, jak i burn authority.
+Spalaj tokeny za pomocą _rs`PermissionedBurnInstruction::BurnChecked`_
+podpisanego zarówno przez właściciela token account, jak i przez organ
+uprawniony do spalania.
 
-<CodePlaceholder title="Przykład" />
+<CodePlaceholder title="Example" />
 
 ```ts !! title="Example"
 const client = await createClient()
@@ -457,28 +449,28 @@ await client.sendTransaction([
 <Callout type="info" title="Kolejność instrukcji">
   _rs`PermissionedBurnInstruction::Initialize`_ musi poprzedzać
   _rs`InitializeMint`_. _rs`CreateAccount`_,
-  _rs`PermissionedBurnInstruction::Initialize`_ oraz _rs`InitializeMint`_ muszą
-  być zawarte w tej samej transakcji.
+  _rs`PermissionedBurnInstruction::Initialize`_ i _rs`InitializeMint`_ muszą być
+  zawarte w tej samej transakcji.
 </Callout>
 
-### Odniesienie do źródła
+### Źródło referencyjne
 
-| Element                                        | Opis                                                                                                                                 | Źródło                                                                                                                                         |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| _rs`PermissionedBurnConfig`_                   | Rozszerzenie minta przechowujące uprawnienie wymagane do współpodpisania każdego spalenia dla minta.                                 | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/mod.rs#L16-L25)         |
-| _rs`PermissionedBurnInstruction::Initialize`_  | Instrukcja inicjalizująca konfigurację permissioned burn przed _rs`InitializeMint`_.                                                 | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L41-L49) |
-| _rs`PermissionedBurnInstruction::Burn`_        | Instrukcja spalania wymagająca podpisów od burn authority oraz właściciela lub delegata token account.                               | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L50-L71) |
-| _rs`PermissionedBurnInstruction::BurnChecked`_ | Instrukcja spalania z weryfikacją liczby miejsc dziesiętnych, używająca tych samych kont co _rs`PermissionedBurnInstruction::Burn`_. | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L72-L79) |
-| _rs`AuthorityType::PermissionedBurn`_          | Dyskryminator uprawnienia używany z _rs`SetAuthority`_ do rotacji lub wyłączenia burn authority na mincie.                           | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/instruction.rs#L1276-L1277)                         |
-| _rs`process_initialize`_                       | Logika procesora inicjalizująca _rs`PermissionedBurnConfig`_ na niezainicjalizowanym mincie i przechowująca burn authority.          | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/extension/permissioned_burn/processor.rs#L29-L47)     |
-| _rs`process_burn`_                             | Logika procesora odrzucająca standardowe spalenia, gdy burn authority jest ustawione, oraz weryfikująca podpis tego uprawnienia.     | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L1114-L1179)                             |
-| _rs`process_set_authority`_                    | Logika procesora walidująca i rotująca burn authority podczas używania _rs`AuthorityType::PermissionedBurn`_.                        | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L996-L1008)                              |
+| Element                                        | Opis                                                                                                                                    | Źródło                                                                                                                                         |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| _rs`PermissionedBurnConfig`_                   | Rozszerzenie mint przechowujące uprawnienie wymagane do współpodpisywania każdego spalenia dla danego mint.                             | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/mod.rs#L16-L25)         |
+| _rs`PermissionedBurnInstruction::Initialize`_  | Instrukcja inicjalizująca konfigurację permissioned burn przed _rs`InitializeMint`_.                                                    | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L41-L49) |
+| _rs`PermissionedBurnInstruction::Burn`_        | Instrukcja spalania wymagająca podpisów od organu uprawnionego do spalania oraz właściciela lub delegata token account.                 | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L50-L71) |
+| _rs`PermissionedBurnInstruction::BurnChecked`_ | Instrukcja spalania z weryfikacją liczby miejsc dziesiętnych, używająca tych samych kont co _rs`PermissionedBurnInstruction::Burn`_.    | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L72-L79) |
+| _rs`AuthorityType::PermissionedBurn`_          | Dyskryminator uprawnień używany razem z _rs`SetAuthority`_ do rotacji lub wyłączenia organu uprawnionego do spalania w mint.            | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/instruction.rs#L1276-L1277)                         |
+| _rs`process_initialize`_                       | Logika procesora inicjalizująca _rs`PermissionedBurnConfig`_ na niezainicjalizowanym mint i przechowująca organ uprawniony do spalania. | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/extension/permissioned_burn/processor.rs#L29-L47)     |
+| _rs`process_burn`_                             | Logika procesora odrzucająca standardowe spalenia, gdy organ uprawniony do spalania jest ustawiony, i weryfikująca podpis tego organu.  | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L1114-L1179)                             |
+| _rs`process_set_authority`_                    | Logika procesora walidująca i rotująca organ uprawniony do spalania, gdy używany jest _rs`AuthorityType::PermissionedBurn`_.            | [Źródło](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L996-L1008)                              |
 
 ### TypeScript
 
-Poniższy przykład z `Kit` używa bezpośrednio wygenerowanych instrukcji.
-Opublikowany pakiet legacy `@solana/spl-token` nie zawiera jeszcze obsługi
-uprawnionego spalania, dlatego nie dołączono przykładu legacy.
+Poniższy przykład `Kit` używa wygenerowanych instrukcji bezpośrednio.
+Opublikowany starszy pakiet `@solana/spl-token` nie zawiera jeszcze obsługi
+permissioned burn, dlatego nie dołączono przykładu dla starszej wersji.
 
 #### Kit
 

@@ -3,14 +3,6 @@ title: Retirar tokens
 description: Aprende cómo retirar tokens del estado confidencial.
 ---
 
-<Callout type="warn">
-  El ZK ElGamal Program está temporalmente deshabilitado en la mainnet y devnet
-  mientras se somete a una auditoría de seguridad. Esto significa que la
-  extensión de transferencias confidenciales no está disponible actualmente.
-  Aunque los conceptos siguen siendo válidos, los ejemplos de código no
-  funcionarán.
-</Callout>
-
 ## Cómo retirar tokens del saldo disponible confidencial
 
 Para retirar tokens del saldo disponible confidencial al saldo público:
@@ -19,24 +11,25 @@ Para retirar tokens del saldo disponible confidencial al saldo público:
    [dos pruebas](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/proof-generation/src/withdraw.rs#L22)
    del lado del cliente:
 
-   **Prueba de igualdad
+   **Prueba de Igualdad
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
-   Verifica que el texto cifrado del saldo disponible restante después del
-   retiro coincida con su
+   Verifica que el texto cifrado del saldo disponible restante tras el retiro
+   coincide con su
    [compromiso de Pedersen](https://en.wikipedia.org/wiki/Commitment_scheme)
-   correspondiente, asegurando que el nuevo saldo disponible de la cuenta se
+   correspondiente, garantizando que el nuevo saldo disponible de la cuenta se
    calcule correctamente como
    `remaining_balance = current_balance - withdraw_amount`.
 
-   **Prueba de rango
+   **Prueba de Rango
    ([BatchedRangeProofU64Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u64.rs#L37))**:
-   Verifica que el saldo disponible restante después del retiro sea no negativo
-   y esté dentro de un rango especificado.
+   Verifica que el saldo disponible restante tras el retiro sea no negativo y
+   esté dentro de un rango especificado.
 
 2. Para cada prueba:
-   - Invoca el ZK ElGamal proof program para verificar los datos de la prueba.
+   - Invoca el programa de pruebas ZK ElGamal para verificar los datos de la
+     prueba.
    - Almacena los metadatos específicos de la prueba en una cuenta de "estado de
-     contexto" de la prueba para usar en otras instrucciones.
+     contexto" de prueba para utilizarla en otras instrucciones.
 
 3. Invoca la instrucción
    [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
@@ -44,8 +37,8 @@ Para retirar tokens del saldo disponible confidencial al saldo público:
 
 4. Cierra las cuentas de prueba para recuperar el SOL utilizado para crearlas.
 
-El siguiente diagrama muestra los pasos involucrados en el retiro de tokens del
-saldo disponible confidencial al saldo público:
+El siguiente diagrama muestra los pasos para retirar tokens del saldo disponible
+confidencial al saldo público:
 
 ```mermaid title="Withdraw Tokens"
 sequenceDiagram
@@ -72,13 +65,13 @@ sequenceDiagram
     deactivate ElGamal
 ```
 
-### Instrucciones requeridas
+### Instrucciones Requeridas
 
 Para retirar tokens del saldo disponible confidencial al saldo público, debes:
 
 - Generar una prueba de igualdad y una prueba de rango del lado del cliente
-- Invocar el Zk ElGamal proof program para verificar las pruebas e inicializar
-  las cuentas de "estado de contexto"
+- Invocar el programa de pruebas Zk ElGamal para verificar las pruebas e
+  inicializar las cuentas de "estado de contexto"
 - Invocar la instrucción
   [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
   proporcionando las dos cuentas de prueba.
@@ -86,29 +79,29 @@ Para retirar tokens del saldo disponible confidencial al saldo público, debes:
 
 El crate `spl_token_client` proporciona los siguientes métodos:
 
-- Método `confidential_transfer_create_context_state_account` que crea una
-  cuenta de prueba.
-- Método `confidential_transfer_withdraw` que invoca la instrucción `Withdraw`.
-- Método `confidential_transfer_close_context_state_account` que cierra una
+- El método `confidential_transfer_create_context_state_account` crea una cuenta
+  de prueba.
+- El método `confidential_transfer_withdraw` invoca la instrucción `Withdraw`.
+- El método `confidential_transfer_close_context_state_account` cierra una
   cuenta de prueba.
 
-### Código de ejemplo
+### Código de Ejemplo
 
-El siguiente ejemplo demuestra cómo retirar tokens del saldo disponible
+El siguiente ejemplo muestra cómo retirar tokens del saldo disponible
 confidencial al saldo público.
 
-Para ejecutar el ejemplo, inicia un validador local con el programa de extensión
-de tokens clonado desde mainnet usando el siguiente comando. Debes tener
-instalada la CLI de Solana para iniciar el validador local.
+Para ejecutar el ejemplo, inicia un validator local con el Token Extensions
+Program clonado desde mainnet usando el siguiente comando. Debes tener la CLI de
+Solana instalada para iniciar el validator local.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Al momento de escribir esto, las transferencias confidenciales no están
-  habilitadas en el validador local predeterminado. Debes clonar el programa de
-  extensión de tokens de mainnet para ejecutar el código de ejemplo.
+  Al momento de escribir esto, las Transferencias Confidenciales no están
+  habilitadas en el validator local predeterminado. Debes clonar el Token
+  Extensions Program de mainnet para ejecutar el código de ejemplo.
 </Callout>
 
 <CodeTabs>

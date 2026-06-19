@@ -1,0 +1,67 @@
+---
+title: Praktik terbaik produksi
+description:
+  Operasikan backend penandatanganan Keychain dengan aman di lingkungan produksi
+  — pemisahan tugas, rotasi kunci, akses dengan hak istimewa minimum,
+  ketersediaan, keamanan transport, pemantauan, dan audit.
+related:
+  - /docs/tools/keychain/choosing-a-backend
+  - /docs/payments/production-readiness
+---
+
+Keychain mengabstraksikan backend penandatanganan, tetapi mengoperasikan penanda
+tangan di lingkungan produksi tetap menjadi tanggung jawab Anda. Praktik-praktik
+ini berlaku di semua backend; lihat
+[Memilih backend](/docs/tools/keychain/choosing-a-backend) untuk memilih salah
+satu.
+
+## Pisahkan penanda tangan hot dan cold
+
+Gunakan penanda tangan operasional bersaldo rendah ("hot") untuk transaksi
+otomatis yang sering dilakukan, dan penanda tangan terpisah bernilai tinggi
+("cold") untuk pergerakan dana treasury. Dukung penanda tangan cold dengan
+kustodian MPC atau cloud HSM dan terapkan kebijakan persetujuan sebelum
+penandatanganan. Karena antarmukanya identik, setiap peran dapat menggunakan
+backend yang berbeda tanpa mengubah call site.
+
+## Rotasi kunci secara terencana
+
+Di Solana, kunci penandatanganan _adalah_ alamat akun, sehingga merotasi kunci
+akan menghasilkan alamat baru. Rencanakan rotasi sebagai migrasi: provisi kunci
+baru, tetapkan kembali otoritas yang relevan (atau pindahkan dana) ke alamat
+baru, lalu nonaktifkan yang lama. Gunakan kunci yang berbeda per lingkungan agar
+kunci devnet tidak pernah digunakan kembali di mainnet.
+
+## Berikan akses dengan hak istimewa minimum
+
+Batasi kredensial setiap backend hanya pada yang diperlukan untuk
+penandatanganan. Untuk AWS KMS, itu adalah `kms:Sign` dan `kms:DescribeKey` pada
+kunci tertentu; utamakan IAM role daripada kredensial statis. Terapkan prinsip
+yang sama pada kebijakan Vault dan kunci API managed wallet.
+
+## Rencanakan ketersediaan
+
+Backend jarak jauh bergantung pada layanan jaringan. Panggil `isAvailable()`
+sebelum mengandalkan penanda tangan, terapkan percobaan ulang dengan backoff
+pada kegagalan sementara, dan tentukan jalur fallback untuk gangguan. Keychain
+memberlakukan HTTPS untuk backend jarak jauh dan menerapkan batas waktu
+permintaan default.
+
+## Lindungi rahasia dan transport
+
+- Semua backend jarak jauh berkomunikasi melalui HTTPS; endpoint non-HTTPS akan
+  ditolak.
+- Sediakan kunci API, token, dan kredensial dari secret manager atau variabel
+  lingkungan — jangan pernah meng-hardcode atau meng-commit-nya ke source
+  control.
+- Keychain membersihkan respons error untuk menghindari kebocoran rahasia ke
+  dalam log; jaga logging Anda sendiri bebas dari kredensial mentah dan bahan
+  kunci.
+
+## Pantau dan audit penandatanganan
+
+Lacak tingkat keberhasilan penandatanganan, latensi, dan jumlah kegagalan, serta
+beri peringatan pada lonjakan — lihat metrik di
+[Production Readiness](/docs/payments/production-readiness#monitoring). Aktifkan
+log audit sisi provider (KMS, Vault, atau kustodian) dan rekonsiliasi dengan
+transaksi yang diajukan oleh aplikasi Anda.

@@ -1,0 +1,67 @@
+---
+title: Tuotantoympäristön parhaat käytännöt
+description:
+  Keychain-allekirjoitustaustajärjestelmien turvallinen käyttö tuotannossa —
+  tehtävien eriyttäminen, avainten kierrätys, vähimmäisoikeuksien periaate,
+  saatavuus, siirtosuojaus, valvonta ja auditointi.
+related:
+  - /docs/tools/keychain/choosing-a-backend
+  - /docs/payments/production-readiness
+---
+
+Keychain abstrahoi allekirjoitustaustajärjestelmän, mutta allekirjoittajan
+käyttäminen tuotannossa on edelleen sinun vastuullasi. Nämä käytännöt koskevat
+kaikkia taustajärjestelmiä; katso
+[Taustajärjestelmän valinta](/docs/tools/keychain/choosing-a-backend) sopivan
+valitsemiseksi.
+
+## Erota kuuma- ja kylmäallekirjoittajat
+
+Käytä pienen saldon operatiivista ("kuuma") allekirjoittajaa toistuviin,
+automatisoituihin tapahtumiin ja erillistä suuren arvon ("kylmä")
+allekirjoittajaa kassansiirtoihin. Turvaa kylmäallekirjoittaja
+MPC-säilytysratkaisulla tai pilvi-HSM:llä ja vaadi hyväksyntäkäytäntöjä ennen
+allekirjoittamista. Koska rajapinta on identtinen, kukin rooli voi käyttää eri
+taustajärjestelmää muuttamatta kutsukohtia.
+
+## Kierrätä avaimet harkitusti
+
+Solanassa allekirjoitusavain _on_ tilin osoite, joten avaimen kierrätys tuottaa
+uuden osoitteen. Suunnittele kierrätys migraationa: luo uusi avain, siirrä
+asiaankuuluvat valtuudet (tai varat) uuteen osoitteeseen, ja poista sitten
+vanha. Käytä eri avaimia eri ympäristöissä, jotta devnet-avaimia ei koskaan
+käytetä uudelleen mainnetissä.
+
+## Myönnä vähimmäisoikeudet
+
+Rajaa kunkin taustajärjestelmän tunnisteet allekirjoittamiseen tarvittavaan
+vähimpään. AWS KMS:ssä se on `kms:Sign` ja `kms:DescribeKey` kyseiselle
+avaimelle; suosi IAM-rooleja staattisten tunnisteiden sijaan. Sovella samaa
+periaatetta Vault-käytäntöihin ja hallittuihin lompakko-API-avaimiin.
+
+## Suunnittele saatavuus
+
+Etätaustajärjestelmät ovat riippuvaisia verkkopalvelusta. Kutsu `isAvailable()`
+ennen kuin luotat allekirjoittajaan, sovella uudelleenyrityksiä viiveellä
+ohimenevissä virheissä ja määrittele varapolku käyttökatkojen varalle. Keychain
+pakottaa HTTPS-yhteyden etätaustajärjestelmille ja soveltaa oletusaikakatkaistua
+pyyntöaikakatkaisua.
+
+## Suojaa salaisuudet ja tiedonsiirto
+
+- Kaikki etätaustat kommunikoivat HTTPS:n kautta; muut kuin HTTPS-päätepisteet
+  hylätään.
+- Toimita API-avaimet, tunnukset ja tunnistetiedot salaisuuksienhallinnan tai
+  ympäristömuuttujien kautta — älä koskaan koodaa niitä suoraan tai tallenna
+  niitä versionhallintaan.
+- Keychain puhdistaa virhevastauksista salaisuudet lokiin vuotamisen
+  estämiseksi; pidä oma lokituksesi vapaana raakatunnistetiedoista ja
+  avainmateriaalista.
+
+## Seuraa ja auditoi allekirjoittaminen
+
+Seuraa allekirjoittamisen onnistumisastetta, viivettä ja virhemääriä, ja aseta
+hälytykset piikkauksille — katso mittarit kohdasta
+[Tuotantovalmius](/docs/payments/production-readiness#monitoring). Ota käyttöön
+palveluntarjoajan puolen auditointilokit (KMS, Vault tai säilytyspalvelu) ja
+täsmäytä ne sovelluksesi lähettämiin transaktioihin.

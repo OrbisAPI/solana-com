@@ -94,11 +94,10 @@ Pinocchio는 Solana 프로그램과 상호작용하기 위한 프로그램별 �
 
 여러 키 관리 백엔드에서 프로덕션 백엔드 서명을 위해:
 
-| 크레이트        | 설명                                                                                               | 문서                                                 | GitHub                                                       |
-| --------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
-| solana-keychain | 통합 서명: Memory, Vault, Privy, Turnkey, AWS KMS, Fireblocks, GCP KMS, CDP, Para, Dfns, Crossmint | [크레이트](https://crates.io/crates/solana-keychain) | [소스](https://github.com/solana-foundation/solana-keychain) |
+| 크레이트        | 설명                                                                                                                | 문서                                                 | GitHub                                                       |
+| --------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
+| solana-keychain | 통합 서명: Memory, Vault, Privy, Turnkey, AWS KMS, Fireblocks, GCP KMS, CDP, Para, Dfns, Crossmint, Openfort, Utila | [크레이트](https://crates.io/crates/solana-keychain) | [소스](https://github.com/solana-foundation/solana-keychain) |
 
-필요한 백엔드만 포함하려면 기능 플래그를 사용하세요. 추가 키 관리 서비스를
-통합하려면
-[서명자 추가 가이드](https://github.com/solana-foundation/solana-keychain/blob/main/docs/ADDING_SIGNERS.md)를
-참조하세요.
+필요한 백엔드만 포함하려면 기능 플래그를 사용하세요. 설정 및 커스터디 모델
+안내는 [Keychain 문서](/docs/tools/keychain)와
+[백엔드 선택하기](/docs/tools/keychain/choosing-a-backend)를 참고하세요.

@@ -5,31 +5,25 @@ description:
   إصدارات الرموز والحسابات.
 ---
 
-<Callout type="warn">
-  برنامج ZK ElGamal معطل مؤقتاً على الشبكة الرئيسية وشبكة التطوير حيث يخضع
-  لتدقيق أمني. هذا يعني أن امتداد التحويلات السرية غير متاح حالياً. بينما
-  المفاهيم لا تزال صالحة، فإن أمثلة الكود لن تعمل.
-</Callout>
-
 ## ما هي التحويلات السرية؟
 
-تتيح لك التحويلات السرية نقل الرموز بين حسابات الرموز دون الكشف عن مبلغ التحويل.
-هذا مفيد للمعاملات التي تحافظ على الخصوصية. فقط مبالغ التحويل وأرصدة الرموز
-خاصة. تظل عناوين حسابات الرموز عامة.
+تتيح لك التحويلات السرية نقل الرموز المميزة بين token accounts دون الكشف عن مبلغ
+التحويل. وهذا مفيد للمعاملات التي تحافظ على الخصوصية. يظل مبلغ التحويل ورصيد
+الرموز المميزة فقط طيَّ الكتمان، في حين تبقى عناوين token accounts متاحة للعموم.
 
 - [نظرة عامة على البروتوكول](https://www.solana-program.com/docs/confidential-balances/overview) -
-  تفاصيل حول البروتوكول التشفيري الأساسي
+  تفاصيل حول بروتوكول التشفير الأساسي
 - [دليل البدء السريع](https://www.solana-program.com/docs/confidential-balances#setup) -
   الإعداد وأوامر CLI الأساسية
 - [كتاب وصفات الأرصدة السرية](https://github.com/solana-developers/Confidential-Balances-Sample) -
-  مقتطفات كود حول كيفية استخدام امتداد التحويل السري
+  مقتطفات من الكود توضح كيفية استخدام امتداد التحويل السري
 
 ### كيف يعمل؟
 
-يضيف امتداد التحويل السري
+يُضيف امتداد التحويل السري
 [تعليمات](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
-إلى برنامج Token Extension تتيح لك نقل الرموز بين الحسابات دون الكشف عن مبلغ
-التحويل.
+إلى Token Extensions Program تتيح لك نقل الرموز المميزة بين الحسابات دون الكشف
+عن مبلغ التحويل.
 
 ```mermaid title="Confidential Transfer Basic Overview"
     sequenceDiagram
@@ -49,66 +43,75 @@ description:
 
 ```
 
-التدفق الأساسي لتحويلات الرموز السرية هو كما يلي:
+تسير عملية التحويلات السرية للرموز المميزة وفق الخطوات التالية:
 
-1. إنشاء حساب إصدار مع امتداد التحويل السري.
-2. إنشاء حسابات رموز مع امتداد التحويل السري للمرسل والمستلم.
-3. إصدار رموز إلى حساب المرسل.
-4. **إيداع** الرصيد العام للمرسل إلى **الرصيد السري المعلق**.
-5. **تطبيق** الرصيد المعلق للمرسل إلى **الرصيد السري المتاح**.
-6. **نقل** الرموز بشكل سري من حساب رموز المرسل إلى حساب رموز المستلم.
-7. **تطبيق** الرصيد المعلق للمستلم إلى **الرصيد السري المتاح**.
-8. **سحب** الرصيد السري المتاح للمستلم إلى **الرصيد العام**.
+1. إنشاء mint account مع امتداد التحويل السري.
+2. إنشاء token accounts مع امتداد التحويل السري للمُرسِل والمستلم.
+3. سك الرموز المميزة في حساب المُرسِل.
+4. **إيداع** الرصيد العام للمُرسِل في **الرصيد المعلَّق السري**.
+5. **تطبيق** الرصيد المعلَّق للمُرسِل على **الرصيد المتاح السري**.
+6. **تحويل** الرموز المميزة سريًا من token account المُرسِل إلى token account
+   المستلم.
+7. **تطبيق** الرصيد المعلَّق للمستلم على **الرصيد المتاح السري**.
+8. **سحب** الرصيد المتاح السري للمستلم إلى **الرصيد العام**.
 
-لمزيد من التفاصيل حول الخطوات في تدفق التحويل السري، راجع الصفحات المقابلة:
+لمزيد من التفاصيل حول خطوات سير عملية التحويل السري، راجع الصفحات المقابلة:
 
 <Cards>
   <Card
-    title="إنشاء mint account"
+    title="إنشاء Mint Account"
     href="/docs/tokens/extensions/confidential-transfer/create-mint"
   >
-    كيفية إنشاء mint account مع امتداد النقل السري
+    كيفية إنشاء mint account مع امتداد التحويل السري
   </Card>
   <Card
-    title="إنشاء token account"
+    title="إنشاء Token Account"
     href="/docs/tokens/extensions/confidential-transfer/create-token-account"
   >
-    كيفية تهيئة token account مع امتداد النقل السري
+    كيفية تهيئة token account مع امتداد التحويل السري
   </Card>
   <Card
-    title="إيداع الرموز"
+    title="إيداع الرموز المميزة"
     href="/docs/tokens/extensions/confidential-transfer/deposit-tokens"
   >
-    كيفية إيداع الرموز في الرصيد المعلق السري
+    كيفية إيداع الرموز المميزة في الرصيد المعلَّق السري
   </Card>
   <Card
-    title="تطبيق الرصيد المعلق"
+    title="تطبيق الرصيد المعلَّق"
     href="/docs/tokens/extensions/confidential-transfer/apply-pending-balance"
   >
-    كيفية تطبيق الرصيد المعلق على الرصيد السري المتاح
+    كيفية تطبيق الرصيد المعلَّق على الرصيد السري المتاح
   </Card>
   <Card
-    title="سحب الرموز"
+    title="سحب الرموز المميزة"
     href="/docs/tokens/extensions/confidential-transfer/withdraw-tokens"
   >
-    كيفية سحب الرموز من الرصيد السري المتاح
+    كيفية سحب الرموز المميزة من الرصيد السري المتاح
   </Card>
   <Card
-    title="تحويل الرموز"
+    title="تحويل الرموز المميزة"
     href="/docs/tokens/extensions/confidential-transfer/transfer-tokens"
   >
-    كيفية نقل الرموز بشكل سري بين token accounts
+    كيفية تحويل الرموز المميزة سريًا بين token accounts
+  </Card>
+  <Card
+    title="دليل التكامل"
+    href="/docs/tokens/extensions/confidential-transfer/integration-guide"
+  >
+    كيف يمكن للمحافظ الرقمية والمستكشفات والبورصات دعم رموز التحويل السري
+    المميزة
   </Card>
   <Card
     title="دليل المُصدِر"
     href="/docs/tokens/extensions/confidential-transfer/issuer-guide"
   >
-    كيفية إصدار وتشغيل رمز النقل السري (سياسة الموافقة، المدققون، الرسوم،
-    الإصدار والحرق)
+    كيفية إصدار وإدارة رمز التحويل السري المميز (سياسة الموافقة، والمدققون،
+    والرسوم، والسك والحرق)
   </Card>
 </Cards>
 
-يوضح الرسم التخطيطي أدناه تسلسلاً مفصلاً للتدفق الأساسي لتحويلات الرموز السرية:
+يوضح الرسم البياني أدناه تسلسلاً تفصيلياً للتدفق الأساسي لعمليات نقل الرموز
+السرية:
 
 ```mermaid title="Confidential Transfer Detailed Overview"
 sequenceDiagram
@@ -255,21 +258,21 @@ sequenceDiagram
 
 ### مثال على الكود
 
-يوضح مثال Rust أدناه خطوات التحويلات السرية للرموز المقابلة للرسم التخطيطي
-السابق. تم فصل الخطوات إلى دوال مساعدة للوضوح.
+يوضح مثال Rust أدناه خطوات عمليات نقل الرموز السرية المقابلة للرسم البياني
+السابق. تم تقسيم الخطوات إلى دوال مساعدة لتوضيح المحتوى.
 
-لتشغيل المثال، ابدأ validator محلي مع برنامج Token Extension المستنسخ من mainnet
-باستخدام الأمر التالي. يجب أن يكون لديك Solana CLI مثبتاً لاستخدام validator
-المحلي.
+لتشغيل المثال، ابدأ تشغيل validator محلي مع Token Extensions Program المنسوخ من
+الشبكة الرئيسية باستخدام الأمر التالي. يجب أن يكون لديك سولانا CLI مثبتاً
+لاستخدام validator المحلي.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  في وقت كتابة هذا، لم يتم تفعيل التحويلات السرية على validator المحلي
-  الافتراضي. يجب عليك استنساخ برنامج Token Extension من mainnet لتشغيل مثال
-  الكود.
+  في وقت كتابة هذا المحتوى، لم يتم تفعيل ميزة النقل السري في validator المحلي
+  الافتراضي. يجب عليك نسخ Token Extensions Program من الشبكة الرئيسية لتشغيل
+  الكود المثال.
 </Callout>
 
 <CodeTabs>
@@ -1150,26 +1153,26 @@ tokio = { version = "1.44.2", features = ["full"] }
 
 </CodeTabs>
 
-## تعليمات التحويل السري
+## تعليمات النقل السري
 
-القائمة الكاملة لـ
-[تعليمات](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
-ملحق التحويل السري هي كما يلي:
+القائمة الكاملة لتعليمات امتداد النقل السري
+[instructions](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
+هي كالتالي:
 
-| التعليمة                            | الوصف                                                                                                                            |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| _rs`InitializeMint`_                | يقوم بإعداد حساب mint للتحويلات السرية. يجب تضمين هذه التعليمة في نفس المعاملة مع تعليمة _rs`TokenInstruction::InitializeMint`_. |
-| _rs`UpdateMint`_                    | يحدّث إعدادات التحويل السري لحساب mint.                                                                                          |
-| _rs`ConfigureAccount`_              | يقوم بإعداد حساب token للتحويلات السرية.                                                                                         |
-| _rs`ApproveAccount`_                | يوافق على حساب token للتحويلات السرية إذا كان mint يتطلب الموافقة على حسابات token الجديدة.                                      |
-| _rs`EmptyAccount`_                  | يفرغ الأرصدة السرية المعلقة والمتاحة للسماح بإغلاق حساب token.                                                                   |
-| _rs`Deposit`_                       | يحول رصيد token العام إلى رصيد سري معلق.                                                                                         |
-| _rs`Withdraw`_                      | يحول الرصيد السري المتاح مرة أخرى إلى رصيد عام.                                                                                  |
-| _rs`Transfer`_                      | يحول الرموز بين حسابات token بشكل سري.                                                                                           |
-| _rs`ApplyPendingBalance`_           | يحول الرصيد المعلق إلى رصيد متاح بعد الإيداعات أو التحويلات.                                                                     |
-| _rs`EnableConfidentialCredits`_     | يسمح لحساب token باستقبال تحويلات الرموز السرية.                                                                                 |
-| _rs`DisableConfidentialCredits`_    | يحظر التحويلات السرية الواردة مع السماح بالتحويلات العامة.                                                                       |
-| _rs`EnableNonConfidentialCredits`_  | يسمح لحساب token باستقبال تحويلات الرموز العامة.                                                                                 |
-| _rs`DisableNonConfidentialCredits`_ | يحظر التحويلات العادية لجعل الحساب يستقبل التحويلات السرية فقط.                                                                  |
-| _rs`TransferWithFee`_               | يحول الرموز بين حسابات token بشكل سري مع رسوم.                                                                                   |
-| _rs`ConfigureAccountWithRegistry`_  | طريقة بديلة لتكوين حسابات token للتحويلات السرية باستخدام حساب _rs`ElGamalRegistry`_ بدلاً من إثبات _rs`VerifyPubkeyValidity`_.  |
+| التعليمة                            | الوصف                                                                                                                                |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| _rs`InitializeMint`_                | يُعدّ mint account لعمليات النقل السري. يجب تضمين هذه التعليمة في نفس المعاملة مع تعليمة _rs`TokenInstruction::InitializeMint`_.     |
+| _rs`UpdateMint`_                    | يُحدّث إعدادات النقل السري لـ mint.                                                                                                  |
+| _rs`ConfigureAccount`_              | يُعدّ token account لعمليات النقل السري.                                                                                             |
+| _rs`ApproveAccount`_                | يوافق على token account لعمليات النقل السري إذا كان mint يتطلب موافقة على token accounts الجديدة.                                    |
+| _rs`EmptyAccount`_                  | يُفرغ الأرصدة السرية المعلقة والمتاحة للسماح بإغلاق token account.                                                                   |
+| _rs`Deposit`_                       | يحوّل الرصيد العلني للرموز إلى رصيد سري معلق.                                                                                        |
+| _rs`Withdraw`_                      | يحوّل الرصيد السري المتاح إلى رصيد علني.                                                                                             |
+| _rs`Transfer`_                      | ينقل الرموز بين token accounts بشكل سري.                                                                                             |
+| _rs`ApplyPendingBalance`_           | يحوّل الرصيد المعلق إلى رصيد متاح بعد عمليات الإيداع أو النقل.                                                                       |
+| _rs`EnableConfidentialCredits`_     | يسمح لـ token account باستقبال عمليات نقل الرموز السرية.                                                                             |
+| _rs`DisableConfidentialCredits`_    | يحجب عمليات النقل السري الواردة مع السماح بالنقل العلني.                                                                             |
+| _rs`EnableNonConfidentialCredits`_  | يسمح لـ token account باستقبال عمليات نقل الرموز العلنية.                                                                            |
+| _rs`DisableNonConfidentialCredits`_ | يحجب عمليات النقل العادية لجعل الحساب يستقبل النقل السري فقط.                                                                        |
+| _rs`TransferWithFee`_               | ينقل الرموز بين token accounts بشكل سري مع رسوم.                                                                                     |
+| _rs`ConfigureAccountWithRegistry`_  | طريقة بديلة لتهيئة token accounts لعمليات النقل السري باستخدام حساب _rs`ElGamalRegistry`_ بدلاً من إثبات _rs`VerifyPubkeyValidity`_. |

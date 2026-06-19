@@ -3,19 +3,13 @@ title: 创建 Token 账户
 description: 了解如何使用 Confidential Transfer 扩展创建 token account。
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program 目前在主网和开发网暂时禁用，正在进行安全审计。这意味着
-  confidential transfers
-  扩展当前不可用。虽然相关概念依然适用，但代码示例将无法运行。
-</Callout>
+## 如何使用机密转账扩展创建 token account
 
-## 如何使用 Confidential Transfer 扩展创建 token account
-
-Confidential Transfer 扩展通过为 token
-account 增加额外状态，实现了私密代币转账。本节将介绍如何启用该扩展并创建 token
+机密转账扩展通过向 token
+account 添加额外状态来实现私密代币转账。本节介绍如何创建启用此扩展的 token
 account。
 
-下图展示了使用 Confidential Transfer 扩展创建 token account 的步骤：
+下图展示了使用机密转账扩展创建 token account 所涉及的步骤：
 
 ```mermaid title="Create Token Account with Confidential Transfer Extension"
 sequenceDiagram
@@ -48,11 +42,11 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Confidential Transfer Token Account 状态
+### 机密转账 Token Account 状态
 
-该扩展为 token account 增加了
+该扩展将
 [ConfidentialTransferAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L75-L122)
-状态：
+状态添加到 token account：
 
 ```rust title="Confidential Token Account State"
 #[repr(C)]
@@ -104,88 +98,93 @@ pub struct ConfidentialTransferAccount {
 }
 ```
 
-_rs`ConfidentialTransferAccount`_ 包含多个字段用于管理 confidential transfers：
+_rs`ConfidentialTransferAccount`_ 包含若干字段，用于管理机密转账：
 
-- **approved**：账户对 confidential transfers 的批准状态。如果 mint account 的
-  `auto_approve_new_accounts` 配置设置为 `true`，所有 token
-  account 都会自动获得 confidential transfers 的批准。
+- **approved**：账户的机密转账审批状态。如果 mint account 的
+  `auto_approve_new_accounts` 配置设为 `true`，则所有 token
+  account 均自动获准进行机密转账。
 
 - **elgamal_pubkey**：用于加密余额和转账金额的 ElGamal 公钥。
 
-- **pending_balance_lo**：待处理余额的低 16 位加密值。余额被拆分为高低两部分以便高效解密。
+- **pending_balance_lo**：待处理余额低 16 位的加密值。余额被拆分为高位和低位，以提高解密效率。
 
-- **pending_balance_hi**：待处理余额的高 48 位加密值。余额被拆分为高低两部分以便高效解密。
+- **pending_balance_hi**：待处理余额高 48 位的加密值。余额被拆分为高位和低位，以提高解密效率。
 
 - **available_balance**：可用于转账的加密余额。
 
 - **decryptable_available_balance**：使用高级加密标准（AES）密钥加密的可用余额，便于账户所有者高效解密。
 
-- **allow_confidential_credits**：如果为 true，则允许接收保密转账。
+- **allow_confidential_credits**：若为 true，则允许接收机密转账。
 
-- **allow_non_confidential_credits**：如果为 true，则允许接收非保密转账。
+- **allow_non_confidential_credits**：若为 true，则允许接收非机密转账。
 
-- **pending_balance_credit_counter**：统计通过存款和转账指令接收的待处理余额。
+- **pending_balance_credit_counter**：统计来自存款和转账指令的待处理余额入账次数。
 
-- **maximum_pending_balance_credit_counter**：待处理余额的计数上限，超过后需要通过
-  _rs`ApplyPendingBalance`_ 指令将待处理余额转换为可用余额。
+- **maximum_pending_balance_credit_counter**：在需要执行
+  _rs`ApplyPendingBalance`_
+  指令将待处理余额转换为可用余额之前，待处理入账的最大计数限制。
 
-- **expected_pending_balance_credit_counter**：客户端上次通过 instruction
-  data 向 _rs`ApplyPendingBalance`_ 指令提供的 `pending_balance_credit_counter`
-  值。
+- **expected_pending_balance_credit_counter**：上次处理
+  _rs`ApplyPendingBalance`_ 指令时，客户端通过 instruction data 提供的
+  `pending_balance_credit_counter` 值。
 
-- **actual_pending_balance_credit_counter**：上次处理 _rs`ApplyPendingBalance`_
-  指令时，token account 上的 `pending_balance_credit_counter` 值。
+- **actual_pending_balance_credit_counter**：处理最后一条
+  _rs`ApplyPendingBalance`_ 指令时，token account 上的
+  `pending_balance_credit_counter` 值。
 
 <Callout type="info">
   **待处理余额与可用余额**
 
-保密余额分为待处理余额和可用余额，以防止 DoS 攻击。如果没有这种区分，攻击者可能会反复向代币账户发送代币，阻止代币账户所有者转移代币。代币账户所有者将无法转移代币，因为在交易提交和处理之间，加密余额会发生变化，导致交易失败。
+保密余额分为待处理余额和可用余额，以防止 DoS 攻击。若没有这种分离机制，攻击者可以反复向 token
+account 发送代币，阻止 token
+account 所有者转移代币。由于从提交交易到交易被处理期间，加密余额可能发生变化，导致交易失败，token
+account 所有者将无法完成代币转移。
 
-所有存款和转账金额最初都会添加到待处理余额中。token account 拥有者必须使用
+所有存款和转账金额最初都会添加到待处理余额中。Token account 所有者必须使用
 _rs`ApplyPendingBalance`_
-指令将待处理余额转换为可用余额。收到的转账或存款不会影响 token
+指令将待处理余额转换为可用余额。传入的转账或存款不会影响 token
 account 的可用余额。
 
 </Callout>
 
 <Callout type="info">
-  **待处理余额高低分割**
+  **待处理余额的高位/低位拆分**
 
-机密待处理余额被拆分为 `pending_balance_lo` 和
-`pending_balance_hi`，因为 ElGamal 解密在处理较大数字时需要更多计算。你可以在[这里](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/ciphertext-arithmetic/src/lib.rs#L54)找到密文算术的实现，该实现被用于
+保密待处理余额被拆分为 `pending_balance_lo` 和
+`pending_balance_hi`，原因是 ElGamal 解密对较大数值需要更多计算量。密文算术实现可在[此处](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/ciphertext-arithmetic/src/lib.rs#L54)查看，该实现在
 _rs`ApplyPendingBalance`_
-指令[这里](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1180-L1184)。
+指令中的使用位置在[此处](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1180-L1184)。
 
 </Callout>
 
 <Callout type="info">
-  **待处理余额计数器**
+  **待处理余额信用计数器**
 
 调用 _rs`ApplyPendingBalance`_ 指令将待处理余额转换为可用余额时：
 
-1. 客户端查询当前的待处理余额和可用余额，对总和进行加密，并提供一个使用 token
-   account 拥有者 AES 密钥加密的 `decryptable_available_balance`。
+1. 客户端查询当前的待处理余额和可用余额，对其总和进行加密，并提供一个使用 token
+   account 所有者 AES 密钥加密的 `decryptable_available_balance`。
 
-2. 期望和实际的待处理计数器用于跟踪 _rs`ApplyPendingBalance`_
-   指令创建到处理之间计数器值的变化：
+2. 预期信用计数器与实际信用计数器用于追踪从创建 _rs`ApplyPendingBalance`_
+   指令到其被处理期间计数器值的变化：
    - `expected_pending_balance_credit_counter`：客户端创建
      _rs`ApplyPendingBalance`_ 指令时的 `pending_balance_credit_counter` 值
    - `actual_pending_balance_credit_counter`：处理 _rs`ApplyPendingBalance`_
      指令时，token account 上的 `pending_balance_credit_counter` 值
 
-预期计数器和实际计数器一致，表示 `decryptable_available_balance` 与
-`available_balance` 匹配。
+匹配的预期/实际计数器表明 `decryptable_available_balance` 与 `available_balance`
+一致。
 
-当获取 token account 的状态以读取 `decryptable_available_balance`
-时，如果预期计数器和实际计数器的值不同，客户端需要查找与计数器差值相符的最近存款/转账指令，以计算正确的余额。
+在获取 token account 状态以读取 `decryptable_available_balance`
+时，若预期/实际计数器值不同，客户端需查找与计数器差值匹配的近期存款/转账指令，以计算正确的余额。
 
 **余额对账流程**
 
-当预期和实际的待处理余额计数器不一致时，请按照以下步骤对
-`decryptable_available_balance` 进行核对：
+当预期与实际待处理余额计数器不一致时，请按以下步骤对
+`decryptable_available_balance` 进行对账：
 
-1. 从 token account 获取 `decryptable_available_balance`
-2. 获取包含存款和转账指令的最新交易，直到计数器差值（实际 - 预期）：
+1. 从 token account 中获取 `decryptable_available_balance` 作为起始值
+2. 获取最近的交易记录，包括存款和转账指令，直至计数器差值（实际 - 预期）为止：
    - 累加存款指令中的公开金额
    - 解密并累加转账指令中的目标密文金额
 
@@ -193,28 +192,28 @@ _rs`ApplyPendingBalance`_
 
 ### 所需指令
 
-使用机密转账扩展创建代币账户需要三个指令：
+创建带有机密转账扩展的 token account 需要三条指令：
 
 1. **创建 Token Account**：调用 Associated Token Program 的
-   _rs`AssociatedTokenAccountInstruction:Create`_ 指令以创建 token account。
+   _rs`AssociatedTokenAccountInstruction:Create`_ 指令以创建token account。
 
-2. **重新分配账户空间**：调用 Token Extension Program 的
+2. **重新分配账户空间**：调用 Token Extensions Program 的
    _rs`TokenInstruction::Reallocate`_ 指令，为 _rs`ConfidentialTransferAccount`_
-   状态增加空间。
+   状态添加空间。
 
-3. **配置机密转账**：调用 Token Extension Program 的
+3. **配置机密转账**：调用 Token Extensions Program 的
    [ConfidentialTransferInstruction::ConfigureAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L201)
-   指令，初始化 _rs`ConfidentialTransferAccount`_ 状态。
+   指令以初始化 _rs`ConfidentialTransferAccount`_ 状态。
 
 <Callout type="info">
 
-**只有 token account 的所有者可以为 token account 配置保密转账功能**。
+**只有 token account 的所有者才能为机密转账配置 token account**。
 
-_rs`ConfigureAccount`_ 指令需要客户端生成加密密钥和证明数据，这些只能由 token
-account 的所有者生成。
+_rs`ConfigureAccount`_
+指令需要在客户端生成加密密钥和证明数据，而这些只能由 token account 所有者生成。
 
 _rs`PubkeyValidityProofData`_
-会创建一个证明，用于验证 ElGamal 密钥的有效性。实现细节请参见：
+会生成一个证明，用于验证 ElGamal 密钥的有效性。有关实现详情，请参阅：
 
 - [PubkeyValidityProofData](https://github.com/anza-xyz/agave/blob/b39a9764005ac8596b7e14e61d381305ce57ecaa/zk-sdk/src/zk_elgamal_proof_program/proof_data/pubkey_validity.rs#L58)
 - [PubkeyValidityProof](https://github.com/anza-xyz/agave/blob/b39a9764005ac8596b7e14e61d381305ce57ecaa/zk-sdk/src/sigma_proofs/pubkey_validity.rs#L65)
@@ -223,19 +222,18 @@ _rs`PubkeyValidityProofData`_
 
 ### 示例代码
 
-以下代码演示了如何使用 Confidential Transfer 扩展创建一个 Associated Token
-Account，
+以下代码演示了如何创建带有机密转账扩展的 associated token account，
 
-要运行此示例，请使用以下命令启动一个从主网克隆的 Token Extension
-Program 的本地 validator。您必须安装 Solana CLI 才能启动本地 validator。
+如需运行此示例，请使用以下命令启动本地 validator，并从主网克隆 Token Extensions
+Program。启动本地 validator 前，您必须已安装 Solana CLI。
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  在撰写本文时，默认的本地 validator 尚未启用 Confidential
-  Transfers。您必须克隆主网的 Token Extension Program 才能运行示例代码。
+  在撰写本文时，默认本地 validator 上尚未启用机密转账功能。您必须克隆主网 Token
+  Extensions Program 才能运行示例代码。
 </Callout>
 
 <CodeTabs>

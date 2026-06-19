@@ -4,21 +4,14 @@ description:
   Aprenda como criar um token mint com a extensão de Transferência Confidencial.
 ---
 
-<Callout type="warn">
-  O ZK ElGamal Program está temporariamente desativado na mainnet e devnet
-  enquanto passa por uma auditoria de segurança. Isso significa que a extensão
-  de transferências confidenciais está atualmente indisponível. Embora os
-  conceitos ainda sejam válidos, os exemplos de código não serão executados.
-</Callout>
+## Como criar um mint com a extensão Confidential Transfer
 
-## Como criar um mint com a extensão de Transferência Confidencial
+A extensão Confidential Transfer permite transferências privadas de tokens
+adicionando estado extra ao mint account. Esta seção explica como criar um token
+mint com esta extensão habilitada.
 
-A extensão de Transferência Confidencial permite transferências privadas de
-tokens ao adicionar estado extra à conta do mint. Esta secção explica como criar
-um token mint com esta extensão ativada.
-
-O diagrama seguinte mostra os passos envolvidos na criação de um mint com a
-extensão de Transferência Confidencial:
+O diagrama a seguir mostra as etapas envolvidas na criação de um mint com a
+extensão Confidential Transfer:
 
 ```mermaid title="Create Mint with Confidential Transfer Extension"
 sequenceDiagram
@@ -32,11 +25,11 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Estado do mint de Transferência Confidencial
+### Estado do Mint com Confidential Transfer
 
 A extensão adiciona o estado
 [ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)
-à conta do mint:
+ao mint account:
 
 ```rust title="Confidential Mint State"
 #[repr(C)]
@@ -65,55 +58,56 @@ pub struct ConfidentialTransferMint {
 O _rs`ConfidentialTransferMint`_ contém três campos de configuração:
 
 - **authority**: A conta que tem permissão para alterar as configurações de
-  transferência confidencial para o mint e aprovar novas contas confidenciais se
-  a aprovação automática estiver desativada.
+  transferência confidencial do mint e aprovar novas contas confidenciais caso a
+  aprovação automática esteja desativada.
 
-- **auto_approve_new_accounts**: Quando definido como verdadeiro, os
-  utilizadores podem criar token accounts com transferências confidenciais
-  ativadas por padrão. Quando falso, a autoridade deve aprovar cada nova token
-  account antes que possa ser usada para transferências confidenciais.
+- **auto_approve_new_accounts**: Quando definido como true, os usuários podem
+  criar token accounts com transferências confidenciais habilitadas por padrão.
+  Quando false, a authority deve aprovar cada novo token account antes que ele
+  possa ser usado para transferências confidenciais.
 
-- **auditor_elgamal_pubkey**: Um auditor opcional que pode desencriptar valores
-  de transferência em transações confidenciais, fornecendo um mecanismo de
-  conformidade enquanto mantém a privacidade do público em geral.
+- **auditor_elgamal_pubkey**: Um auditor opcional que pode descriptografar os
+  valores das transferências em transações confidenciais, fornecendo um
+  mecanismo de conformidade enquanto mantém a privacidade em relação ao público
+  geral.
 
-### Instruções necessárias
+### Instruções Necessárias
 
-Criar um mint com Transferência Confidencial ativada requer três instruções numa
+Criar um mint com Confidential Transfer habilitado requer três instruções em uma
 única transação:
 
-1. **Criar a conta do mint**: Invocar a instrução _rs`CreateAccount`_ do System
-   Program para criar a conta do mint.
+1. **Criar o Mint Account**: Invocar a instrução _rs`CreateAccount`_ do System
+   Program para criar o mint account.
 
-2. **Inicializar a extensão de Transferência Confidencial**: Invocar a instrução
+2. **Inicializar a Extensão Confidential Transfer**: Invocar a instrução
    [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
-   do Token Extension Program para configurar o estado
-   _rs`ConfidentialTransferMint`_ para o mint.
+   do Token Extensions Program para configurar o estado
+   _rs`ConfidentialTransferMint`_ do mint.
 
 3. **Inicializar o Mint**: Invocar a instrução _rs`Instruction::InitializeMint`_
-   do Token Extension Program para inicializar o estado padrão do mint.
+   do Token Extensions Program para inicializar o estado padrão do mint.
 
-Embora você possa escrever estas instruções manualmente, o crate
+Embora você possa escrever essas instruções manualmente, o crate
 `spl_token_client` fornece um método `create_mint` que constrói e envia uma
-transação com todas as três instruções numa única chamada de função, conforme
+transação com todas as três instruções em uma única chamada de função, conforme
 demonstrado no exemplo abaixo.
 
-### Código de exemplo
+### Código de Exemplo
 
-O código a seguir demonstra como criar um mint com a extensão de Transferência
-Confidencial.
+O código a seguir demonstra como criar um mint com a extensão Confidential
+Transfer.
 
-Para executar o exemplo, inicie um validador local com o Token Extension Program
-clonado da mainnet usando o seguinte comando. Você deve ter a Solana CLI
-instalada para iniciar o validador local.
+Para executar o exemplo, inicie um validator local com o Token Extensions
+Program clonado da mainnet usando o seguinte comando. Você deve ter a CLI do
+Solana instalada para iniciar o validator local.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  No momento da escrita, as Transferências Confidenciais não estão ativadas no
-  validador local padrão. Você deve clonar o Token Extension Program da mainnet
+  No momento da redação, as Confidential Transfers não estão habilitadas no
+  validator local padrão. Você deve clonar o Token Extensions Program da mainnet
   para executar o código de exemplo.
 </Callout>
 

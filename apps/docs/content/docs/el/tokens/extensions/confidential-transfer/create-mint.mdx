@@ -5,21 +5,14 @@ description:
   Transfer.
 ---
 
-<Callout type="warn">
-  Το ZK ElGamal Program είναι προσωρινά απενεργοποιημένο στο mainnet και το
-  devnet καθώς υποβάλλεται σε έλεγχο ασφαλείας. Αυτό σημαίνει ότι η επέκταση
-  confidential transfers δεν είναι προς το παρόν διαθέσιμη. Ενώ οι έννοιες
-  παραμένουν έγκυρες, τα παραδείγματα κώδικα δεν θα εκτελεστούν.
-</Callout>
-
 ## Πώς να δημιουργήσετε ένα mint με την επέκταση Confidential Transfer
 
 Η επέκταση Confidential Transfer επιτρέπει ιδιωτικές μεταφορές token
-προσθέτοντας πρόσθετη κατάσταση στο mint account. Αυτή η ενότητα εξηγεί πώς να
+προσθέτοντας επιπλέον κατάσταση στο mint account. Αυτή η ενότητα εξηγεί πώς να
 δημιουργήσετε ένα token mint με αυτή την επέκταση ενεργοποιημένη.
 
-Το παρακάτω διάγραμμα δείχνει τα βήματα που εμπλέκονται στη δημιουργία ενός mint
-με την επέκταση Confidential Transfer:
+Το παρακάτω διάγραμμα δείχνει τα βήματα που απαιτούνται για τη δημιουργία ενός
+mint με την επέκταση Confidential Transfer:
 
 ```mermaid title="Create Mint with Confidential Transfer Extension"
 sequenceDiagram
@@ -33,7 +26,7 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Κατάσταση Confidential Transfer Mint
+### Κατάσταση Mint του Confidential Transfer
 
 Η επέκταση προσθέτει την κατάσταση
 [ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)
@@ -65,49 +58,50 @@ pub struct ConfidentialTransferMint {
 
 Το _rs`ConfidentialTransferMint`_ περιέχει τρία πεδία διαμόρφωσης:
 
-- **authority**: Ο λογαριασμός που έχει άδεια να αλλάξει τις ρυθμίσεις
-  confidential transfer για το mint και να εγκρίνει νέους confidential
-  λογαριασμούς εάν η αυτόματη έγκριση είναι απενεργοποιημένη.
+- **authority**: Ο λογαριασμός που έχει άδεια να αλλάζει τις ρυθμίσεις του
+  confidential transfer για το mint και να εγκρίνει νέα confidential accounts
+  εάν η αυτόματη έγκριση είναι απενεργοποιημένη.
 
 - **auto_approve_new_accounts**: Όταν οριστεί σε true, οι χρήστες μπορούν να
-  δημιουργήσουν token accounts με confidential transfers ενεργοποιημένα από
+  δημιουργούν token accounts με confidential transfers ενεργοποιημένα από
   προεπιλογή. Όταν είναι false, η authority πρέπει να εγκρίνει κάθε νέο token
-  account πριν μπορέσει να χρησιμοποιηθεί για confidential transfers.
+  account πριν μπορεί να χρησιμοποιηθεί για confidential transfers.
 
-- **auditor_elgamal_pubkey**: Ένας προαιρετικός auditor που μπορεί να
-  αποκρυπτογραφήσει τα ποσά μεταφοράς σε confidential συναλλαγές, παρέχοντας
-  έναν μηχανισμό συμμόρφωσης διατηρώντας παράλληλα το απόρρητο από το ευρύ
+- **auditor_elgamal_pubkey**: Ένας προαιρετικός ελεγκτής που μπορεί να
+  αποκρυπτογραφεί τα ποσά μεταφοράς σε εμπιστευτικές συναλλαγές, παρέχοντας έναν
+  μηχανισμό συμμόρφωσης διατηρώντας παράλληλα την ιδιωτικότητα από το ευρύ
   κοινό.
 
-### Απαιτούμενες οδηγίες
+### Απαιτούμενες Οδηγίες
 
 Η δημιουργία ενός mint με ενεργοποιημένο το Confidential Transfer απαιτεί τρεις
 οδηγίες σε μία μόνο συναλλαγή:
 
 1. **Δημιουργία του Mint Account**: Καλέστε την οδηγία _rs`CreateAccount`_ του
-   System Program για να δημιουργήσετε το mint account.
+   System Program για τη δημιουργία του mint account.
 
-2. **Αρχικοποίηση επέκτασης Confidential Transfer**: Καλέστε την εντολή
+2. **Αρχικοποίηση της Επέκτασης Confidential Transfer**: Καλέστε την οδηγία
    [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
-   του Token Extension Program για να διαμορφώσετε την κατάσταση
+   του Token Extensions Program για τη διαμόρφωση της κατάστασης
    _rs`ConfidentialTransferMint`_ για το mint.
 
-3. **Αρχικοποίηση mint**: Καλέστε την εντολή _rs`Instruction::InitializeMint`_
-   του Token Extension Program για να αρχικοποιήσετε την τυπική κατάσταση mint.
+3. **Αρχικοποίηση Mint**: Καλέστε την οδηγία _rs`Instruction::InitializeMint`_
+   του Token Extensions Program για την αρχικοποίηση της τυπικής κατάστασης
+   mint.
 
-Ενώ θα μπορούσατε να γράψετε αυτές τις εντολές χειροκίνητα, το crate
-`spl_token_client` παρέχει μια μέθοδο `create_mint` που δημιουργεί και στέλνει
-μια συναλλαγή με και τις τρεις εντολές σε μία μόνο κλήση συνάρτησης, όπως
-επιδεικνύεται στο παρακάτω παράδειγμα.
+Ενώ θα μπορούσατε να γράψετε αυτές τις οδηγίες χειροκίνητα, το crate
+`spl_token_client` παρέχει μια μέθοδο `create_mint` που δημιουργεί και
+αποστέλλει μια συναλλαγή με και τις τρεις οδηγίες σε μία μόνο κλήση συνάρτησης,
+όπως αποδεικνύεται στο παρακάτω παράδειγμα.
 
-### Παράδειγμα κώδικα
+### Παράδειγμα Κώδικα
 
-Ο ακόλουθος κώδικας επιδεικνύει πώς να δημιουργήσετε ένα mint με την επέκταση
+Ο παρακάτω κώδικας δείχνει πώς να δημιουργήσετε ένα mint με την επέκταση
 Confidential Transfer.
 
-Για να εκτελέσετε το παράδειγμα, ξεκινήστε έναν τοπικό validator με το Token
-Extension Program κλωνοποιημένο από το mainnet χρησιμοποιώντας την ακόλουθη
-εντολή. Πρέπει να έχετε εγκατεστημένο το Solana CLI για να ξεκινήσετε τον τοπικό
+Για να εκτελέσετε το παράδειγμα, εκκινήστε έναν τοπικό validator με το Token
+Extensions Program κλωνοποιημένο από το mainnet χρησιμοποιώντας την παρακάτω
+εντολή. Πρέπει να έχετε εγκατεστημένο το Solana CLI για να εκκινήσετε τον τοπικό
 validator.
 
 ```terminal
@@ -115,9 +109,10 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 ```
 
 <Callout type="info">
-  Τη στιγμή της συγγραφής, το Confidential Transfers δεν είναι ενεργοποιημένο
-  στον προεπιλεγμένο τοπικό validator. Πρέπει να κλωνοποιήσετε το Token
-  Extension Program του mainnet για να εκτελέσετε τον κώδικα του παραδείγματος.
+  Κατά τη στιγμή της συγγραφής, το Confidential Transfers δεν είναι
+  ενεργοποιημένο στον προεπιλεγμένο τοπικό validator. Πρέπει να κλωνοποιήσετε το
+  mainnet Token Extension Program για να εκτελέσετε τον κώδικα του
+  παραδείγματος.
 </Callout>
 
 <CodeTabs>

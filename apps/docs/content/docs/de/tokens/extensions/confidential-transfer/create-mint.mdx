@@ -5,21 +5,14 @@ description:
   Transfer-Erweiterung erstellen.
 ---
 
-<Callout type="warn">
-  Das ZK ElGamal Program ist vorübergehend im Mainnet und Devnet deaktiviert, da
-  es einem Sicherheitsaudit unterzogen wird. Dies bedeutet, dass die
-  Confidential Transfers-Erweiterung derzeit nicht verfügbar ist. Obwohl die
-  Konzepte weiterhin gültig sind, werden die Code-Beispiele nicht funktionieren.
-</Callout>
+## So erstellen Sie einen Mint mit der Confidential Transfer-Erweiterung
 
-## Wie man einen Mint mit Confidential Transfer-Erweiterung erstellt
+Die Confidential Transfer-Erweiterung ermöglicht private Token-Übertragungen,
+indem sie dem mint account zusätzliche Zustände hinzufügt. Dieser Abschnitt
+erklärt, wie man einen Token-Mint mit dieser aktivierten Erweiterung erstellt.
 
-Die Confidential Transfer-Erweiterung ermöglicht private Token-Transfers, indem
-sie zusätzlichen Zustand zum Mint-Konten hinzufügt. Dieser Abschnitt erklärt,
-wie man einen Token-Mint mit aktivierter Erweiterung erstellt.
-
-Das folgende Diagramm zeigt die Schritte, die beim Erstellen eines Mints mit der
-Confidential Transfer-Erweiterung erforderlich sind:
+Das folgende Diagramm zeigt die Schritte zur Erstellung eines Mints mit der
+Confidential Transfer-Erweiterung:
 
 ```mermaid title="Create Mint with Confidential Transfer Extension"
 sequenceDiagram
@@ -35,9 +28,9 @@ sequenceDiagram
 
 ### Confidential Transfer Mint-Zustand
 
-Die Erweiterung fügt den
-[ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)
-Zustand zum Mint-Konten hinzu:
+Die Erweiterung fügt dem mint account den
+[ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)-Zustand
+hinzu:
 
 ```rust title="Confidential Mint State"
 #[repr(C)]
@@ -65,59 +58,60 @@ pub struct ConfidentialTransferMint {
 
 Der _rs`ConfidentialTransferMint`_ enthält drei Konfigurationsfelder:
 
-- **authority**: Das Konten, das die Berechtigung hat, Confidential
-  Transfer-Einstellungen für den Mint zu ändern und neue vertrauliche Konten zu
+- **authority**: Das Konten, das die Berechtigung hat, Einstellungen für
+  vertrauliche Übertragungen des Mints zu ändern und neue vertrauliche Konten zu
   genehmigen, wenn die automatische Genehmigung deaktiviert ist.
 
-- **auto_approve_new_accounts**: Wenn auf true gesetzt, können Benutzer
-  Token-Konten mit standardmäßig aktivierten vertraulichen Transfers erstellen.
-  Wenn false, muss die Authority jedes neue Token-Konten genehmigen, bevor es
-  für vertrauliche Transfers verwendet werden kann.
+- **auto_approve_new_accounts**: Wenn auf „true“ gesetzt, können Benutzer token
+  accounts mit standardmäßig aktivierten vertraulichen Übertragungen erstellen.
+  Bei „false“ muss die Autorität jeden neuen token account genehmigen, bevor er
+  für vertrauliche Übertragungen verwendet werden kann.
 
-- **auditor_elgamal_pubkey**: Ein optionaler Auditor, der Transfer-Beträge in
+- **auditor_elgamal_pubkey**: Ein optionaler Prüfer, der Überweisungsbeträge in
   vertraulichen Transaktionen entschlüsseln kann und so einen
   Compliance-Mechanismus bietet, während die Privatsphäre gegenüber der
-  allgemeinen Öffentlichkeit gewahrt bleibt.
+  Öffentlichkeit gewahrt bleibt.
 
 ### Erforderliche Anweisungen
 
 Das Erstellen eines Mints mit aktiviertem Confidential Transfer erfordert drei
 Anweisungen in einer einzigen Transaktion:
 
-1. **Mint-Konten erstellen**: Rufen Sie die _rs`CreateAccount`_ Anweisung des
-   System Programs auf, um das Mint-Konten zu erstellen.
+1. **Das mint account erstellen**: Rufen Sie die Anweisung _rs`CreateAccount`_
+   des System Program auf, um das mint account zu erstellen.
 
 2. **Confidential Transfer-Erweiterung initialisieren**: Rufen Sie die
-   [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
-   Anweisung des Token Extension Programs auf, um den
-   _rs`ConfidentialTransferMint`_ Zustand für den Mint zu konfigurieren.
+   [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)-Anweisung
+   des Token Extensions Program auf, um den
+   _rs`ConfidentialTransferMint`_-Zustand für den Mint zu konfigurieren.
 
-3. **Mint initialisieren**: Rufen Sie die _rs`Instruction::InitializeMint`_
-   Anweisung des Token Extension Programs auf, um den Standard-Mint-Zustand zu
-   initialisieren.
+3. **Mint initialisieren**: Rufen Sie die Anweisung
+   _rs`Instruction::InitializeMint`_ des Token Extensions Program auf, um den
+   standardmäßigen Mint-Zustand zu initialisieren.
 
-Obwohl Sie diese Anweisungen manuell schreiben könnten, bietet die
-`spl_token_client` Crate eine `create_mint` Methode, die eine Transaktion mit
-allen drei Anweisungen in einem einzigen Funktionsaufruf erstellt und sendet,
-wie im folgenden Beispiel demonstriert.
+Sie könnten diese Anweisungen zwar manuell schreiben, aber das
+`spl_token_client`-Crate bietet eine `create_mint`-Methode, die eine Transaktion
+mit allen drei Anweisungen in einem einzigen Funktionsaufruf erstellt und
+sendet, wie im folgenden Beispiel gezeigt.
 
 ### Beispielcode
 
-Der folgende Code demonstriert, wie man einen Mint mit der Confidential
-Transfer-Erweiterung erstellt.
+Der folgende Code zeigt, wie eine Mint mit der Confidential Transfer-Erweiterung
+erstellt wird.
 
-Um das Beispiel auszuführen, starten Sie einen lokalen Validator mit dem Token
-Extension Program, das vom Mainnet geklont wurde, mit folgendem Befehl. Sie
-müssen die Solana CLI installiert haben, um den lokalen Validator zu starten.
+Um das Beispiel auszuführen, starten Sie einen lokalen Validatoren mit dem Token
+Extensions Program, das von Mainnet geklont wurde, indem Sie den folgenden
+Befehl verwenden. Sie müssen die Solana CLI installiert haben, um den lokalen
+Validatoren zu starten.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Zum Zeitpunkt der Erstellung ist Confidential Transfers auf dem
-  Standard-Local-Validator nicht aktiviert. Sie müssen das Token Extension
-  Program vom Mainnet klonen, um den Beispielcode auszuführen.
+  Zum Zeitpunkt der Erstellung ist Confidential Transfers im standardmäßigen
+  lokalen Validatoren nicht aktiviert. Sie müssen das Mainnet Token Extensions
+  Program klonen, um den Beispielcode auszuführen.
 </Callout>
 
 <CodeTabs>

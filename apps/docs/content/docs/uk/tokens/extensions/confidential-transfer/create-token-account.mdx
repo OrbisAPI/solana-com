@@ -4,18 +4,11 @@ description:
   Дізнайтеся, як створити token account з розширенням Confidential Transfer.
 ---
 
-<Callout type="warn">
-  Програма ZK ElGamal тимчасово вимкнена в мережах mainnet та devnet, оскільки
-  проходить аудит безпеки. Це означає, що розширення confidential transfers
-  наразі недоступне. Хоча концепції залишаються дійсними, приклади коду не
-  працюватимуть.
-</Callout>
-
 ## Як створити token account з розширенням Confidential Transfer
 
 Розширення Confidential Transfer забезпечує приватні перекази токенів, додаючи
-додатковий стан до token account. Цей розділ пояснює, як створити token account
-з увімкненим цим розширенням.
+додатковий стан до token account. У цьому розділі пояснюється, як створити token
+account з увімкненим розширенням.
 
 Наступна діаграма показує кроки, необхідні для створення token account з
 розширенням Confidential Transfer:
@@ -51,7 +44,7 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Стан Confidential Transfer Token Account
+### Стан Token Account з Confidential Transfer
 
 Розширення додає стан
 [ConfidentialTransferAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L75-L122)
@@ -107,28 +100,28 @@ pub struct ConfidentialTransferAccount {
 }
 ```
 
-_rs`ConfidentialTransferAccount`_ містить кілька полів для управління
+_rs`ConfidentialTransferAccount`_ містить кілька полів для керування
 конфіденційними переказами:
 
-- **approved**: статус схвалення облікового запису для конфіденційних переказів.
-  Якщо конфігурація `auto_approve_new_accounts` облікового запису mint
-  встановлена як `true`, усі облікові записи токенів автоматично схвалюються для
+- **approved**: Статус підтвердження облікового запису для конфіденційних
+  переказів. Якщо конфігурація `auto_approve_new_accounts` у mint account
+  встановлена як `true`, всі token accounts автоматично підтверджуються для
   конфіденційних переказів.
 
-- **elgamal_pubkey**: Відкритий ключ ElGamal, який використовується для
-  шифрування балансів та сум переказів.
+- **elgamal_pubkey**: Публічний ключ ElGamal, що використовується для шифрування
+  балансів і сум переказів.
 
-- **pending_balance_lo**: Зашифровані нижні 16 бітів очікуваного балансу. Баланс
-  розділений на верхню та нижню частини для ефективного дешифрування.
+- **pending_balance_lo**: Зашифровані молодші 16 біт очікуваного балансу. Баланс
+  розділено на старшу і молодшу частини для ефективного розшифрування.
 
-- **pending_balance_hi**: Зашифровані верхні 48 бітів очікуваного балансу.
-  Баланс розділений на верхню та нижню частини для ефективного дешифрування.
+- **pending_balance_hi**: Зашифровані старші 48 біт очікуваного балансу. Баланс
+  розділено на старшу і молодшу частини для ефективного розшифрування.
 
 - **available_balance**: Зашифрований баланс, доступний для переказів.
 
 - **decryptable_available_balance**: Доступний баланс, зашифрований за допомогою
-  ключа Advanced Encryption Standard (AES) для ефективного дешифрування
-  власником акаунта.
+  ключа Advanced Encryption Standard (AES) для ефективного розшифрування
+  власником облікового запису.
 
 - **allow_confidential_credits**: Якщо true, дозволяє вхідні конфіденційні
   перекази.
@@ -136,45 +129,44 @@ _rs`ConfidentialTransferAccount`_ містить кілька полів для 
 - **allow_non_confidential_credits**: Якщо true, дозволяє вхідні неконфіденційні
   перекази.
 
-- **pending_balance_credit_counter**: Підраховує вхідні очікувані кредити
+- **pending_balance_credit_counter**: Підраховує вхідні кредити очікуваного
   балансу від інструкцій депозиту та переказу.
 
-- **maximum_pending_balance_credit_counter**: ліміт кількості очікуваних
-  кредитів перед необхідністю виконання інструкції _rs`ApplyPendingBalance`_ для
-  конвертації очікуваного балансу в доступний баланс.
+- **maximum_pending_balance_credit_counter**: Ліміт кількості очікуваних
+  кредитів перед тим, як буде потрібна інструкція _rs`ApplyPendingBalance`_ для
+  конвертації очікуваного балансу в доступний.
 
-- **expected_pending_balance_credit_counter**: значення
-  `pending_balance_credit_counter`, надане клієнтом через дані інструкції
-  останнього разу, коли була оброблена інструкція _rs`ApplyPendingBalance`_.
+- **expected_pending_balance_credit_counter**: Значення
+  `pending_balance_credit_counter`, надане клієнтом через instruction data під
+  час останньої обробки інструкції _rs`ApplyPendingBalance`_.
 
-- **actual_pending_balance_credit_counter**: значення
-  `pending_balance_credit_counter` в обліковому записі токена на момент обробки
-  останньої інструкції _rs`ApplyPendingBalance`_.
+- **actual_pending_balance_credit_counter**: Значення
+  `pending_balance_credit_counter` у token account на момент обробки останньої
+  інструкції _rs`ApplyPendingBalance`_.
 
 <Callout type="info">
-  **Очікуваний проти доступного балансу**
+  **Очікуваний і доступний баланс**
 
-Конфіденційні баланси розділені на очікувані та доступні баланси для запобігання
+Конфіденційні баланси розділені на очікуваний і доступний, щоб запобігти
 DoS-атакам. Без такого розділення зловмисник міг би неодноразово надсилати
 токени на token account, блокуючи можливість власника token account переказувати
-токени. Власник token account не зміг би переказувати токени, оскільки
-зашифрований баланс змінювався б між моментом відправлення транзакції та
-моментом її обробки, що призводило б до невдалої транзакції.
+токени. Власник token account не зміг би здійснювати перекази, оскільки
+зашифрований баланс змінювався б між моментом відправлення транзакції та її
+обробкою, що призводило б до відхилення транзакції.
 
 Усі депозити та суми переказів спочатку додаються до очікуваного балансу.
-Власники облікових записів токенів повинні використовувати інструкцію
-_rs`ApplyPendingBalance`_ для конвертації очікуваного балансу в доступний
-баланс. Вхідні перекази або депозити не впливають на доступний баланс облікового
-запису токена.
+Власники token account повинні використовувати інструкцію
+_rs`ApplyPendingBalance`_, щоб перетворити очікуваний баланс на доступний.
+Вхідні перекази або депозити не впливають на доступний баланс token account.
 
 </Callout>
 
 <Callout type="info">
-  **Розділення очікуваного балансу на високий/низький**
+  **Розподіл очікуваного балансу на старшу/молодшу частини**
 
-Конфіденційний очікуваний баланс розділений на `pending_balance_lo` та
+Конфіденційний очікуваний баланс розділено на `pending_balance_lo` і
 `pending_balance_hi`, оскільки дешифрування ElGamal вимагає більше обчислень для
-більших чисел. Ви можете знайти реалізацію арифметики шифротексту
+великих чисел. Реалізацію арифметики шифротексту можна знайти
 [тут](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/ciphertext-arithmetic/src/lib.rs#L54),
 яка використовується в інструкції _rs`ApplyPendingBalance`_
 [тут](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1180-L1184).
@@ -184,49 +176,48 @@ _rs`ApplyPendingBalance`_ для конвертації очікуваного �
 <Callout type="info">
   **Лічильники кредитів очікуваного балансу**
 
-При виклику інструкції _rs`ApplyPendingBalance`_ для конвертації очікуваного
-балансу в доступний баланс:
+Під час виклику інструкції _rs`ApplyPendingBalance`_ для перетворення
+очікуваного балансу на доступний:
 
-1. Клієнт переглядає поточні очікувані та доступні баланси, шифрує суму і надає
-   `decryptable_available_balance`, зашифрований за допомогою AES-ключа власника
-   облікового запису токена.
+1. Клієнт отримує поточні очікуваний і доступний баланси, шифрує їх суму та
+   надає `decryptable_available_balance`, зашифрований за допомогою AES-ключа
+   власника token account.
 
-2. Очікувані та фактичні лічильники кредитів відстежують зміни значення
-   лічильника між моментом створення інструкції _rs`ApplyPendingBalance`_ та її
-   обробкою:
+2. Очікуваний і фактичний лічильники кредитів відстежують зміни значення
+   лічильника між моментом створення та обробки інструкції
+   _rs`ApplyPendingBalance`_:
    - `expected_pending_balance_credit_counter`: значення
-     `pending_balance_credit_counter`, коли клієнт створює інструкцію
+     `pending_balance_credit_counter` на момент, коли клієнт створює інструкцію
      _rs`ApplyPendingBalance`_
    - `actual_pending_balance_credit_counter`: значення
-     `pending_balance_credit_counter` в обліковому записі токена на момент
-     обробки інструкції _rs`ApplyPendingBalance`_
+     `pending_balance_credit_counter` у token account на момент обробки
+     інструкції _rs`ApplyPendingBalance`_
 
 Збіг очікуваних/фактичних лічильників вказує на те, що
 `decryptable_available_balance` відповідає `available_balance`.
 
 Під час отримання стану token account для читання
 `decryptable_available_balance`, різні значення очікуваних/фактичних лічильників
-вимагають від клієнта пошуку нещодавніх інструкцій депозиту/переказу, що
-відповідають різниці лічильників, для обчислення правильного балансу.
+вимагають від клієнта пошуку останніх інструкцій депозиту/переказу, що
+відповідають різниці лічильників, для розрахунку правильного балансу.
 
-**Процес звірки балансу**
+**Процес узгодження балансу**
 
-Коли очікувані та фактичні лічильники балансу, що очікує на обробку,
-відрізняються, виконайте ці кроки для узгодження
-`decryptable_available_balance`:
+Якщо очікуваний та фактичний лічильники очікуваного балансу відрізняються,
+виконайте такі кроки для узгодження `decryptable_available_balance`:
 
-1. Почніть з `decryptable_available_balance` з token account
+1. Почніть із `decryptable_available_balance` з token account
 2. Отримайте найновіші транзакції, включаючи інструкції депозиту та переказу до
    різниці лічильників (фактичний - очікуваний):
    - Додайте публічні суми з інструкцій депозиту
-   - Розшифруйте та додайте суми з зашифрованого тексту призначення з інструкцій
+   - Розшифруйте та додайте суми зашифрованого тексту призначення з інструкцій
      переказу
 
 </Callout>
 
 ### Необхідні інструкції
 
-Створення token account з розширенням Confidential Transfer вимагає трьох
+Створення token account з розширенням Confidential Transfer потребує трьох
 інструкцій:
 
 1. **Створіть token account**: Викличте інструкцію
@@ -234,25 +225,24 @@ _rs`ApplyPendingBalance`_ для конвертації очікуваного �
    створення token account.
 
 2. **Перерозподіліть простір облікового запису**: Викличте інструкцію
-   _rs`TokenInstruction::Reallocate`_ Token Extension Program для додавання
-   простору для стану _rs`ConfidentialTransferAccount`_.
+   _rs`TokenInstruction::Reallocate`_ Token Extension Program, щоб додати
+   простір для стану _rs`ConfidentialTransferAccount`_.
 
-3. **Налаштуйте конфіденційні перекази**: Викличте інструкцію
+3. **Налаштуйте конфіденційні перекази**: Викличте інструкцію Token Extension
+   Program
    [ConfidentialTransferInstruction::ConfigureAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L201)
-   Token Extension Program для ініціалізації стану
-   _rs`ConfidentialTransferAccount`_.
+   для ініціалізації стану _rs`ConfidentialTransferAccount`_.
 
 <Callout type="info">
 
 **Лише власник token account може налаштувати token account для конфіденційних
 переказів**.
 
-Інструкція _rs`ConfigureAccount`_ вимагає генерації ключів шифрування та даних
-доказу на стороні клієнта, які можуть бути згенеровані лише власником token
-account.
+Інструкція _rs`ConfigureAccount`_ вимагає генерації на стороні клієнта ключів
+шифрування та даних доказу, які може генерувати лише власник token account.
 
-_rs`PubkeyValidityProofData`_ створює доказ, який підтверджує, що ключ ElGamal є
-дійсним. Для деталей реалізації дивіться:
+_rs`PubkeyValidityProofData`_ створює доказ того, що ключ ElGamal є дійсним.
+Деталі реалізації дивіться тут:
 
 - [PubkeyValidityProofData](https://github.com/anza-xyz/agave/blob/b39a9764005ac8596b7e14e61d381305ce57ecaa/zk-sdk/src/zk_elgamal_proof_program/proof_data/pubkey_validity.rs#L58)
 - [PubkeyValidityProof](https://github.com/anza-xyz/agave/blob/b39a9764005ac8596b7e14e61d381305ce57ecaa/zk-sdk/src/sigma_proofs/pubkey_validity.rs#L65)
@@ -261,21 +251,20 @@ _rs`PubkeyValidityProofData`_ створює доказ, який підтвер
 
 ### Приклад коду
 
-Наступний код демонструє, як створити Associated Token Account з розширенням
-Confidential Transfer,
+Наведений нижче код демонструє, як створити associated token account з
+розширенням Confidential Transfer,
 
-Щоб запустити приклад, запустіть локальний validator з програмою Token
-Extensions Program, клонованою з мережі mainnet, використовуючи наступну
-команду. Для запуску локального validator у вас має бути встановлений Solana
-CLI.
+Щоб запустити приклад, запустіть локальний validator із Token Extension Program,
+клонованою з mainnet, за допомогою наведеної нижче команди. Для запуску
+локального validator необхідно встановити Solana CLI.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  На момент написання, Confidential Transfers не увімкнено на стандартному
-  локальному validator. Ви повинні клонувати Token Extension Program з мережі
+  На момент написання, Confidential Transfers не підтримується на стандартному
+  локальному validator. Необхідно клонувати Token Extension Program з мережі
   mainnet, щоб запустити приклад коду.
 </Callout>
 

@@ -22,43 +22,35 @@ zijn afhankelijk van het ZK ElGamal Proof Program voor
 onchain-bewijsverificatie, waardoor de mint bruikbaar is op clusters waar dat
 programma is ingeschakeld.
 
-<Callout type="warn" title="Beschikbaarheid">
-  Vertrouwelijke overdrachten vereisen de Token-2022
-  [`program@v11.0.0`](https://github.com/solana-program/token-2022/releases/tag/program%40v11.0.0)
-  of hoger. Ze zijn vandaag beschikbaar op devnet en staan gepland om in juni
-  2026 op mainnet te worden ingeschakeld. Het Token Extension Program wordt
-  afzonderlijk op elk cluster geïmplementeerd, dus bevestig de implementatie op
-  het cluster dat u als doel instelt.
-</Callout>
-
-## Keuzes die u maakt bij het aanmaken
+## Beslissingen die je bij aanmaak neemt
 
 De Confidential Transfer-extensie moet worden geïnitialiseerd voordat de mint
-wordt geïnitialiseerd en kan later niet meer worden toegevoegd. Bij het aanmaken
-beslist u:
+wordt geïnitialiseerd en kan later niet meer worden toegevoegd. Bij aanmaak
+bepaal je:
 
-- **Goedkeuringsbeleid**: of accounts toestemming kunnen geven voor
-  vertrouwelijke overdrachten zonder toestemming (`auto`) of goedgekeurd moeten
-  worden door de vertrouwelijke overdrachtsautoriteit van de mint (`manual`).
-- **Auditor**: of u een globale auditor-ElGamal-publieke sleutel wilt instellen
+- **Goedkeuringsbeleid**: of accounts zich permissieloos kunnen aanmelden voor
+  vertrouwelijke overdrachten (`auto`) of goedkeuring vereisen van de
+  vertrouwelijke overdrachtsautoriteit van de mint (`manual`).
+- **Auditor**: of een globale auditor ElGamal pubkey moet worden ingesteld,
   zodat een aangewezen partij elk overdrachtsbedrag voor de mint kan
-  ontsleutelen. Optioneel en kan later worden gewijzigd.
-- **Optionele aanvullende extensies**: vertrouwelijke overdrachtskosten
-  (gecombineerd met de overdrachtskosten-extensie) en vertrouwelijke mint/burn,
-  beide hieronder behandeld. Deze moeten ook bij het aanmaken worden
-  geïnitialiseerd.
+  ontcijferen. Optioneel en kan later worden gewijzigd.
+- **Optionele bijbehorende extensies**: vertrouwelijke overdrachtskosten
+  (gekoppeld aan de overdrachtskosten-extensie) en vertrouwelijk
+  munten/verbranden, beide hieronder beschreven. Deze moeten ook bij aanmaak
+  worden geïnitialiseerd.
 
-## Maak een vertrouwelijke mint aan
+## Een vertrouwelijke mint aanmaken
 
 De CLI stelt het goedkeuringsbeleid in met
 `--enable-confidential-transfers auto` of `manual`; `auto` laat elke houder zijn
-eigen account configureren, terwijl `manual` dit koppelt aan goedkeuring door de
-vertrouwelijke overdrachtautoriteit (die standardaard de mint-autoriteit is). De
-clientpaden nemen dezelfde instellingen over via de `ConfidentialTransferMint`
-parameters: een autoriteit, de automatische-goedkeuringsvlag, en een optionele
-auditorsleutel. Zowel het goedkeuringsbeleid als de auditor kunnen later worden
-gewijzigd (zie [Configureer een auditor](#configure-an-auditor)); alleen de
-aanwezigheid van de extensie zelf ligt vast bij aanmaak.
+eigen account configureren, terwijl `manual` dit achter goedkeuring van de
+vertrouwelijke overdrachtsautoriteit plaatst (die standaard de mint-autoriteit
+is). De clientpaden nemen dezelfde instellingen via de
+`ConfidentialTransferMint`-parameters: een autoriteit, de automatische
+goedkeuringsvlag en een optionele auditorsleutel. Zowel het goedkeuringsbeleid
+als de auditor kunnen later worden gewijzigd (zie
+[Een auditor configureren](#configure-an-auditor)); alleen de aanwezigheid van
+de extensie zelf ligt vast bij aanmaak.
 
 <CodeTabs>
 
@@ -130,25 +122,25 @@ const instructions = [
 
 </CodeTabs>
 
-## Configureer een auditor
+## Een auditor configureren
 
-Een globale auditor is een ElGamal-publieke sleutel die op de mint is
-opgeslagen. Wanneer ingesteld, versleutelt elke vertrouwelijke overdracht het
-bedrag ook onder deze sleutel, zodat wiegene de bijbehorende geheime sleutel
-bezit alle overdrachtsbedragen voor de mint kan ontcijferen. Dit is hoe
-vertrouwelijke overdrachten compatibel blijven met audit- en
-compliancevereisten: het publiek ziet niets, de auditor ziet alles.
+Een globale auditor is een ElGamal pubkey die is opgeslagen op de mint. Wanneer
+ingesteld, versleutelt elke vertrouwelijke overdracht bovendien het bedrag onder
+deze sleutel, zodat degene die de bijbehorende geheime sleutel bezit alle
+overdrachtsbedragen voor de mint kan ontcijferen. Dit is hoe vertrouwelijke
+overdrachten compatibel blijven met audit- en nalevingsvereisten: het publiek
+ziet niets, de auditor ziet alles.
 
-De vertrouwelijke overdrachtautoriteit kan de auditor op elk moment instellen,
+De vertrouwelijke overdrachtsbeheerder kan de auditor op elk moment instellen,
 roteren of verwijderen. Dezelfde bewerking werkt ook het goedkeuringsbeleid bij.
-Op de CLI is de auditorsleutel een base64-codering van een ElGamal-publieke
+Op de CLI is de auditorsleutel een base64-codering van een ElGamal publieke
 sleutel; geef `--auditor-pubkey none` door om deze te verwijderen en
 `--approve-policy auto|manual` om het beleid te wijzigen.
 
 Rotatie heeft alleen invloed op toekomstige overdrachten. Bedragen in
-transacties die al onchain staan, blijven versleuteld onder de auditorsleutel
-die actief was op het moment van uitvoering; bewaar daarom oude auditorsleutels
-als u historische activiteit wilt ontcijferen.
+transacties die al op de blockchain staan, blijven versleuteld met de
+auditorsleutel die actief was toen ze werden uitgevoerd. Bewaar daarom oude
+auditorsleutels als u historische activiteit wilt ontsleutelen.
 
 <CodeTabs>
 
@@ -181,20 +173,20 @@ const ix = getUpdateConfidentialTransferMintInstruction({
 </CodeTabs>
 
 <Callout type="warn">
-  De geheime sleutel van de auditor kan elk overdrachtsbedrag voor de mint
-  ontcijferen. Bewaar deze met dezelfde zorgvuldigheid als een
-  ondertekeningssleutel, en plan voor rotatie. De auditor instellen op `None`
-  schakelt de zichtbaarheid van bedragen uit voor iedereen, behalve de
-  accounteigenaren zelf.
+  De geheime auditorsleutel kan elk overdrachtsbedrag voor de mint ontsleutelen.
+  Bewaar deze met dezelfde zorgvuldigheid als een ondertekeningssleutel en plan
+  voor rotatie. Het instellen van de auditor op `None` schakelt de zichtbaarheid
+  van bedragen uit voor iedereen, behalve voor de rekeninghouders zelf.
 </Callout>
 
 ## Accounts goedkeuren (handmatig beleid)
 
 Met een handmatig goedkeuringsbeleid kan een account dat is geconfigureerd voor
-vertrouwelijke overdrachten niet vertrouwelijk transacteren totdat de autoriteit
-voor vertrouwelijke overdrachten het goedkeurt. Dit geeft uitgevers een
-toegangspoort voor deelnemers op de allowlist of met KYC-verificatie. De CLI
-biedt geen goedkeuringsopdracht, dus goedkeuring verloopt via een client.
+vertrouwelijke overdrachten niet vertrouwelijk transacties uitvoeren totdat de
+vertrouwelijke overdrachtsbeheerder het goedkeurt. Dit geeft uitgevers een
+toegangscontrole voor deelnemers op een allowlist of met KYC-verificatie. De CLI
+heeft geen goedkeuringscommando, waardoor goedkeuring via een client moet worden
+gedaan.
 
 <CodeTabs>
 
@@ -224,22 +216,22 @@ const ix = getApproveConfidentialTransferAccountInstruction({
 
 Als uw mint [overdrachtskosten](/docs/tokens/extensions/transfer-fees) in
 rekening brengt en overdrachten vertrouwelijk zijn, moeten de kosten ook
-vertrouwelijk worden ingehouden. De `ConfidentialTransferFeeConfig`-extensie
-verwerkt dit en wordt geïnitialiseerd bij het aanmaken van de mint, samen met
-zowel de overdrachtskosten- als de vertrouwelijke overdrachtsextensies.
+vertrouwelijk worden ingehouden. De extensie `ConfidentialTransferFeeConfig`
+regelt dit en wordt bij het aanmaken van de mint geïnitialiseerd naast zowel de
+overdrachtskosten- als de vertrouwelijke overdrachtsextensies.
 
-Ingehouden kosten worden versleuteld opgebouwd op ontvangersaccounts, worden
-naar de mint overgebracht en vervolgens opgenomen door de autoriteit voor het
-opnemen van ingehouden kosten. Elk kostenbedrag blijft durend versleuteld. Niets
-hiervan is toegankelijk via de CLI. De ElGamal-geheime sleutel van de autoriteit
-voor het opnemen van ingehouden kosten kan ingehouden kostenbedragen
+Ingehouden kosten worden versleuteld opgebouwd op ontvangeraccounts, worden naar
+de mint overgebracht en vervolgens opgenomen door de autoriteit voor het opnemen
+van ingehouden bedragen. Elk kostenbedrag blijft gedurende het hele proces
+versleuteld. Dit is niet beschikbaar via de CLI. De geheime ElGamal-sleutel van
+de autoriteit voor ingehouden bedragen kan versleutelde kostenbedragen
 ontsleutelen, wat in combinatie met de openbare kostenparameters informatie over
-overdachtsbedragen kan onthullen. Behandel die sleutel daarom als gevoelig.
+overdrachtsbedragen kan onthullen. Behandel die sleutel daarom als gevoelig.
 
-### De kostenconfiguratie initialiseren
+### Initialiseer de vergoedingsconfiguratie
 
-Voeg dit toe samen met `ConfidentialTransferMint` en de
-overdrachtskosten-configuratie bij hetzelfde aanmaken van de mint.
+Voeg dit toe samen met `ConfidentialTransferMint` en de configuratie voor
+overdrachtkosten in dezelfde muntcreatie.
 
 <CodeTabs>
 
@@ -264,20 +256,20 @@ const ix = getInitializeConfidentialTransferFeeInstruction({
 
 </CodeTabs>
 
-### Ingehouden kosten oogsten en opnemen
+### Oogst en onttrek ingehouden vergoedingen
 
-Oogsten verplaatst de versleuteld ingehouden kosten van accounts naar de mint;
-opnemen verplaatst ze uit de mint naar een gekozen account. Er zijn twee
-autoriteiten betrokken, die elk kunnen verschillen van de mint-autoriteit:
+Oogsten verplaatst de versleutelde ingehouden vergoedingen van accounts naar de
+mint; onttrekken verplaatst ze uit de mint naar een gekozen account. Twee
+autoriteiten zijn betrokken, en elk kan afwijken van de mint-autoriteit:
 
-- De **autoriteit voor vertrouwelijke overdrachtskosten** (de `authority`
+- De **vertrouwelijke overdrachtvergoedingsautoriteit** (de `authority`
   ingesteld op `ConfidentialTransferFeeConfig`) schakelt het oogsten in of uit.
-- De **autoriteit voor het opnemen van ingehouden kosten** (vanuit de
-  `TransferFeeConfig` van de overdrachtskosten-extensie) neemt de geoogste
-  kosten uit de mint op.
+- De **autoriteit voor het onttrekken van ingehouden bedragen** (van de
+  `TransferFeeConfig` van de overdrachtvergoedingsextensie) onttrekt de geoogste
+  vergoedingen uit de mint.
 
-Opnames vereisen een gelijkheids- en een bereikbewijs, inline aangeleverd of
-geverifieerd in contextstaataccounts.
+Onttrekkingen vereisen een gelijkheids- en bereikbewijs, inline aangeleverd of
+geverifieerd in contextstatusaccounts.
 
 <CodeTabs>
 
@@ -322,38 +314,38 @@ const harvestIx =
 
 </CodeTabs>
 
-In de JS-client vereist het opnemen van de geoogste vergoedingen uit de mint
+In de JS-client vereist het onttrekken van de geoogste vergoedingen uit de mint
 (`getWithdrawWithheldTokensFromMintForConfidentialTransferFeeInstruction`)
-bovendien een gelijkheids- en bereikbewijs dat is geverifieerd in
-contextstaataccounts, zodat het hetzelfde bewijs-accountpatroon volgt als een
-vertrouwelijke overdracht.
+bovendien een gelijkheids- en bereikbewijs geverifieerd in
+contextstatusaccounts, waardoor het hetzelfde bewijs-accountpatroon volgt als
+een vertrouwelijke overdracht.
 
-## Vertrouwelijk aanmaken en verbranden
+## Vertrouwelijk minten en verbranden
 
-De `ConfidentialMintBurn`-extensie stelt de mint-autoriteit in staat om aanbod
-rechtstreeks op basis van vertrouwelijke saldi uit te geven en te verbranden,
-waarbij het totale aanbod versleuteld blijft. Een mint met deze extensie
-schakelt het publieke storting- en opnamepad uit, omdat tokens uitsluitend
-vertrouwelijk bestaan. Zie de
+De `ConfidentialMintBurn` extensie stelt de mint-autoriteit in staat om aanbod
+direct uit te geven en te verbranden via vertrouwelijke saldi, waarbij het
+totale aanbod versleuteld blijft. Een mint met deze extensie schakelt het
+openbare storten en opnemen uit, omdat tokens uitsluitend vertrouwelijk bestaan.
+Zie de
 [protocoldocumentatie](https://www.solana-program.com/docs/confidential-balances)
 voor het volledige model.
 
 <Callout type="info">
-  Vertrouwelijk aanmaken/verbranden gaat het eenvoudigst via de Rust
+  Vertrouwelijk minten/verbranden gaat het eenvoudigst via de Rust
   `spl-token-client`, die de vereiste bewijzen genereert en de transacties voor
-  u in volgorde uitvoert. De `@solana-program/token-2022` JS-client bevat de
+  u in volgorde uitvoert. De `@solana-program/token-2022` JS-client levert de
   low-level instructiebouwers (`getConfidentialMintInstruction`,
-  `getConfidentialBurnInstruction` en verwanten), maar geen high-level helper
+  `getConfidentialBurnInstruction`, en aanverwante) maar geen high-level helper
   die de bewijzen opbouwt, en er zijn geen CLI-opdrachten, dus de onderstaande
-  voorbeelden zijn uitsluitend in Rust.
+  voorbeelden zijn alleen in Rust.
 </Callout>
 
-Initialiseer de extensie bij het aanmaken van de mint en mint, verbrand en
-reconcilieer het aanbod vervolgens in de loop van de tijd. Aanmaken geeft een
-versleuteld bedrag uit aan het vertrouwelijke saldo van een ontvanger;
-verbranden verwijdert een versleuteld bedrag naar een openstaande verbranding
-die later in het aanbod wordt opgenomen. Beide genereren bewijzen zoals bij een
-vertrouwelijke overdracht.
+Initialiseer de extensie bij het aanmaken van de mint, en mint, burn en
+reconcilieer daarna de voorraad in de loop van de tijd. Minting geeft een
+versleuteld bedrag uit naar het vertrouwelijke saldo van een ontvanger; burning
+verwijdert een versleuteld bedrag naar een openstaande burn die later wordt
+samengevoegd met de voorraad. Beide genereren bewijzen zoals een vertrouwelijke
+overdracht.
 
 <CodeTabs>
 
@@ -411,27 +403,28 @@ token
 
 </CodeTabs>
 
-Roteer de versleutelingssleutel van het aanbod met
-`confidential_transfer_rotate_supply_elgamal_pubkey` (de openstaande verbranding
-moet eerst nul zijn), en ververs de leesbare aanbodciphertext met
+Roteer de versleutelingssleutel voor de voorraad met
+`confidential_transfer_rotate_supply_elgamal_pubkey` (de openstaande burn moet
+eerst nul zijn), en ververs de leesbare voorraad-ciphertext met
 `confidential_transfer_update_decrypt_supply`.
 
 ## Operationele en compliance-overwegingen
 
-- **Bewaarneming van de auditorsleutel.** Als u een auditor instelt, is de
-  geheime sleutel van de auditor een hoogwaardige ontsleutelingssleutel. Sla
-  deze op en roteer hem zorgvuldig, en beslis wie binnen uw organisatie (of
-  welke toezichthouder) deze beheert.
-- **Compliance-houding.** Adresscreening en analyse van tegenpartijgrafieken
+- **Bewaring van de auditeursleutel.** Als u een auditor instelt, is de geheime
+  sleutel van de auditor een hoogwaardige decryptiesleutel. Bewaar en roteer
+  deze zorgvuldig, en bepaal wie binnen uw organisatie (of welke toezichthouder)
+  deze beheert.
+- **Compliance-houding.** Adresscreening en analyse van het tegenpartijnetwerk
   blijven werken omdat adressen openbaar blijven. Monitoring op basis van
-  bedragen is afhankelijk van de auditorsleutel of van selectieve openbaarmaking
-  door accounteigenaren. Bepaal uw aanpak vóór de lancering.
-- **Gebruikers onboarden.** Het configureren van een vertrouwelijk account
-  vereist de handtekening van de eigenaar. Laat gebruikers voor een soepele
-  accountinrichting eenmalig een ElGamal-sleutel registreren en gebruik het
-  registerpad, beschreven in de
+  bedragen is afhankelijk van de auditeursleutel of van selectieve
+  openbaarmaking door rekeninghouders. Bepaal uw aanpak vóór de lancering.
+- **Gebruikers onboarden.** Voor het configureren van een vertrouwelijke
+  rekening is de handtekening van de eigenaar vereist. Om accounts voor
+  gebruikers soepel in te richten, laat u hen eenmalig een ElGamal-sleutel
+  registreren en gebruikt u het registerpad, beschreven in de
   [Integratiegids](/docs/tokens/extensions/confidential-transfer/integration-guide#creating-and-configuring-accounts).
-- **Transactieaantal.** Een vertrouwelijke overdracht beslaat momenteel enkele
-  afhankelijke transacties, omdat de bewijzen de huidige transactiegroottelimiet
-  overschrijden. Transactieformaat v1 (geleverd met Agave v4.2) verhoogt die
-  limiet en zal naar verwachting één enkele onchain-transactie mogelijk maken.
+- **Transactieaantal.** Een vertrouwelijke overdracht omvat momenteel een aantal
+  afhankelijke transacties, omdat de bewijzen de huidige transactiegroottlimiet
+  overschrijden. Transactieformaat v1 (geïntroduceerd met Agave v4.2) verhoogt
+  die limiet en zal naar verwachting één enkele on-chain transactie mogelijk
+  maken.

@@ -3,18 +3,11 @@ title: Luo token mint
 description: Opi luomaan token mint Confidential Transfer -laajennuksella.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program on väliaikaisesti poistettu käytöstä mainnetissä ja
-  devnetissä turvallisuusauditoinnin ajaksi. Tämä tarkoittaa, että confidential
-  transfers -laajennus ei ole tällä hetkellä käytettävissä. Vaikka konseptit
-  ovat edelleen päteviä, koodiesimerkit eivät toimi.
-</Callout>
+## Kuinka luoda mint Confidential Transfer -laajennuksella
 
-## Miten luodaan mint Confidential Transfer -laajennuksella
-
-Confidential Transfer -laajennus mahdollistaa yksityiset token-siirrot
-lisäämällä ylimääräistä tilaa mint-tilille. Tämä osio selittää, miten luodaan
-token mint tämän laajennuksen ollessa käytössä.
+Confidential Transfer -laajennus mahdollistaa yksityiset tokensiirrot lisäämällä
+extra-tilan mint account -tilille. Tässä osiossa selitetään, kuinka luodaan
+token mint tämä laajennus aktivoituna.
 
 Seuraava kaavio näyttää vaiheet, jotka liittyvät mintin luomiseen Confidential
 Transfer -laajennuksella:
@@ -31,11 +24,11 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Confidential Transfer mint -tila
+### Confidential Transfer Mint -tila
 
 Laajennus lisää
 [ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)
--tilan mint-tilille:
+-tilan mint account -tilille:
 
 ```rust title="Confidential Mint State"
 #[repr(C)]
@@ -61,61 +54,62 @@ pub struct ConfidentialTransferMint {
 }
 ```
 
-_rs`ConfidentialTransferMint`_ sisältää kolme konfigurointikenttää:
+_rs`ConfidentialTransferMint`_ sisältää kolme konfiguraatiokenttää:
 
-- **authority**: Tili, jolla on oikeus muuttaa confidential transfer -asetuksia
-  mintille ja hyväksyä uusia confidential-tilejä, jos automaattinen hyväksyntä
-  on poistettu käytöstä.
+- **authority**: Tili, jolla on oikeus muuttaa luottamuksellisen siirron
+  asetuksia minttiä varten ja hyväksyä uudet luottamukselliset tilit, jos
+  automaattinen hyväksyntä on poistettu käytöstä.
 
 - **auto_approve_new_accounts**: Kun asetettu arvoon true, käyttäjät voivat
-  luoda token-tilejä, joissa confidential transfers on oletuksena käytössä. Kun
-  asetettu arvoon false, authorityn on hyväksyttävä jokainen uusi token-tili
-  ennen kuin sitä voidaan käyttää confidential-siirtoihin.
+  luoda token account -tilejä, joissa luottamukselliset siirrot ovat oletuksena
+  käytössä. Kun false, auktoriteetin täytyy hyväksyä jokainen uusi token account
+  ennen kuin sitä voidaan käyttää luottamuksellisiin siirtoihin.
 
-- **auditor_elgamal_pubkey**: Valinnainen auditoija, joka voi purkaa
-  siirtosummien salauksen confidential-transaktioissa, tarjoten
-  compliance-mekanismin säilyttäen samalla yksityisyyden suurelta yleisöltä.
+- **auditor_elgamal_pubkey**: Valinnainen tarkastaja, joka voi purkaa
+  siirtosummat luottamuksellisissa transaktioissa, tarjoten
+  vaatimustenmukaisuusmekanismin samalla kun yksityisyys säilyy suurelta
+  yleisöltä.
 
 ### Vaaditut ohjeet
 
-Mintin luominen Confidential Transfer -laajennuksen kanssa vaatii kolme ohjetta
-yhdessä transaktiossa:
+Mintin luominen Confidential Transfer aktivoituna vaatii kolme ohjetta yhdessä
+transaktiossa:
 
-1. **Luo mint-tili**: Kutsu System Program -ohjelman _rs`CreateAccount`_
-   -ohjetta luomaan mint-tili.
+1. **Luo Mint Account**: Kutsu System Program'n _rs`CreateAccount`_ -ohjetta
+   luodaksesi mint account -tilin.
 
-2. **Alusta Confidential Transfer -laajennus**: Kutsu Token Extension Program
-   -ohjelman
+2. **Alusta Confidential Transfer -laajennus**: Kutsu Token Extensions Program'n
    [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
-   -instruktiota konfiguroimaan _rs`ConfidentialTransferMint`_ -tila mintille.
+   -ohjetta konfiguroidaksesi _rs`ConfidentialTransferMint`_ -tilan minttiä
+   varten.
 
-3. **Alusta mint**: Kutsu Token Extension Program -ohjelman
-   _rs`Instruction::InitializeMint`_ -instruktiota alustamaan standardin
-   mint-tila.
+3. **Alusta Mint**: Kutsu Token Extensions Program'n
+   _rs`Instruction::InitializeMint`_ -ohjetta alustaaksesi tavallisen mint
+   -tilan.
 
-Vaikka voisit kirjoittaa nämä instruktiot manuaalisesti, `spl_token_client`
--crate tarjoaa `create_mint` -metodin, joka rakentaa ja lähettää transaktion
-kaikilla kolmella instruktiolla yhdellä funktiokutsulla, kuten alla olevassa
-esimerkissä havainnollistetaan.
+Vaikka voisit kirjoittaa nämä ohjeet manuaalisesti, `spl_token_client` -crate
+tarjoaa `create_mint` -metodin, joka rakentaa ja lähettää transaktion kaikilla
+kolmella ohjeella yhdellä funktiokutsulla, kuten alla olevassa esimerkissä on
+esitetty.
 
 ### Esimerkkikoodi
 
-Seuraava koodi havainnollistaa, kuinka luoda mint Confidential Transfer
--laajennuksella.
+Seuraava koodi havainnollistaa, kuinka luodaan mint Confidential
+Transfer-laajennuksella.
 
-Esimerkin suorittamiseksi käynnistä paikallinen validator Token Extension
-Program -ohjelmalla kloonattuna mainnetistä käyttämällä seuraavaa komentoa.
-Sinulla täytyy olla Solana CLI asennettuna paikallisen validatorin
-käynnistämiseksi.
+Suorittaaksesi esimerkin, käynnistä paikallinen validator Token Extension
+Program illa, joka on kloonattu mainnetistä käyttämällä seuraavaa komentoa.
+Sinulla täytyy olla Solana CLI asennettuna käynnistääksesi paikallisen
+validatorin.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Tätä kirjoitettaessa Confidential Transfers ei ole käytössä oletuksena
-  paikallisessa validatorissa. Sinun täytyy kloonata mainnetin Token Extension
-  Program esimerkkikoodin suorittamiseksi.
+  Kirjoitushetkellä Confidential Transfers ei ole käytössä oletuspaikallisessa
+  validatorissa. Sinun täytyy kloonata mainnetin Token Extension Program
+  suorittaaksesi esimerkkikoodin.
 </Callout>
 
 <CodeTabs>

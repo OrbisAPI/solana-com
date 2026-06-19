@@ -5,33 +5,27 @@ description:
   zu machen.
 ---
 
-<Callout type="warn">
-  Das ZK ElGamal Program ist vorübergehend im Mainnet und Devnet deaktiviert, da
-  es einem Sicherheitsaudit unterzogen wird. Dies bedeutet, dass die Erweiterung
-  für vertrauliche Überweisungen derzeit nicht verfügbar ist. Obwohl die
-  Konzepte weiterhin gültig sind, werden die Code-Beispiele nicht ausgeführt.
-</Callout>
+## So wird das ausstehende Guthaben auf das verfügbare Guthaben angewendet
 
-## Wie man den ausstehenden Saldo auf den verfügbaren Saldo anwendet
+Bevor Token vertraulich übertragen werden können, muss das öffentliche
+Token-Guthaben in ein vertrauliches Guthaben umgewandelt werden. Diese
+Umwandlung erfolgt in zwei Schritten:
 
-Bevor Token vertraulich übertragen werden können, muss der öffentliche
-Token-Saldo in einen vertraulichen Saldo umgewandelt werden. Diese Umwandlung
-erfolgt in zwei Phasen:
+1. **Vertrauliches ausstehendes Guthaben**: Zunächst werden Token aus dem
+   öffentlichen Guthaben in ein „ausstehendes“ vertrauliches Guthaben
+   „eingezahlt“.
+2. **Vertrauliches verfügbares Guthaben**: Das ausstehende Guthaben wird
+   anschließend auf das verfügbare Guthaben „angewendet“, wodurch die Token für
+   vertrauliche Übertragungen verfügbar werden.
 
-1. **Vertraulicher ausstehender Saldo**: Zunächst werden Token vom öffentlichen
-   Saldo in einen "ausstehenden" vertraulichen Saldo "eingezahlt".
-2. **Vertraulicher verfügbarer Saldo**: Der ausstehende Saldo wird dann auf den
-   verfügbaren Saldo "angewendet", wodurch die Token für vertrauliche
-   Überweisungen verfügbar werden.
+Dieser Abschnitt erläutert den zweiten Schritt: das Anwenden des ausstehenden
+Guthabens auf das verfügbare Guthaben.
 
-Dieser Abschnitt erklärt die zweite Phase: das Anwenden des ausstehenden Saldos
-auf den verfügbaren Saldo.
-
-Wenn Token vom öffentlichen Saldo "eingezahlt" werden oder wenn Token
-vertraulich von einem Token-Konten auf ein anderes übertragen werden, werden die
-Token zunächst dem vertraulichen ausstehenden Saldo hinzugefügt. Bevor Token für
-vertrauliche Überweisungen verwendet werden können, muss der ausstehende Saldo
-auf den verfügbaren Saldo "angewendet" werden.
+Wenn Token aus dem öffentlichen Guthaben „eingezahlt“ werden oder wenn Token
+vertraulich von einem token account auf einen anderen übertragen werden, werden
+die Token zunächst dem vertraulichen ausstehenden Guthaben hinzugefügt. Bevor
+Token für vertrauliche Übertragungen verwendet werden können, muss das
+ausstehende Guthaben auf das verfügbare Guthaben „angewendet“ werden.
 
 ```mermaid title="Apply Pending Balance"
 sequenceDiagram
@@ -52,7 +46,7 @@ B->>BB: Apply
 ```
 
 Das folgende Diagramm zeigt die Schritte, die beim Anwenden des ausstehenden
-Saldos auf den verfügbaren Saldo erforderlich sind:
+Guthabens auf das verfügbare Guthaben durchgeführt werden:
 
 ```mermaid title="Apply Pending Balance"
 sequenceDiagram
@@ -75,33 +69,34 @@ sequenceDiagram
 
 ### Erforderliche Anweisung
 
-Um einen ausstehenden Saldo in einen verfügbaren Saldo umzuwandeln, rufen Sie
+Um ein ausstehendes Guthaben in ein verfügbares Guthaben umzuwandeln, rufen Sie
 die
 [ConfidentialTransferInstruction::ApplyPendingBalance](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1152)
-Anweisung auf.
+Anweisungen auf.
 
-Die `spl_token_client` Crate stellt eine
-`confidential_transfer_apply_pending_balance` Methode bereit, die eine
-Transaktion mit der `ApplyPendingBalance` Anweisung erstellt und sendet, wie im
-folgenden Beispiel demonstriert wird.
+Das `spl_token_client`-Crate stellt eine
+`confidential_transfer_apply_pending_balance`-Methode bereit, die eine
+Transaktion mit der `ApplyPendingBalance`- Anweisungen erstellt und sendet, wie
+im nachfolgenden Beispiel gezeigt.
 
 ### Beispielcode
 
-Das folgende Beispiel zeigt, wie der vertrauliche ausstehende Saldo auf den
-vertraulichen verfügbaren Saldo angewendet wird.
+Das folgende Beispiel zeigt, wie das vertrauliche ausstehende Guthaben auf das
+vertrauliche verfügbare Guthaben angewendet wird.
 
-Um das Beispiel auszuführen, starten Sie einen lokalen Validator mit dem Token
-Extension Program, das von Mainnet geklont wurde, mit folgendem Befehl. Sie
-müssen die Solana CLI installiert haben, um den lokalen Validator zu starten.
+Um das Beispiel auszuführen, starten Sie einen lokalen validator mit dem Token
+Extensions Program, das vom Mainnet geklont wurde, mithilfe des folgenden
+Befehls. Sie müssen die Solana CLI installiert haben, um den lokalen validator
+zu starten.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Zum Zeitpunkt der Erstellung ist Confidential Transfers auf dem
-  standardmäßigen lokalen Validator nicht aktiviert. Sie müssen das Mainnet
-  Token Extension Program klonen, um den Beispielcode auszuführen.
+  Zum Zeitpunkt der Erstellung war Confidential Transfers im standardmäßigen
+  lokalen validator nicht aktiviert. Sie müssen das Mainnet Token Extensions
+  Program klonen, um den Beispielcode auszuführen.
 </Callout>
 
 <CodeTabs>

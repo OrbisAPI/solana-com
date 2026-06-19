@@ -3,47 +3,41 @@ title: Prelevare token
 description: Scopri come prelevare token dallo stato confidenziale.
 ---
 
-<Callout type="warn">
-  Il programma ZK ElGamal è temporaneamente disabilitato sulla mainnet e devnet
-  mentre è sottoposto a un audit di sicurezza. Ciò significa che l'estensione
-  dei trasferimenti confidenziali è attualmente non disponibile. Sebbene i
-  concetti siano ancora validi, gli esempi di codice non funzioneranno.
-</Callout>
+## Come prelevare token dal saldo disponibile riservato
 
-## Come prelevare token dal saldo disponibile confidenziale
+Per prelevare token dal saldo disponibile riservato al saldo pubblico:
 
-Per prelevare token dal saldo disponibile confidenziale al saldo pubblico:
-
-1. Crea
+1. Creare
    [due prove](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/proof-generation/src/withdraw.rs#L22)
    lato client:
 
-   **Prova di uguaglianza
+   **Equality Proof
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
-   Verifica che il ciphertext del saldo disponibile rimanente dopo il prelievo
-   corrisponda al suo
-   [commitment di Pedersen](https://en.wikipedia.org/wiki/Commitment_scheme),
+   Verifica che il testo cifrato del saldo disponibile rimanente dopo il
+   prelievo corrisponda al relativo
+   [Pedersen commitment](https://en.wikipedia.org/wiki/Commitment_scheme),
    garantendo che il nuovo saldo disponibile dell'account sia calcolato
    correttamente come `remaining_balance = current_balance - withdraw_amount`.
 
-   **Prova di intervallo
+   **Range Proof
    ([BatchedRangeProofU64Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u64.rs#L37))**:
    Verifica che il saldo disponibile rimanente dopo il prelievo sia non negativo
-   e compreso in un intervallo specificato.
+   e rientri in un intervallo specificato.
 
-2. Per ogni prova:
-   - Invoca il programma di prova ZK ElGamal per verificare i dati della prova.
-   - Memorizza i metadati specifici della prova in un account "context state"
+2. Per ciascuna prova:
+   - Invocare il programma di prova ZK ElGamal per verificare i dati della
+     prova.
+   - Memorizzare i metadati specifici della prova in un account "context state"
      della prova da utilizzare in altre istruzioni.
 
-3. Invoca l'istruzione
+3. Invocare l'istruzione
    [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
    fornendo i due account di prova.
 
-4. Chiudi gli account di prova per recuperare i SOL utilizzati per crearli.
+4. Chiudere gli account di prova per recuperare il SOL utilizzato per crearli.
 
-Il seguente diagramma mostra i passaggi coinvolti nel prelievo di token dal
-saldo disponibile confidenziale al saldo pubblico:
+Il seguente diagramma illustra i passaggi necessari per prelevare token dal
+saldo disponibile riservato al saldo pubblico:
 
 ```mermaid title="Withdraw Tokens"
 sequenceDiagram
@@ -70,11 +64,12 @@ sequenceDiagram
     deactivate ElGamal
 ```
 
-### Istruzioni richieste
+### Istruzioni necessarie
 
-Per prelevare token dal saldo disponibile confidenziale al saldo pubblico, devi:
+Per prelevare token dal saldo disponibile riservato al saldo pubblico, è
+necessario:
 
-- Generare una prova di uguaglianza e una prova di intervallo lato client
+- Generare una equality proof e una range proof lato client
 - Invocare il programma di prova Zk ElGamal per verificare le prove e
   inizializzare gli account "context state"
 - Invocare l'istruzione
@@ -92,21 +87,21 @@ Il crate `spl_token_client` fornisce i seguenti metodi:
 
 ### Codice di esempio
 
-Il seguente esempio dimostra come prelevare token dal saldo confidenziale
-disponibile al saldo pubblico.
+Il seguente esempio dimostra come prelevare token dal saldo disponibile
+riservato al saldo pubblico.
 
-Per eseguire l'esempio, avvia un validator locale con il Token Extension Program
-clonato da mainnet utilizzando il seguente comando. Devi avere la Solana CLI
-installata per avviare il validator locale.
+Per eseguire l'esempio, avvia un validator locale con il Token Extensions
+Program clonato dalla mainnet utilizzando il seguente comando. È necessario
+avere la CLI di Solana installata per avviare il validator locale.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Al momento della scrittura, i Confidential Transfers non sono abilitati sul
-  validator locale predefinito. Devi clonare il Token Extension Program di
-  mainnet per eseguire il codice di esempio.
+  Al momento della stesura, i Confidential Transfer non sono abilitati sul
+  validator locale predefinito. È necessario clonare il Token Extensions Program
+  della mainnet per eseguire il codice di esempio.
 </Callout>
 
 <CodeTabs>

@@ -5,58 +5,52 @@ description:
   khoản khác.
 ---
 
-<Callout type="warn">
-  Chương trình ZK ElGamal tạm thời bị vô hiệu hóa trên mainnet và devnet khi
-  đang trải qua kiểm toán bảo mật. Điều này có nghĩa là tiện ích mở rộng chuyển
-  khoản bảo mật hiện không khả dụng. Mặc dù các khái niệm vẫn hợp lệ, nhưng các
-  ví dụ mã sẽ không chạy được.
-</Callout>
+## Cách chuyển token bí mật từ token account này sang token account khác
 
-## Cách chuyển token một cách bảo mật từ tài khoản token này sang tài khoản khác
+Để chuyển token bí mật từ token account này sang token account khác, cả người
+gửi và người nhận đều phải có token account được cấu hình với trạng thái
+_rs`ConfidentialTransferAccount`_ và được phê duyệt cho việc chuyển bí mật.
+Token account của người gửi cũng phải có số dư bí mật khả dụng để thực hiện
+chuyển.
 
-Để chuyển token một cách bảo mật từ tài khoản token này sang tài khoản khác, cả
-người gửi và người nhận đều phải có tài khoản token được cấu hình với trạng thái
-_rs`ConfidentialTransferAccount`_ và được phê duyệt cho chuyển khoản bảo mật.
-Tài khoản token của người gửi cũng phải có số dư bảo mật khả dụng để chuyển.
-
-Để chuyển token một cách bảo mật:
+Để chuyển token bí mật:
 
 1. Tạo
    [ba bằng chứng](https://github.com/solana-program/token-2022/blob/d073cb89dbcd430387b5c6fb4b7157911351e4a3/confidential-transfer/proof-generation/src/transfer.rs#L35)
-   ở phía client:
+   phía client:
 
-   **Bằng chứng đẳng thức
+   **Bằng chứng Đẳng thức
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
-   Xác minh rằng ciphertext số dư khả dụng mới sau khi chuyển khoản khớp với
+   Xác minh rằng bản mã số dư khả dụng mới sau khi chuyển khớp với
    [cam kết Pedersen](https://en.wikipedia.org/wiki/Commitment_scheme) tương
    ứng, đảm bảo số dư khả dụng mới của tài khoản nguồn được tính toán chính xác
    là `new_balance = current_balance - transfer_amount`.
 
-   **Bằng chứng tính hợp lệ của ciphertext
+   **Bằng chứng Tính hợp lệ của Bản mã
    ([BatchedGroupedCiphertext3HandlesValidityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_grouped_ciphertext_validity/handles_3.rs#L63))**:
-   Xác minh rằng các ciphertext số tiền chuyển được tạo đúng cách cho cả ba bên
+   Xác minh rằng các bản mã của số tiền chuyển được tạo đúng cách cho cả ba bên
    (nguồn, đích và kiểm toán viên), đảm bảo số tiền chuyển được mã hóa chính xác
-   dưới khóa công khai của từng bên.
+   theo khóa công khai của từng bên.
 
-   **Bằng chứng phạm vi
+   **Bằng chứng Phạm vi
    ([BatchedRangeProofU128Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u128.rs#L37))**:
    Xác minh rằng số dư khả dụng mới và số tiền chuyển (được chia thành các bit
-   thấp/cao) đều không âm và nằm trong phạm vi được chỉ định.
+   thấp/cao) đều không âm và nằm trong một phạm vi xác định.
 
 2. Đối với mỗi bằng chứng:
    - Gọi chương trình bằng chứng ZK ElGamal để xác minh dữ liệu bằng chứng.
-   - Lưu trữ metadata cụ thể của bằng chứng trong tài khoản "trạng thái ngữ cảnh
-     bằng chứng" để sử dụng trong các lệnh khác.
+   - Lưu trữ siêu dữ liệu đặc thù của bằng chứng trong tài khoản "context state"
+     của bằng chứng để sử dụng trong các lệnh khác.
 
 3. Gọi lệnh
    [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604),
-   cung cấp các tài khoản trạng thái ngữ cảnh bằng chứng.
+   cung cấp các tài khoản context state của bằng chứng.
 
-4. Đóng các tài khoản trạng thái ngữ cảnh bằng chứng để thu hồi SOL đã sử dụng
-   để tạo chúng.
+4. Đóng các tài khoản context state của bằng chứng để thu hồi SOL đã dùng để tạo
+   chúng.
 
-Sơ đồ sau đây cho thấy các bước liên quan đến việc chuyển token từ tài khoản
-token của người gửi sang tài khoản token của người nhận.
+Sơ đồ sau đây mô tả các bước liên quan đến việc chuyển token từ token account
+của người gửi sang token account của người nhận.
 
 ```mermaid title="Transfer Tokens"
 sequenceDiagram
@@ -84,15 +78,14 @@ sequenceDiagram
     deactivate ElGamal
 ```
 
-### Các lệnh bắt buộc
+### Các Lệnh Bắt buộc
 
-Để chuyển token một cách bảo mật từ tài khoản token này sang tài khoản token
-khác, bạn phải:
+Để chuyển token bí mật từ token account này sang token account khác, bạn phải:
 
-- Tạo bằng chứng đẳng thức, bằng chứng tính hợp lệ của ciphertext và bằng chứng
-  phạm vi ở phía client
+- Tạo bằng chứng đẳng thức, bằng chứng tính hợp lệ của bản mã và bằng chứng phạm
+  vi phía client
 - Gọi chương trình bằng chứng Zk ElGamal để xác minh các bằng chứng và khởi tạo
-  các tài khoản "trạng thái ngữ cảnh"
+  các tài khoản "context state"
 - Gọi lệnh
   [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604)
   cung cấp ba tài khoản bằng chứng.
@@ -100,18 +93,18 @@ khác, bạn phải:
 
 Crate `spl_token_client` cung cấp các phương thức sau:
 
-- Phương thức `confidential_transfer_create_context_state_account` tạo một tài
-  khoản bằng chứng.
-- Phương thức `confidential_transfer_transfer` gọi lệnh `Transfer`.
-- Phương thức `confidential_transfer_close_context_state_account` đóng một tài
-  khoản bằng chứng.
+- Phương thức `confidential_transfer_create_context_state_account` tạo một proof
+  account.
+- Phương thức `confidential_transfer_transfer` gọi lệnh `Transfer` instruction.
+- Phương thức `confidential_transfer_close_context_state_account` đóng một proof
+  account.
 
-### Mã ví dụ
+### Mã Ví Dụ
 
-Ví dụ sau đây minh họa cách chuyển token một cách bảo mật giữa các tài khoản
-token.
+Ví dụ sau đây minh họa cách chuyển token một cách bảo mật giữa các token
+account.
 
-Để chạy ví dụ, hãy khởi động một validator cục bộ với Token Extension Program
+Để chạy ví dụ, hãy khởi động một validator cục bộ với Token Extensions Program
 được sao chép từ mainnet bằng lệnh sau. Bạn phải cài đặt Solana CLI để khởi động
 validator cục bộ.
 
@@ -120,9 +113,9 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 ```
 
 <Callout type="info">
-  Tại thời điểm viết bài, tính năng Confidential Transfers chưa được kích hoạt
-  trên validator cục bộ mặc định. Bạn phải sao chép Token Extension Program từ
-  mainnet để chạy mã ví dụ.
+  Tại thời điểm viết bài, Confidential Transfers chưa được bật trên validator
+  cục bộ mặc định. Bạn phải sao chép Token Extensions Program từ mainnet để chạy
+  mã ví dụ.
 </Callout>
 
 <CodeTabs>

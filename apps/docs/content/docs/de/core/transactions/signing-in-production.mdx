@@ -1,0 +1,77 @@
+---
+title: Signieren in der Produktion
+description:
+  Wo Signing-Keys in einer Solana-Produktionsanwendung gespeichert werden und
+  wie man zwischen lokalen Keys, Browser-Wallets, Cloud-KMS/HSM und verwalteten
+  Signing-Backends wählt.
+type: conceptual
+prerequisites:
+  - /docs/core/transactions/transaction-structure
+related:
+  - /docs/tools/keychain
+  - /docs/payments/production-readiness
+---
+
+Eine Transaktion wird nur ausgeführt, wenn sie eine gültige
+[Signatur](/docs/core/transactions/transaction-structure#signatures) von jedem
+erforderlichen Signer enthält. Während der lokalen Entwicklung wird dieser Key
+in der Regel als [`Keypair`](/developers/cookbook/wallets/create-keypair)
+gehalten und direkt signiert. In der Produktion stellt sich eine andere wichtige
+Frage: **Wo wird der private Key gespeichert, und wer ist berechtigt, eine
+Signatur damit zu autorisieren?**
+
+<Callout type="warn">
+  Private Keys dürfen niemals in clientseitigen Code eingebettet, in ein
+  Frontend gebündelt oder in die Versionskontrolle eingecheckt werden. Jeder,
+  der einen Key erlangt, erhält die vollständige Kontrolle über die Mittel des
+  jeweiligen Konten.
+</Callout>
+
+## Signier-Ansätze
+
+| Ansatz                       | Wo der Key gespeichert wird                                   | Wer signiert                                    | Am besten geeignet für                                                  |
+| ---------------------------- | ------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------- |
+| **Lokales keypair**          | Eine Datei oder Umgebungsvariable auf dem Rechner             | Ihr Code, direkt                                | Lokale Entwicklung, Tests, CI                                           |
+| **Browser-Wallet**           | Das Wallet des Endbenutzers (z. B. Phantom, Solflare)         | Der Endbenutzer, pro Transaktion                | Frontend-dApps, bei denen Benutzer ihre eigenen Transaktionen signieren |
+| **Cloud-KMS / HSM**          | Ein hardwaregestützter Key-Dienst (AWS KMS, GCP KMS, Vault)   | Ihr Backend fordert eine Signatur vom Dienst an | Backend-Dienste, Treasury-Operationen, regulierte Umgebungen            |
+| **Verwaltete / MPC-Wallets** | Aufgeteilt oder verwahrt in der Infrastruktur eines Anbieters | Der Anbieter co-signiert gemäß Ihrer Richtlinie | Eingebettete Wallets, Genehmigungsworkflows, institutionelle Verwahrung |
+
+Das lokale keypair ist der einzige Ansatz, bei dem rohes Schlüsselmaterial
+direkt in Ihrer Anwendung gespeichert wird. Jeder produktionsreife Ansatz
+bewahrt den Schlüssel in einer dedizierten Infrastruktur auf und lässt diese
+Infrastruktur in Ihrem Auftrag signieren.
+
+## Backend-Signierung
+
+Wenn ein Server signieren muss – zum Bezahlen von Fee, zum Senden von
+Programmtransaktionen oder zum Betreiben einer Treasury – verwenden Sie ein
+dediziertes Schlüsselverwaltungs-Backend anstelle eines rohen keypair. Die
+Solana Foundation pflegt [Keychain](/docs/tools/keychain), eine einheitliche
+Signing-Bibliothek (Rust und TypeScript), die eine `SolanaSigner`-Schnittstelle
+über alle Backends in der obigen Tabelle hinweg bereitstellt: Memory, HashiCorp
+Vault, AWS KMS, GCP KMS, Fireblocks, Privy, Turnkey, CDP, Crossmint, Dfns, Para,
+Openfort und Utila.
+
+Da die Schnittstelle über alle Backends hinweg identisch ist, können Sie lokal
+mit einem In-Memory-Schlüssel entwickeln und über die Konfiguration auf ein
+Produktions-Backend wechseln, ohne den Anwendungscode neu schreiben zu müssen.
+Keychain ist kompatibel mit [`@solana/kit`](/docs/clients/official/javascript)
+und dem [Rust SDK](/docs/clients/official/rust).
+
+<Cards>
+  <Card title="Keychain" href="/docs/tools/keychain">
+    Einheitliche Signierung über lokale Schlüssel, KMS, HSM und verwaltete
+    Wallet-Backends.
+  </Card>
+  <Card
+    title="Choosing a backend"
+    href="/docs/tools/keychain/choosing-a-backend"
+  >
+    Vergleichen Sie Custody-Modelle und wählen Sie das richtige Signing-Backend
+    für Ihre Anwendung.
+  </Card>
+</Cards>
+
+Die vollständige Produktions-Checkliste – Schlüsselverwaltung, RPC-Sicherheit
+und Monitoring – finden Sie unter
+[Production Readiness](/docs/payments/production-readiness).

@@ -5,33 +5,26 @@ description:
   các tính năng tùy chọn cho token mint và tài khoản.
 ---
 
-<Callout type="warn">
-  Chương trình ZK ElGamal hiện đang tạm thời bị vô hiệu hóa trên mainnet và
-  devnet do đang trải qua kiểm toán bảo mật. Điều này có nghĩa là tiện ích mở
-  rộng chuyển khoản bảo mật hiện không khả dụng. Mặc dù các khái niệm vẫn còn
-  giá trị, nhưng các ví dụ mã sẽ không chạy được.
-</Callout>
-
 ## Chuyển khoản bảo mật là gì?
 
 Chuyển khoản bảo mật cho phép bạn chuyển token giữa các token account mà không
-tiết lộ số lượng chuyển khoản. Điều này hữu ích cho các giao dịch bảo vệ quyền
-riêng tư. Chỉ có số lượng chuyển khoản và số dư token là riêng tư. Địa chỉ token
-account vẫn công khai.
+tiết lộ số lượng giao dịch. Tính năng này hữu ích cho các giao dịch bảo vệ quyền
+riêng tư. Chỉ có số lượng chuyển khoản và số dư token là được bảo mật. Địa chỉ
+của token account vẫn hiển thị công khai.
 
-- [Tổng quan giao thức](https://www.solana-program.com/docs/confidential-balances/overview) -
+- [Tổng quan về giao thức](https://www.solana-program.com/docs/confidential-balances/overview) -
   Chi tiết về giao thức mật mã cơ bản
-- [Hướng dẫn bắt đầu nhanh](https://www.solana-program.com/docs/confidential-balances#setup) -
+- [Hướng dẫn khởi động nhanh](https://www.solana-program.com/docs/confidential-balances#setup) -
   Thiết lập và các lệnh CLI cơ bản
-- [Sổ tay số dư bảo mật](https://github.com/solana-developers/Confidential-Balances-Sample) -
-  Các đoạn mã về cách sử dụng tiện ích mở rộng Confidential Transfer
+- [Confidential Balances Cookbook](https://github.com/solana-developers/Confidential-Balances-Sample) -
+  Các đoạn mã hướng dẫn cách sử dụng extension Chuyển khoản bảo mật
 
-### Nó hoạt động như thế nào?
+### Cơ chế hoạt động?
 
-Tiện ích mở rộng Confidential Transfer bổ sung các
-[lệnh](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
-vào chương trình Token Extension cho phép bạn chuyển token giữa các tài khoản mà
-không tiết lộ số lượng chuyển khoản.
+Extension Chuyển khoản bảo mật bổ sung
+[các lệnh](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
+vào Token Extensions Program, cho phép bạn chuyển token giữa các tài khoản mà
+không tiết lộ số lượng giao dịch.
 
 ```mermaid title="Confidential Transfer Basic Overview"
     sequenceDiagram
@@ -53,18 +46,16 @@ không tiết lộ số lượng chuyển khoản.
 
 Quy trình cơ bản của chuyển khoản token bảo mật như sau:
 
-1. Tạo một mint account với tiện ích mở rộng chuyển khoản bảo mật.
-2. Tạo các token account với tiện ích mở rộng chuyển khoản bảo mật cho người gửi
-   và người nhận.
+1. Tạo một mint account với extension chuyển khoản bảo mật.
+2. Tạo các token account với extension chuyển khoản bảo mật cho người gửi và
+   người nhận.
 3. Mint token vào tài khoản người gửi.
-4. **Gửi** số dư công khai của người gửi vào **số dư bảo mật đang chờ xử lý**.
-5. **Áp dụng** số dư đang chờ xử lý của người gửi vào **số dư bảo mật khả
-   dụng**.
-6. **Chuyển** token một cách bảo mật từ token account của người gửi sang token
-   account của người nhận.
-7. **Áp dụng** số dư đang chờ xử lý của người nhận vào **số dư bảo mật khả
-   dụng**.
-8. **Rút** số dư bảo mật khả dụng của người nhận về **số dư công khai**.
+4. **Nạp** số dư công khai của người gửi vào **số dư chờ xử lý bảo mật**.
+5. **Áp dụng** số dư chờ xử lý của người gửi vào **số dư khả dụng bảo mật**.
+6. **Chuyển** token bảo mật từ token account của người gửi sang token account
+   của người nhận.
+7. **Áp dụng** số dư chờ xử lý của người nhận vào **số dư khả dụng bảo mật**.
+8. **Rút** số dư khả dụng bảo mật của người nhận về **số dư công khai**.
 
 Để biết thêm chi tiết về các bước trong quy trình chuyển khoản bảo mật, xem các
 trang tương ứng:
@@ -74,13 +65,13 @@ trang tương ứng:
     title="Tạo Mint Account"
     href="/docs/tokens/extensions/confidential-transfer/create-mint"
   >
-    Cách tạo một mint account với tiện ích mở rộng Confidential Transfer
+    Cách tạo một mint account với extension Chuyển khoản bảo mật
   </Card>
   <Card
     title="Tạo Token Account"
     href="/docs/tokens/extensions/confidential-transfer/create-token-account"
   >
-    Cách cấu hình một token account với tiện ích mở rộng Confidential Transfer
+    Cách cấu hình một token account với extension Chuyển khoản bảo mật
   </Card>
   <Card
     title="Nạp Token"
@@ -89,16 +80,16 @@ trang tương ứng:
     Cách nạp token vào số dư chờ xử lý bảo mật
   </Card>
   <Card
-    title="Áp Dụng Số Dư Chờ"
+    title="Áp dụng Số dư Chờ xử lý"
     href="/docs/tokens/extensions/confidential-transfer/apply-pending-balance"
   >
-    Cách áp dụng số dư chờ vào số dư bảo mật khả dụng
+    Cách áp dụng số dư chờ xử lý vào số dư khả dụng bảo mật
   </Card>
   <Card
     title="Rút Token"
     href="/docs/tokens/extensions/confidential-transfer/withdraw-tokens"
   >
-    Cách rút token từ số dư bảo mật khả dụng
+    Cách rút token từ số dư khả dụng bảo mật
   </Card>
   <Card
     title="Chuyển Token"
@@ -107,16 +98,23 @@ trang tương ứng:
     Cách chuyển token bảo mật giữa các token account
   </Card>
   <Card
-    title="Hướng Dẫn Nhà Phát Hành"
+    title="Hướng dẫn Tích hợp"
+    href="/docs/tokens/extensions/confidential-transfer/integration-guide"
+  >
+    Cách ví, trình khám phá và sàn giao dịch có thể hỗ trợ token chuyển khoản
+    bảo mật
+  </Card>
+  <Card
+    title="Hướng dẫn Nhà phát hành"
     href="/docs/tokens/extensions/confidential-transfer/issuer-guide"
   >
-    Cách phát hành và vận hành token chuyển bảo mật (chính sách phê duyệt, kiểm
-    toán viên, phí, mint và burn)
+    Cách phát hành và vận hành token chuyển khoản bảo mật (chính sách phê duyệt,
+    kiểm toán viên, phí, mint và burn)
   </Card>
 </Cards>
 
-Sơ đồ dưới đây hiển thị trình tự chi tiết của quy trình cơ bản cho chuyển khoản
-token bảo mật:
+Sơ đồ dưới đây mô tả chi tiết trình tự luồng cơ bản cho các giao dịch token bảo
+mật:
 
 ```mermaid title="Confidential Transfer Detailed Overview"
 sequenceDiagram
@@ -261,23 +259,23 @@ sequenceDiagram
     end
 ```
 
-### Mã ví dụ
+### Mã Ví Dụ
 
-Ví dụ Rust dưới đây hiển thị các bước cho chuyển khoản token bảo mật tương ứng
-với sơ đồ trước đó. Các bước được tách thành các hàm trợ giúp để dễ hiểu hơn.
+Ví dụ Rust dưới đây trình bày các bước thực hiện giao dịch token bảo mật tương
+ứng với sơ đồ trên. Các bước được tách thành các hàm trợ giúp để dễ đọc hơn.
 
-Để chạy ví dụ, khởi động validator cục bộ với Token Extension Program được sao
-chép từ mainnet bằng lệnh sau. Bạn phải cài đặt Solana CLI để sử dụng validator
-cục bộ.
+Để chạy ví dụ, hãy khởi động một validator cục bộ với Token Extensions Program
+được sao chép từ mainnet bằng lệnh sau. Bạn phải cài đặt Solana CLI để sử dụng
+validator cục bộ.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Tại thời điểm viết bài, chuyển khoản bảo mật chưa được kích hoạt trên
-  validator cục bộ mặc định. Bạn phải sao chép Token Extension Program từ
-  mainnet để chạy mã ví dụ.
+  Tại thời điểm viết bài, Confidential Transfers chưa được bật trên validator
+  cục bộ mặc định. Bạn phải sao chép Token Extensions Program từ mainnet để chạy
+  mã ví dụ.
 </Callout>
 
 <CodeTabs>
@@ -1158,26 +1156,26 @@ tokio = { version = "1.44.2", features = ["full"] }
 
 </CodeTabs>
 
-## Các lệnh chuyển khoản bảo mật
+## Các Lệnh Confidential Transfer
 
 Danh sách đầy đủ các
 [lệnh](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
-tiện ích mở rộng chuyển khoản bảo mật như sau:
+của extension Confidential Transfer như sau:
 
-| Lệnh                                | Mô tả                                                                                                                                                             |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _rs`InitializeMint`_                | Thiết lập mint account cho chuyển khoản bảo mật. Lệnh này phải được bao gồm trong cùng giao dịch với lệnh _rs`TokenInstruction::InitializeMint`_.                 |
-| _rs`UpdateMint`_                    | Cập nhật cài đặt chuyển khoản bảo mật cho mint.                                                                                                                   |
-| _rs`ConfigureAccount`_              | Thiết lập token account cho chuyển khoản bảo mật.                                                                                                                 |
-| _rs`ApproveAccount`_                | Phê duyệt token account cho chuyển khoản bảo mật nếu mint yêu cầu phê duyệt cho token account mới.                                                                |
-| _rs`EmptyAccount`_                  | Làm trống số dư bảo mật đang chờ xử lý và khả dụng để cho phép đóng token account.                                                                                |
-| _rs`Deposit`_                       | Chuyển đổi số dư token công khai thành số dư bảo mật đang chờ xử lý.                                                                                              |
-| _rs`Withdraw`_                      | Chuyển đổi số dư bảo mật khả dụng trở lại số dư công khai.                                                                                                        |
-| _rs`Transfer`_                      | Chuyển token giữa các token account một cách bảo mật.                                                                                                             |
-| _rs`ApplyPendingBalance`_           | Chuyển đổi số dư đang chờ xử lý thành số dư khả dụng sau khi gửi hoặc chuyển khoản.                                                                               |
-| _rs`EnableConfidentialCredits`_     | Cho phép token account nhận chuyển khoản token bảo mật.                                                                                                           |
-| _rs`DisableConfidentialCredits`_    | Chặn chuyển khoản bảo mật đến trong khi vẫn cho phép chuyển khoản công khai.                                                                                      |
-| _rs`EnableNonConfidentialCredits`_  | Cho phép token account nhận chuyển khoản token công khai.                                                                                                         |
-| _rs`DisableNonConfidentialCredits`_ | Chặn chuyển khoản thông thường để tài khoản chỉ nhận chuyển khoản bảo mật.                                                                                        |
-| _rs`TransferWithFee`_               | Chuyển token giữa các token account một cách bảo mật với phí.                                                                                                     |
-| _rs`ConfigureAccountWithRegistry`_  | Cách thay thế để cấu hình token account cho chuyển khoản bảo mật bằng cách sử dụng tài khoản _rs`ElGamalRegistry`_ thay vì bằng chứng _rs`VerifyPubkeyValidity`_. |
+| Lệnh                                | Mô tả                                                                                                                                                  |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| _rs`InitializeMint`_                | Thiết lập mint account cho các giao dịch bảo mật. Lệnh này phải được bao gồm trong cùng một giao dịch với lệnh _rs`TokenInstruction::InitializeMint`_. |
+| _rs`UpdateMint`_                    | Cập nhật cài đặt giao dịch bảo mật cho một mint.                                                                                                       |
+| _rs`ConfigureAccount`_              | Thiết lập một token account cho các giao dịch bảo mật.                                                                                                 |
+| _rs`ApproveAccount`_                | Phê duyệt một token account cho các giao dịch bảo mật nếu mint yêu cầu phê duyệt cho các token account mới.                                            |
+| _rs`EmptyAccount`_                  | Xóa số dư bảo mật đang chờ xử lý và khả dụng để cho phép đóng một token account.                                                                       |
+| _rs`Deposit`_                       | Chuyển đổi số dư token công khai thành số dư bảo mật đang chờ xử lý.                                                                                   |
+| _rs`Withdraw`_                      | Chuyển đổi số dư bảo mật khả dụng trở lại thành số dư công khai.                                                                                       |
+| _rs`Transfer`_                      | Chuyển token giữa các token account một cách bảo mật.                                                                                                  |
+| _rs`ApplyPendingBalance`_           | Chuyển đổi số dư đang chờ xử lý thành số dư khả dụng sau khi nạp tiền hoặc chuyển khoản.                                                               |
+| _rs`EnableConfidentialCredits`_     | Cho phép một token account nhận các giao dịch token bảo mật.                                                                                           |
+| _rs`DisableConfidentialCredits`_    | Chặn các giao dịch bảo mật đến trong khi vẫn cho phép các giao dịch công khai.                                                                         |
+| _rs`EnableNonConfidentialCredits`_  | Cho phép một token account nhận các giao dịch token công khai.                                                                                         |
+| _rs`DisableNonConfidentialCredits`_ | Chặn các giao dịch thông thường để tài khoản chỉ nhận các giao dịch bảo mật.                                                                           |
+| _rs`TransferWithFee`_               | Chuyển token giữa các token account một cách bảo mật kèm phí.                                                                                          |
+| _rs`ConfigureAccountWithRegistry`_  | Cách thay thế để cấu hình token account cho các giao dịch bảo mật bằng tài khoản _rs`ElGamalRegistry`_ thay vì bằng chứng _rs`VerifyPubkeyValidity`_.  |

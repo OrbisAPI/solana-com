@@ -23,44 +23,33 @@ bleiben. Sie basieren auf dem ZK ElGamal Proof Program zur
 Onchain-Proof-Verifizierung, sodass der Mint auf Clustern verwendet werden kann,
 auf denen dieses Programm aktiviert ist.
 
-<Callout type="warn" title="Verfügbarkeit">
-  Vertrauliche Übertragungen erfordern das Token-2022
-  [`program@v11.0.0`](https://github.com/solana-program/token-2022/releases/tag/program%40v11.0.0)
-  oder höher. Sie sind heute im Devnet verfügbar und sollen im Juni 2026 im
-  Mainnet aktiviert werden. Das Token Extensions Program wird separat auf jedem
-  Cluster deployed, daher sollten Sie das Deployment auf dem von Ihnen
-  verwendeten Cluster bestätigen.
-</Callout>
-
 ## Entscheidungen bei der Erstellung
 
-Die Confidential Transfer-Erweiterung muss vor der Initialisierung des Mints
-initialisiert werden und kann nicht nachträglich hinzugefügt werden. Bei der
-Erstellung entscheiden Sie:
+Die Confidential Transfer-Erweiterung muss vor der Mint initialisiert werden und
+kann später nicht mehr hinzugefügt werden. Bei der Erstellung entscheiden Sie:
 
-- **Genehmigungsrichtlinie**: ob Konten sich ohne Genehmigung in vertrauliche
-  Übertragungen einwählen dürfen (`auto`) oder durch die Confidential
-  Transfer-Autorität des Mints genehmigt werden müssen (`manual`).
-- **Prüfer**: ob ein globaler ElGamal-pubkey für einen Prüfer festgelegt werden
-  soll, damit eine bestimmte Partei jeden Übertragungsbetrag für den Mint
+- **Genehmigungsrichtlinie**: Ob Konten sich ohne Genehmigung in vertrauliche
+  Transfers einschreiben dürfen (`auto`) oder von der Confidential
+  Transfer-Autorität der Mint genehmigt werden müssen (`manual`).
+- **Prüfer**: Ob ein globaler ElGamal-pubkey für einen Prüfer festgelegt werden
+  soll, damit eine bestimmte Partei jeden Transferbetrag für die Mint
   entschlüsseln kann. Optional und kann später geändert werden.
-- **Optionale Begleiterweiterungen**: vertrauliche Übertragungs-Fee (kombiniert
-  mit der Übertragungs-Fee-Erweiterung) und vertrauliche Prägung/Verbrennung,
-  beide werden unten behandelt. Diese müssen ebenfalls bei der Erstellung
-  initialisiert werden.
+- **Optionale Begleiterweiterungen**: Vertrauliche Transfer-Fee (in Kombination
+  mit der Transfer-Fee-Erweiterung) und vertrauliches Mint/Burn, beide unten
+  beschrieben. Diese müssen ebenfalls bei der Erstellung initialisiert werden.
 
 ## Eine vertrauliche Mint erstellen
 
 Die CLI legt die Genehmigungsrichtlinie mit
-`--enable-confidential-transfers auto` oder `manual` fest; `auto` erlaubt jedem
-Inhaber, sein eigenes Konten selbst zu konfigurieren, während `manual` dies
-hinter der Genehmigung durch die Confidential-Transfer-Autorität absichert (die
-standardmäßig der Mint-Autorität entspricht). Die Client-Pfade verwenden
-dieselben Einstellungen über die `ConfidentialTransferMint`-Parameter: eine
-Autorität, das Auto-Approve-Flag und einen optionalen Auditor-Schlüssel. Sowohl
-die Genehmigungsrichtlinie als auch der Auditor können später geändert werden
-(siehe [Einen Auditor konfigurieren](#configure-an-auditor)); nur das
-Vorhandensein der Erweiterung selbst ist bei der Erstellung festgelegt.
+`--enable-confidential-transfers auto` oder `manual` fest; `auto` erlaubt es
+jedem Inhaber, sein eigenes Konto zu konfigurieren, während `manual` dies an die
+Genehmigung durch die Confidential Transfer-Autorität (die standardmäßig der
+Mint-Autorität entspricht) knüpft. Die Client-Pfade verwenden dieselben
+Einstellungen über die `ConfidentialTransferMint`-Parameter: eine Autorität, das
+Auto-Approve-Flag und einen optionalen Prüferschlüssel. Sowohl die
+Genehmigungsrichtlinie als auch der Prüfer können später geändert werden (siehe
+[Prüfer konfigurieren](#configure-an-auditor)); nur das Vorhandensein der
+Erweiterung selbst ist bei der Erstellung festgelegt.
 
 <CodeTabs>
 
@@ -132,23 +121,24 @@ const instructions = [
 
 </CodeTabs>
 
-## Einen Auditor konfigurieren
+## Einen Prüfer konfigurieren
 
-Ein globaler Auditor ist ein ElGamal-pubkey, der auf der Mint gespeichert ist.
-Wenn er gesetzt ist, verschlüsselt jeder vertrauliche Transfer seinen Betrag
-zusätzlich unter diesem Schlüssel, sodass derjenige, der den entsprechenden
-geheimen Schlüssel besitzt, alle Transferbeträge für die Mint entschlüsseln
-kann. So bleiben vertrauliche Transfers mit Prüf- und Compliance-Anforderungen
-kompatibel: Die Öffentlichkeit sieht nichts, der Auditor sieht alles.
+Ein globaler Prüfer ist ein ElGamal-pubkey, der auf der Mint gespeichert ist.
+Wenn dieser festgelegt ist, verschlüsselt jeder vertrauliche Transfer seinen
+Betrag zusätzlich unter diesem Schlüssel, sodass derjenige, der den
+entsprechenden geheimen Schlüssel besitzt, alle Transferbeträge für die Mint
+entschlüsseln kann. So bleiben vertrauliche Transfers mit Prüf- und
+Compliance-Anforderungen kompatibel: Die Öffentlichkeit sieht nichts, der Prüfer
+sieht alles.
 
-Die Confidential-Transfer-Autorität kann den Auditor jederzeit festlegen,
-rotieren oder entfernen. Dieselbe Operation aktualisiert auch die
+Die Autorität für vertrauliche Übertragungen kann den Auditor jederzeit
+festlegen, rotieren oder entfernen. Dieselbe Operation aktualisiert auch die
 Genehmigungsrichtlinie. In der CLI ist der Auditor-Schlüssel eine
-Base64-Kodierung eines ElGamal-pubkey; übergeben Sie `--auditor-pubkey none`, um
-ihn zu entfernen, und `--approve-policy auto|manual`, um die Richtlinie zu
-ändern.
+Base64-Kodierung eines ElGamal-öffentlichen Schlüssels; übergeben Sie
+`--auditor-pubkey none`, um ihn zu entfernen, und
+`--approve-policy auto|manual`, um die Richtlinie zu ändern.
 
-Die Rotation betrifft nur zukünftige Transfers. Beträge in bereits auf der Chain
+Die Rotation betrifft nur zukünftige Übertragungen. Beträge in bereits on-chain
 befindlichen Transaktionen bleiben mit dem Auditor-Schlüssel verschlüsselt, der
 zum Zeitpunkt ihrer Ausführung aktiv war. Bewahren Sie daher alte
 Auditor-Schlüssel auf, wenn Sie historische Aktivitäten entschlüsseln müssen.
@@ -184,20 +174,20 @@ const ix = getUpdateConfidentialTransferMintInstruction({
 </CodeTabs>
 
 <Callout type="warn">
-  Der geheime Auditor-Schlüssel kann jeden Transferbetrag für die Mint
+  Der geheime Auditor-Schlüssel kann jeden Überweisungsbetrag für den Mint
   entschlüsseln. Verwahren Sie ihn mit derselben Sorgfalt wie einen
-  Signaturschlüssel, und planen Sie eine Rotation ein. Den Auditor auf `None` zu
-  setzen deaktiviert die Betragstransparenz für alle außer den Konten- Inhabern
-  selbst.
+  Signing-Schlüssel, und planen Sie eine Rotation ein. Wenn der Auditor auf
+  `None` gesetzt wird, wird die Betragsanzeige für alle deaktiviert, außer für
+  die Konten-Inhaber selbst.
 </Callout>
 
 ## Konten genehmigen (manuelle Richtlinie)
 
-Bei einer manuellen Genehmigungsrichtlinie kann ein Konto, das für vertrauliche
-Überweisungen konfiguriert ist, erst dann vertraulich Transaktionen durchführen,
-wenn die Autorität für vertrauliche Überweisungen es genehmigt. Dies gibt
-Ausstellern eine Kontrollmöglichkeit für Allowlist- oder KYC-geprüfte
-Teilnehmer. Die CLI stellt keinen Genehmigungsbefehl bereit, daher erfolgt die
+Mit einer manuellen Genehmigungsrichtlinie kann ein für vertrauliche
+Übertragungen konfiguriertes Konto keine vertraulichen Transaktionen
+durchführen, bis die Autorität für vertrauliche Übertragungen es genehmigt. Dies
+gibt Ausstellern eine Kontrollfunktion für Allowlist- oder KYC-geprüfte
+Teilnehmer. Die CLI bietet keinen Genehmigungsbefehl, daher erfolgt die
 Genehmigung über einen Client.
 
 <CodeTabs>
@@ -224,27 +214,27 @@ const ix = getApproveConfidentialTransferAccountInstruction({
 
 </CodeTabs>
 
-## Fee für vertrauliche Überweisungen
+## Vertrauliche Überweisungsgebühren
 
 Wenn Ihr Mint eine [Überweisungsgebühr](/docs/tokens/extensions/transfer-fees)
-erhebt und Überweisungen vertraulich sind, muss die Fee ebenfalls vertraulich
-einbehalten werden. Die Erweiterung `ConfidentialTransferFeeConfig` übernimmt
-dies und wird bei der Mint-Erstellung zusammen mit der Überweisungsgebühr- und
-der Vertrauliche-Überweisungen-Erweiterung initialisiert.
+erhebt und Übertragungen vertraulich sind, muss die Fee ebenfalls vertraulich
+einbehalten werden. Die `ConfidentialTransferFeeConfig`-Erweiterung übernimmt
+dies und wird bei der Mint-Erstellung zusammen mit der Überweisungsgebühr und
+den Erweiterungen für vertrauliche Übertragungen initialisiert.
 
-Einbehaltene Fee akkumulieren verschlüsselt auf Empfänger-Konten, werden zum
-Mint übertragen und anschließend von der Autorität zum Abheben einbehaltener
-Beträge ausgezahlt. Jeder Fee-Betrag bleibt dabei durchgehend verschlüsselt. All
-dies ist über die CLI nicht zugänglich. Der ElGamal-Geheimschlüssel der
-Autorität zum Abheben einbehaltener Beträge kann einbehaltene Fee-Beträge
-entschlüsseln, was in Kombination mit den öffentlichen Fee-Parametern
-Rückschlüsse auf Überweisungsbeträge ermöglichen kann – behandeln Sie diesen
-Schlüssel daher als vertraulich.
+Einbehaltene Gebühren werden verschlüsselt auf den Empfänger-Konten angesammelt,
+zum Mint übertragen und anschließend von der Autorität zum Abheben einbehaltener
+Beträge abgehoben. Jeder Gebührenbetrag bleibt dabei durchgehend verschlüsselt.
+Dies ist über die CLI nicht zugänglich. Der geheime ElGamal-Schlüssel der
+Abhebe-Autorität kann einbehaltene Gebührenbeträge entschlüsseln, was in
+Kombination mit den öffentlichen Gebührenparametern Rückschlüsse auf
+Überweisungsbeträge ermöglichen kann – behandeln Sie diesen Schlüssel daher als
+sensibel.
 
 ### Fee-Konfiguration initialisieren
 
 Fügen Sie dies zusammen mit `ConfidentialTransferMint` und der
-Überweisungsgebühren-Konfiguration in derselben Mint-Erstellung ein.
+Transfer-Fee-Konfiguration bei der Erstellung desselben Mint ein.
 
 <CodeTabs>
 
@@ -271,17 +261,16 @@ const ix = getInitializeConfidentialTransferFeeInstruction({
 
 ### Einbehaltene Fee einsammeln und abheben
 
-Das Einsammeln verschiebt die verschlüsselten einbehaltenen Fee von Konten in
-den Mint; das Abheben verschiebt sie aus dem Mint auf ein gewähltes Konto. Zwei
-Autoritäten sind beteiligt, von denen jede von der Mint-Autorität abweichen
-kann:
+Beim Einsammeln werden die verschlüsselten einbehaltenen Fee von den Konten in
+den Mint verschoben; beim Abheben werden sie aus dem Mint auf ein gewähltes
+Konto übertragen. Dabei sind zwei Autoritäten beteiligt, die sich beide von der
+Mint-Autorität unterscheiden können:
 
-- Die **Autorität für vertrauliche Überweisungsgebühren** (das `authority`, das
-  auf `ConfidentialTransferFeeConfig` gesetzt ist) aktiviert oder deaktiviert
-  das Einsammeln.
-- Die **Autorität zum Abheben einbehaltener Beträge** (aus dem
-  `TransferFeeConfig` der Überweisungsgebührenerweiterung) hebt die
-  eingesammelten Fee aus dem Mint ab.
+- Die **Confidential-Transfer-Fee-Autorität** (die `authority`, die auf
+  `ConfidentialTransferFeeConfig` gesetzt ist) aktiviert oder deaktiviert das
+  Einsammeln.
+- Die **Withdraw-Withheld-Autorität** (aus dem `TransferFeeConfig` der
+  Transfer-Fee-Erweiterung) hebt die eingesammelten Fee aus dem Mint ab.
 
 Abhebungen erfordern einen Gleichheits- und einen Bereichsnachweis, der inline
 bereitgestellt oder in Kontextzustands-Konten verifiziert wird.
@@ -329,38 +318,38 @@ const harvestIx =
 
 </CodeTabs>
 
-Im JS-Client erfordert das Abheben der geernteten Fee aus dem Mint
+Im JS-Client erfordert das Abheben der eingesammelten Fee aus dem Mint
 (`getWithdrawWithheldTokensFromMintForConfidentialTransferFeeInstruction`)
 zusätzlich einen Gleichheits- und einen Bereichsnachweis, der in
-Kontextzustands-Konten verifiziert wird. Daher folgt es demselben
-Nachweis-Konten-Muster wie eine vertrauliche Übertragung.
+Kontextzustands-Konten verifiziert wurde, und folgt daher demselben
+Proof-Account-Muster wie ein vertraulicher Transfer.
 
 ## Vertrauliches Prägen und Verbrennen
 
 Die Erweiterung `ConfidentialMintBurn` ermöglicht es der Mint-Autorität, Angebot
 direkt gegen vertrauliche Salden auszugeben und zu verbrennen, wobei das
 Gesamtangebot verschlüsselt bleibt. Ein Mint mit dieser Erweiterung deaktiviert
-den öffentlichen Einzahlungs- und Abhebungspfad, da Token ausschließlich
-vertraulich existieren. Siehe die
-[Protokolldokumentation](https://www.solana-program.com/docs/confidential-balances)
-für das vollständige Modell.
+den öffentlichen Ein- und Auszahlungspfad, da Token ausschließlich vertraulich
+existieren. Weitere Informationen zum vollständigen Modell finden Sie in der
+[Protokolldokumentation](https://www.solana-program.com/docs/confidential-balances).
 
 <Callout type="info">
-  Vertrauliches Prägen/Verbrennen ist am einfachsten über den Rust
-  `spl-token-client`, der die erforderlichen Nachweise generiert und die
-  Transaktionen für Sie sequenziert. Der `@solana-program/token-2022` JS-Client
-  liefert die Low-Level-Anweisungen-Builder (`getConfidentialMintInstruction`,
-  `getConfidentialBurnInstruction` und weitere), aber keinen High-Level-Helfer
-  zum Erstellen der Nachweise, und es gibt keine CLI-Befehle, daher sind die
-  folgenden Beispiele nur in Rust.
+  Vertrauliches Prägen/Verbrennen ist am einfachsten über das
+  Rust-`spl-token-client` möglich, das die erforderlichen Nachweise generiert
+  und die Transaktionen für Sie sequenziert. Der `@solana-program/token-2022`
+  JS-Client enthält die Low-Level-Anweisungs- Builder
+  (`getConfidentialMintInstruction`, `getConfidentialBurnInstruction` und
+  weitere), jedoch keinen High-Level-Helfer zum Erstellen der Nachweise, und es
+  gibt keine CLI-Befehle – die folgenden Beispiele sind daher nur in Rust
+  verfügbar.
 </Callout>
 
-Initialisieren Sie die Erweiterung bei der Mint-Erstellung, und prägen,
-verbrennen und gleichen Sie das Angebot dann im Laufe der Zeit ab. Beim Prägen
-wird ein verschlüsselter Betrag in das vertrauliche Guthaben eines Empfängers
-ausgegeben; beim Verbrennen wird ein verschlüsselter Betrag in ein ausstehendes
-Verbrennen überführt, das später in das Angebot eingerechnet wird. Beide
-Vorgänge erzeugen Nachweise wie bei einer vertraulichen Übertragung.
+Initialisieren Sie die Erweiterung bei der Mint-Erstellung, dann können Sie den
+Vorrat über die Zeit minten, burnen und abgleichen. Beim Minting wird ein
+verschlüsselter Betrag in das vertrauliche Guthaben eines Empfängers ausgegeben;
+beim Burning wird ein verschlüsselter Betrag in einen ausstehenden Burn
+überführt, der später in den Vorrat eingerechnet wird. Beide Vorgänge erzeugen
+Nachweise wie eine vertrauliche Übertragung.
 
 <CodeTabs>
 
@@ -418,29 +407,29 @@ token
 
 </CodeTabs>
 
-Rotieren Sie den Angebots-Verschlüsselungsschlüssel mit
-`confidential_transfer_rotate_supply_elgamal_pubkey` (das ausstehende Verbrennen
-muss zuvor null sein), und aktualisieren Sie den lesbaren Angebots-Chiffretext
-mit `confidential_transfer_update_decrypt_supply`.
+Rotieren Sie den Vorrat-Verschlüsselungsschlüssel mit
+`confidential_transfer_rotate_supply_elgamal_pubkey` (der ausstehende Burn muss
+zuerst null sein), und aktualisieren Sie den lesbaren Vorrat-Chiffretext mit
+`confidential_transfer_update_decrypt_supply`.
 
-## Betriebs- und Compliance-Überlegungen
+## Betriebliche und Compliance-Überlegungen
 
-- **Verwahrung des Prüfer-Schlüssels.** Wenn Sie einen Prüfer festlegen, ist der
-  geheime Prüfer-Schlüssel ein hochwertiger Entschlüsselungsschlüssel. Verwahren
-  und rotieren Sie ihn sorgfältig, und legen Sie fest, wer in Ihrer Organisation
-  (oder welche Regulierungsbehörde) ihn besitzt.
-- **Compliance-Haltung.** Adressen-Screening und die Analyse des
+- **Verwahrung des Prüferschlüssels.** Wenn Sie einen Prüfer festlegen, ist der
+  geheime Prüferschlüssel ein hochwertiger Entschlüsselungsschlüssel. Bewahren
+  Sie ihn sorgfältig auf, rotieren Sie ihn regelmäßig und entscheiden Sie, wer
+  in Ihrer Organisation (oder welche Regulierungsbehörde) ihn verwahrt.
+- **Compliance-Ausrichtung.** Die Adressprüfung und die Analyse des
   Gegenpartei-Graphen funktionieren weiterhin, da Adressen öffentlich bleiben.
-  Die betragsbasierte Überwachung hängt vom Prüfer-Schlüssel oder von der
-  selektiven Offenlegung durch Konten-Inhaber ab. Legen Sie Ihren Ansatz vor dem
+  Die betragsbasierte Überwachung hängt vom Prüferschlüssel oder von der
+  selektiven Offenlegung durch Konteninhaber ab. Legen Sie Ihren Ansatz vor dem
   Launch fest.
 - **Onboarding von Inhabern.** Die Konfiguration eines vertraulichen Konten
-  erfordert die Unterschrift des Eigentümers. Um Konten für Benutzer reibungslos
-  bereitzustellen, lassen Sie diese einmalig einen ElGamal-Schlüssel
-  registrieren und verwenden Sie den Registry-Pfad, der im
+  erfordert die Unterschrift des Inhabers. Um Konten für Benutzer reibungslos
+  bereitzustellen, lassen Sie sie einmalig einen ElGamal-Schlüssel registrieren
+  und verwenden Sie den Registry-Pfad, der im
   [Integrationsleitfaden](/docs/tokens/extensions/confidential-transfer/integration-guide#creating-and-configuring-accounts)
   beschrieben ist.
-- **Transaktionsanzahl.** Eine vertrauliche Übertragung umfasst derzeit mehrere
+- **Transaktionsanzahl.** Eine vertrauliche Übertragung umfasst derzeit einige
   abhängige Transaktionen, da die Nachweise das aktuelle Transaktionsgrößenlimit
-  überschreiten. Das Transaktionsformat v1 (wird mit Agave v4.2 eingeführt)
-  erhöht dieses Limit und soll eine einzelne Onchain-Transaktion ermöglichen.
+  überschreiten. Das Transaktionsformat v1 (mit Agave v4.2 eingeführt) erhöht
+  dieses Limit und soll eine einzelne Onchain-Transaktion ermöglichen.

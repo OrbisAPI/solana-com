@@ -3,23 +3,18 @@ title: 保留残高の適用
 description: 資金を利用可能にするために保留残高を適用する方法を学びます。
 ---
 
-<Callout type="warn">
-  ZK
-  ElGamalプログラムは、セキュリティ監査を受けているため、メインネットとdevnetで一時的に無効化されています。これは、機密転送拡張機能が現在利用できないことを意味します。概念は依然として有効ですが、コード例は実行されません。
-</Callout>
-
 ## 保留残高を利用可能残高に適用する方法
 
-トークンを機密的に転送する前に、公開トークン残高を機密残高に変換する必要があります。この変換は2つの段階で行われます。
+トークンを秘密裏に転送する前に、公開トークン残高を秘密残高に変換する必要があります。この変換は2段階で行われます：
 
-1. **機密保留残高**: 最初に、トークンは公開残高から「保留」機密残高に「入金」されます。
-2. **機密利用可能残高**: 次に、保留残高が利用可能残高に「適用」され、トークンが機密転送に利用可能になります。
+1. **秘密保留残高**：まず、トークンが公開残高から「保留中」の秘密残高に「預け入れ」られます。
+2. **秘密利用可能残高**：次に、保留残高が利用可能残高に「適用」され、トークンが秘密転送に使用できる状態になります。
 
-このセクションでは、2番目の段階である保留残高を利用可能残高に適用することについて説明します。
+このセクションでは、第2段階である保留残高を利用可能残高に適用する手順について説明します。
 
-トークンが公開残高から「入金」されるとき、またはトークンがあるtoken
-accountから別のtoken
-accountに機密的に転送されるとき、トークンは最初に機密保留残高に追加されます。トークンを機密転送に使用する前に、保留残高を利用可能残高に「適用」する必要があります。
+トークンが公開残高から「預け入れ」られる場合、またはトークンがある token
+account から別の token
+account へ秘密裏に転送される場合、トークンは最初に秘密保留残高に追加されます。トークンを秘密転送に使用するには、保留残高を利用可能残高に「適用」する必要があります。
 
 ```mermaid title="Apply Pending Balance"
 sequenceDiagram
@@ -39,7 +34,7 @@ CC->>BB: Transfer
 B->>BB: Apply
 ```
 
-次の図は、保留残高を利用可能残高に適用する際の手順を示しています。
+次の図は、保留残高を利用可能残高に適用する際の手順を示しています：
 
 ```mermaid title="Apply Pending Balance"
 sequenceDiagram
@@ -60,28 +55,33 @@ sequenceDiagram
     Note over TokenAccount: Tokens now in available confidential balance<br>ready for confidential transfers
 ```
 
-### 必要な命令
+### 必要な instructions
 
-保留残高を利用可能残高に変換するには、[ConfidentialTransferInstruction::ApplyPendingBalance](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1152)命令を呼び出します。
+保留残高を利用可能残高に変換するには、
+[ConfidentialTransferInstruction::ApplyPendingBalance](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1152)
+instructionsを呼び出してください。
 
-`spl_token_client`クレートは、以下の例で示されているように、`ApplyPendingBalance`命令を含むトランザクションを構築して送信する`confidential_transfer_apply_pending_balance`メソッドを提供します。
+`spl_token_client` クレートは、以下の例に示すように、`ApplyPendingBalance`
+instructionsを含むトランザクションを構築して送信する
+`confidential_transfer_apply_pending_balance` メソッドを提供しています。
 
 ### サンプルコード
 
-以下の例は、機密保留残高を機密利用可能残高に適用する方法を示しています。
+次の例では、秘密保留残高を秘密利用可能残高に適用する方法を示しています。
 
-この例を実行するには、次のコマンドを使用して、mainnetからクローンしたToken
+例を実行するには、以下のコマンドを使用して、メインネットからクローンした Token
 Extension
-Programを使用してローカルバリデータを起動します。ローカルバリデータを起動するには、Solana
-CLIがインストールされている必要があります。
+Program を使用してローカル validator を起動してください。ローカル validator を起動するには、Solana
+CLI がインストールされている必要があります。
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  執筆時点では、機密転送はデフォルトのローカルバリデータでは有効になっていません。サンプルコードを実行するには、mainnetのToken
-  Extension Programをクローンする必要があります。
+  執筆時点では、Confidential Transfers はデフォルトのローカル validator
+  では有効になっていません。サンプルコードを実行するには、メインネットの Token
+  Extension Program をクローンする必要があります。
 </Callout>
 
 <CodeTabs>

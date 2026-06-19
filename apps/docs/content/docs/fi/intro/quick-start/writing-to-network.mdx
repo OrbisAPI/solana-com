@@ -827,3 +827,11 @@ console.log("Mint Account:", mintAccount);
 ```
 
 </ScrollyCoding>
+
+<Callout type="info">
+  Nämä esimerkit käyttävät `generatedPayer()` luomaan väliaikaisen keypair
+  paikallista testausta varten. Tuotantosovellukset eivät koskaan saa säilyttää
+  raakoja yksityisiä avaimia koodissa — delegoi allekirjoitus
+  avaintenhallintapalvelimelle. Katso [Allekirjoitus
+  tuotannossa](/docs/core/transactions/signing-in-production).
+</Callout>

@@ -3,43 +3,37 @@ title: سحب الرموز
 description: تعلم كيفية سحب الرموز من الحالة السرية.
 ---
 
-<Callout type="warn">
-  برنامج ZK ElGamal معطل مؤقتاً على الشبكة الرئيسية وشبكة التطوير حيث يخضع
-  لتدقيق أمني. هذا يعني أن ملحق التحويلات السرية غير متاح حالياً. بينما المفاهيم
-  لا تزال صالحة، فإن أمثلة الكود لن تعمل.
-</Callout>
+## كيفية سحب الرموز المميزة من الرصيد المتاح السري
 
-## كيفية سحب الرموز من الرصيد السري المتاح
-
-لسحب الرموز من الرصيد السري المتاح إلى الرصيد العام:
+لسحب الرموز المميزة من الرصيد المتاح السري إلى الرصيد العام:
 
 1. أنشئ
-   [إثباتين](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/proof-generation/src/withdraw.rs#L22)
-   من جانب العميل:
+   [دليلَين](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/proof-generation/src/withdraw.rs#L22)
+   على جانب العميل:
 
-   **إثبات المساواة
+   **دليل المساواة
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
-   يتحقق من أن النص المشفر للرصيد المتاح المتبقي بعد السحب يطابق
+   يتحقق من أن نص الرصيد المتاح المتبقي المشفر بعد عملية السحب يتطابق مع
    [التزام Pedersen](https://en.wikipedia.org/wiki/Commitment_scheme) المقابل
-   له، مما يضمن حساب الرصيد المتاح الجديد للحساب بشكل صحيح كـ
+   له، مما يضمن أن الرصيد المتاح الجديد للحساب محسوب بشكل صحيح على أنه
    `remaining_balance = current_balance - withdraw_amount`.
 
-   **إثبات النطاق
+   **دليل النطاق
    ([BatchedRangeProofU64Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u64.rs#L37))**:
-   يتحقق من أن الرصيد المتاح المتبقي بعد السحب غير سالب وضمن نطاق محدد.
+   يتحقق من أن الرصيد المتاح المتبقي بعد السحب غير سلبي وضمن نطاق محدد.
 
-2. لكل إثبات:
-   - استدعِ برنامج إثبات ZK ElGamal للتحقق من بيانات الإثبات.
-   - خزّن البيانات الوصفية الخاصة بالإثبات في حساب "حالة سياق الإثبات"
-     لاستخدامها في تعليمات أخرى.
+2. لكل دليل:
+   - استدعِ برنامج دليل ZK ElGamal للتحقق من بيانات الدليل.
+   - احفظ البيانات الوصفية الخاصة بالدليل في حساب "حالة السياق" للدليل لاستخدامه
+     في التعليمات الأخرى.
 
 3. استدعِ تعليمة
    [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
-   مع توفير حسابي الإثبات.
+   مع تزويدها بحسابَي الدليلين.
 
-4. أغلق حسابات الإثبات لاسترداد SOL المستخدم لإنشائها.
+4. أغلق حسابات الدليل لاسترداد SOL المستخدمة في إنشائها.
 
-يوضح الرسم التخطيطي التالي الخطوات المتضمنة في سحب الرموز من الرصيد السري المتاح
+يوضح المخطط التالي الخطوات المتبعة في سحب الرموز المميزة من الرصيد المتاح السري
 إلى الرصيد العام:
 
 ```mermaid title="Withdraw Tokens"
@@ -69,40 +63,40 @@ sequenceDiagram
 
 ### التعليمات المطلوبة
 
-لسحب الرموز من الرصيد السري المتاح إلى الرصيد العام، يجب عليك:
+لسحب الرموز المميزة من الرصيد المتاح السري إلى الرصيد العام، يجب عليك:
 
-- توليد إثبات مساواة وإثبات نطاق من جانب العميل
-- استدعاء برنامج إثبات Zk ElGamal للتحقق من الإثباتات وتهيئة حسابات "حالة
-  السياق"
+- إنشاء دليل مساواة ودليل نطاق على جانب العميل
+- استدعاء برنامج دليل Zk ElGamal للتحقق من الأدلة وتهيئة حسابات "حالة السياق"
 - استدعاء تعليمة
   [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
-  مع توفير حسابي الإثبات.
-- إغلاق حسابي الإثبات لاسترداد الإيجار.
+  مع تزويدها بحسابَي الدليلين.
+- إغلاق حسابَي الدليلين لاسترداد rent.
 
-توفر حزمة `spl_token_client` الطرق التالية:
+تُوفر حزمة `spl_token_client` الأساليب التالية:
 
-- طريقة `confidential_transfer_create_context_state_account` التي تنشئ حساب
-  إثبات.
-- طريقة `confidential_transfer_withdraw` التي تستدعي تعليمة `Withdraw`.
-- طريقة `confidential_transfer_close_context_state_account` التي تغلق حساب
-  الإثبات.
+- الأسلوب `confidential_transfer_create_context_state_account` الذي ينشئ حساب
+  دليل.
+- الأسلوب `confidential_transfer_withdraw` الذي يستدعي تعليمة `Withdraw`.
+- الأسلوب `confidential_transfer_close_context_state_account` الذي يغلق حساب
+  دليل.
 
 ### مثال على الكود
 
-يوضح المثال التالي كيفية سحب الرموز من الرصيد السري المتاح إلى الرصيد العام.
+يوضح المثال التالي كيفية سحب الرموز المميزة من الرصيد المتاح السري إلى الرصيد
+العام.
 
-لتشغيل المثال، ابدأ مدقق محلي مع برنامج Token Extension Program المستنسخ من
-الشبكة الرئيسية باستخدام الأمر التالي. يجب أن يكون لديك Solana CLI مثبتًا لبدء
-المدقق المحلي.
+لتشغيل المثال، ابدأ تشغيل validator محلي مع Token Extensions Program مستنسخًا من
+الشبكة الرئيسية باستخدام الأمر التالي. يجب أن يكون لديك سولانا CLI مثبتًا لبدء
+تشغيل validator المحلي.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  في وقت كتابة هذا، لم يتم تفعيل التحويلات السرية على المدقق المحلي الافتراضي.
-  يجب عليك استنساخ برنامج Token Extension Program من الشبكة الرئيسية لتشغيل مثال
-  الكود.
+  في وقت كتابة هذا المقال، لم يتم تفعيل التحويلات السرية على validator المحلي
+  الافتراضي. يجب عليك استنساخ Token Extensions Program الخاصة بالشبكة الرئيسية
+  لتشغيل كود المثال.
 </Callout>
 
 <CodeTabs>

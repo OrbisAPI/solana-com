@@ -3,31 +3,23 @@ title: Déposer des tokens
 description: Apprenez comment déposer des tokens dans un état confidentiel.
 ---
 
-<Callout type="warn">
-  Le programme ZK ElGamal est temporairement désactivé sur le mainnet et le
-  devnet pendant qu'il fait l'objet d'un audit de sécurité. Cela signifie que
-  l'extension de transferts confidentiels n'est actuellement pas disponible.
-  Bien que les concepts restent valides, les exemples de code ne fonctionneront
-  pas.
-</Callout>
-
-## Comment déposer des tokens dans un solde confidentiel en attente
+## Comment déposer des tokens vers le solde en attente confidentiel
 
 Avant que les tokens puissent être transférés de manière confidentielle, le
-solde public des tokens doit être converti en solde confidentiel. Cette
-conversion se déroule en deux étapes :
+solde de tokens public doit être converti en solde confidentiel. Cette
+conversion s'effectue en deux étapes :
 
-1. **Solde confidentiel en attente** : Initialement, les tokens sont "déposés"
-   depuis le solde public vers un solde confidentiel "en attente".
-2. **Solde confidentiel disponible** : Le solde en attente est ensuite
-   "appliqué" au solde disponible, rendant les tokens disponibles pour les
+1. **Solde en attente confidentiel** : Dans un premier temps, les tokens sont «
+   déposés » depuis le solde public vers un solde confidentiel « en attente ».
+2. **Solde disponible confidentiel** : Le solde en attente est ensuite «
+   appliqué » au solde disponible, rendant les tokens disponibles pour les
    transferts confidentiels.
 
-Cette section explique la première étape : déposer le solde public des tokens
-vers le solde confidentiel en attente.
+Cette section explique la première étape : le dépôt du solde de tokens public
+vers le solde en attente confidentiel.
 
-Le diagramme suivant montre les étapes impliquées dans le dépôt de tokens depuis
-le solde public vers le solde confidentiel en attente :
+Le diagramme suivant illustre les étapes de dépôt des tokens depuis le solde
+public vers le solde en attente confidentiel :
 
 ```mermaid title="Deposit Tokens"
 sequenceDiagram
@@ -47,25 +39,25 @@ sequenceDiagram
 
 ### Instruction requise
 
-Pour convertir un solde public en solde confidentiel en attente, invoquez
-l'instruction
+Pour convertir un solde public en solde en attente confidentiel, invoquez l'
+instruction
 [ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386).
 Le
 [montant maximum](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
 par instruction de dépôt est limité à 2^48.
 
-Le crate `spl_token_client` fournit une méthode `confidential_transfer_deposit`
+La crate `spl_token_client` fournit une méthode `confidential_transfer_deposit`
 qui construit et envoie une transaction avec l'instruction `Deposit`, comme
 démontré dans l'exemple ci-dessous.
 
 ### Exemple de code
 
-L'exemple suivant démontre comment déposer un solde public de tokens vers un
-solde confidentiel en attente.
+L'exemple suivant montre comment déposer un solde de tokens public vers un solde
+en attente confidentiel.
 
-Pour exécuter l'exemple, démarrez un validateur local avec le Token Extensions
-Program cloné depuis le mainnet en utilisant la commande suivante. Vous devez
-avoir installé le CLI Solana pour démarrer le validateur local.
+Pour exécuter l'exemple, démarrez un validator local avec le Token Extensions
+Program cloné depuis le mainnet à l'aide de la commande suivante. Vous devez
+avoir installé la CLI Solana pour démarrer le validator local.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
@@ -73,8 +65,8 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 
 <Callout type="info">
   Au moment de la rédaction, les transferts confidentiels ne sont pas activés
-  sur le validator local par défaut. Vous devez cloner le programme Token
-  Extension du réseau principal pour exécuter le code d'exemple.
+  sur le validator local par défaut. Vous devez cloner le Token Extensions
+  Program du mainnet pour exécuter l'exemple de code.
 </Callout>
 
 <CodeTabs>

@@ -36,43 +36,32 @@ accountのオーナーもオーソリティの署名なしにバーンするこ�
 _rs`SetAuthority`_
 でローテーションできます。オーソリティを`None`に設定すると、許可制バーンが無効になり、標準のバーンinstructionsが再び使用可能になります。拡張機能のデータ自体はミント上に残ります。
 
-<Callout type="warn" title="利用可能状況">
-  許可制バーンはToken-2022
-  [`program@v11.0.0`](https://github.com/solana-program/token-2022/releases/tag/program%40v11.0.0)
-  に同梱されています。
-  現在devnetで利用可能であり、2026年6月にメインネットで有効化される予定です。Token
-  Extension
-  Programは各クラスターに個別にデプロイされるため、対象クラスターのデプロイメントがv11.0.0以降を含むことを確認してください。
-</Callout>
-
-ローカルテストvalidatorには古いバージョンのToken-2022ビルドが同梱されているため、このページのサンプルを実行するには、devnetからv11.0.0プログラムをテストvalidatorに読み込んでください：
+ローカルテストvalidatorには古いToken-2022ビルドもバンドルされているため、このページのサンプルを実行するには、devnetからv11.0.0プログラムをテストvalidatorに読み込んでください：
 
 ```shell title="Terminal"
 solana program dump -u devnet TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb token_2022.so
 solana-test-validator --reset --bpf-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb token_2022.so
 ```
 
-## 権限付きMintとBurnの作成方法
+## ミントと許可付きバーンの作成方法
 
-権限付きBurnのMintを作成し、トークンをBurnするには：
+許可付きバーンのミントを作成し、トークンをバーンするには：
 
 1. mint
-   accountのサイズと、MintおよびRs`PermissionedBurnConfig`\_エクステンションに必要なrentを計算します。
-2. _rs`CreateAccount`_ でmint accountを作成し、_rs`PermissionedBurnConfig`_
-   を初期化して、_rs`InitializeMint`_ でMintを初期化します。
-3. token accountを作成し、トークンをMintします。
-4. token accountオーナーとBurn権限者の両方が署名した
-   _rs`PermissionedBurnInstruction::BurnChecked`_ でBurnします。
-5. 任意で、_rs`AuthorityType::PermissionedBurn`_ と `None` 権限者を使用して
-   _rs`SetAuthority`_ で権限付きBurnを無効化すると、標準のBurn
-   instructionsが再度有効になります。以下の完全なコードサンプルにこの手順が示されています。
+   accountのサイズと、ミントおよび*rs`PermissionedBurnConfig`*エクステンションに必要なrentを計算します。
+2. *rs`CreateAccount`*でmint
+   accountを作成し、*rs`PermissionedBurnConfig`*を初期化し、*rs`InitializeMint`*でミントを初期化します。
+3. token accountを作成してトークンをミントします。
+4. token
+   accountのオーナーとバーンオーソリティの両方が署名した*rs`PermissionedBurnInstruction::BurnChecked`*でバーンします。
+5. 任意で、*rs`AuthorityType::PermissionedBurn`*と`None`オーソリティを使用して*rs`SetAuthority`*で許可付きバーンを無効化すると、標準のバーンinstructionsが再度有効になります。以下の完全なコード例にこのステップが示されています。
 
 <ScrollyCoding>
 
 ## !!steps アカウントサイズの計算
 
-ベースMintに*rs`PermissionedBurnConfig`*エクステンションを加えたmint
-accountのサイズを計算します。これは*rs`CreateAccount`*で使用するサイズです。
+ベースミントと*rs`PermissionedBurnConfig`*エクステンションのmint
+accountサイズを計算します。これは*rs`CreateAccount`*で使用されるサイズです。
 
 <CodePlaceholder title="Example" />
 
@@ -102,7 +91,7 @@ const mintSpace = BigInt(getMintSize([permissionedBurnExtension]));
 
 ## !!steps rentの計算
 
-MintにRs`PermissionedBurnConfig`\_エクステンションを加えたサイズに必要なrentを計算します。
+ミントと*rs`PermissionedBurnConfig`*エクステンションに必要なサイズを使用してrentを計算します。
 
 <CodePlaceholder title="Example" />
 
@@ -135,7 +124,7 @@ const mintRent = await client.rpc
 
 ## !!steps mint accountの作成
 
-計算したスペースとlamportでmint accountを作成します。
+計算されたスペースとlamportを使用してmint accountを作成します。
 
 <CodePlaceholder title="Example" />
 
@@ -178,7 +167,7 @@ await client.sendTransaction([
 
 ## !!steps PermissionedBurnの初期化
 
-Burn権限者を指定して、Mint上の*rs`PermissionedBurnConfig`*エクステンションを初期化します。
+バーンオーソリティを指定してミントの*rs`PermissionedBurnConfig`*エクステンションを初期化します。
 
 <CodePlaceholder title="Example" />
 
@@ -223,9 +212,9 @@ await client.sendTransaction([
 ]);
 ```
 
-## !!steps Mintの初期化
+## !!steps ミントの初期化
 
-同じトランザクション内で*rs`InitializeMint`*を使用してMintを初期化します。
+同一トランザクション内で*rs`InitializeMint`*を使用してミントを初期化します。
 
 <CodePlaceholder title="Example" />
 
@@ -280,7 +269,7 @@ await client.sendTransaction([
 
 支払者のtoken accountを作成し、トークンをミントします。
 
-<CodePlaceholder title="例" />
+<CodePlaceholder title="Example" />
 
 ```ts !! title="Example"
 const client = await createClient()
@@ -352,10 +341,10 @@ await client.sendTransaction([
 
 ## !!steps バーン権限によるバーン
 
-token accountの所有者とバーン権限の両方が署名した
+token accountのオーナーとバーン権限の両方が署名した
 _rs`PermissionedBurnInstruction::BurnChecked`_ でトークンをバーンします。
 
-<CodePlaceholder title="例" />
+<CodePlaceholder title="Example" />
 
 ```ts !! title="Example"
 const client = await createClient()
@@ -439,27 +428,27 @@ await client.sendTransaction([
 
 </ScrollyCoding>
 
-<Callout type="info" title="Instructionの順序">
+<Callout type="info" title="instructionsの順序">
   _rs`PermissionedBurnInstruction::Initialize`_ は _rs`InitializeMint`_
-  より前に実行する必要があります。_rs`CreateAccount`_、
+  より前に記述する必要があります。_rs`CreateAccount`_、
   _rs`PermissionedBurnInstruction::Initialize`_、および _rs`InitializeMint`_ は
-  同一のトランザクションに含める必要があります。
+  同一トランザクション内に含める必要があります。
 </Callout>
 
 ### ソースリファレンス
 
-| 項目                                           | 説明                                                                                                         | ソース                                                                                                                                         |
+| アイテム                                       | 説明                                                                                                         | ソース                                                                                                                                         |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| _rs`PermissionedBurnConfig`_                   | ミントのすべてのバーンに共同署名するために必要な権限を保存するミント拡張。                                   | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/mod.rs#L16-L25)         |
-| _rs`PermissionedBurnInstruction::Initialize`_  | _rs`InitializeMint`_ の前にパーミッションドバーン設定を初期化するinstructions。                              | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L41-L49) |
-| _rs`PermissionedBurnInstruction::Burn`_        | バーン権限およびtoken accountの所有者またはデリゲートの署名を必要とするバーンinstructions。                  | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L50-L71) |
-| _rs`PermissionedBurnInstruction::BurnChecked`_ | _rs`PermissionedBurnInstruction::Burn`_ と同じアカウントを使用する、小数点チェック付きのバーンinstructions。 | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L72-L79) |
-| _rs`AuthorityType::PermissionedBurn`_          | ミントのバーン権限のローテーションまたは無効化のために _rs`SetAuthority`_ と併用する権限識別子。             | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/instruction.rs#L1276-L1277)                         |
-| _rs`process_initialize`_                       | 未初期化のミントに対して _rs`PermissionedBurnConfig`_ を初期化し、バーン権限を保存するプロセッサーロジック。 | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/extension/permissioned_burn/processor.rs#L29-L47)     |
+| _rs`PermissionedBurnConfig`_                   | ミントに対するすべてのバーンに共同署名するために必要な権限を保存するミント拡張機能。                         | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/mod.rs#L16-L25)         |
+| _rs`PermissionedBurnInstruction::Initialize`_  | _rs`InitializeMint`_ の前にパーミッションドバーン設定を初期化するinstruction。                               | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L41-L49) |
+| _rs`PermissionedBurnInstruction::Burn`_        | バーン権限およびtoken accountのオーナーまたはデリゲートからの署名を必要とするバーンinstruction。             | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L50-L71) |
+| _rs`PermissionedBurnInstruction::BurnChecked`_ | _rs`PermissionedBurnInstruction::Burn`_ と同じアカウントを使用する、小数点チェック付きのバーンinstruction。  | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L72-L79) |
+| _rs`AuthorityType::PermissionedBurn`_          | ミントのバーン権限を更新または無効化するために _rs`SetAuthority`_ と共に使用される権限ディスクリミネーター。 | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/instruction.rs#L1276-L1277)                         |
+| _rs`process_initialize`_                       | 未初期化のミントに _rs`PermissionedBurnConfig`_ を初期化し、バーン権限を保存するプロセッサーロジック。       | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/extension/permissioned_burn/processor.rs#L29-L47)     |
 | _rs`process_burn`_                             | バーン権限が設定されている場合に標準バーンを拒否し、権限の署名を検証するプロセッサーロジック。               | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L1114-L1179)                             |
-| _rs`process_set_authority`_                    | _rs`AuthorityType::PermissionedBurn`_ 使用時にバーン権限を検証およびローテーションするプロセッサーロジック。 | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L996-L1008)                              |
+| _rs`process_set_authority`_                    | _rs`AuthorityType::PermissionedBurn`_ が使用された際にバーン権限を検証および更新するプロセッサーロジック。   | [ソース](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L996-L1008)                              |
 
-### Typescript
+### TypeScript
 
 以下の `Kit`
 の例では、生成された instructions を直接使用しています。公開済みのレガシー

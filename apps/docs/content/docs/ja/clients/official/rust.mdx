@@ -91,10 +91,10 @@ Pinocchioには、Solanaプログラムと対話するためのプログラム�
 
 複数の鍵管理バックエンドにわたる本番環境のバックエンド署名には：
 
-| クレート        | 説明                                                                                                  | ドキュメント                                         | GitHub                                                         |
-| --------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------- |
-| solana-keychain | 統合署名機能: Memory、Vault、Privy、Turnkey、AWS KMS、Fireblocks、GCP KMS、CDP、Para、Dfns、Crossmint | [クレート](https://crates.io/crates/solana-keychain) | [ソース](https://github.com/solana-foundation/solana-keychain) |
+| クレート        | 説明                                                                                                               | ドキュメント                                         | GitHub                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- | -------------------------------------------------------------- |
+| solana-keychain | 統合署名：Memory、Vault、Privy、Turnkey、AWS KMS、Fireblocks、GCP KMS、CDP、Para、Dfns、Crossmint、Openfort、Utila | [クレート](https://crates.io/crates/solana-keychain) | [ソース](https://github.com/solana-foundation/solana-keychain) |
 
-必要なバックエンドのみを含めるには、機能フラグを使用してください。追加の鍵管理サービスを統合するには、
-[署名者の追加ガイド](https://github.com/solana-foundation/solana-keychain/blob/main/docs/ADDING_SIGNERS.md)
-を参照してください。
+フィーチャーフラグを使用して、必要なバックエンドのみを含めてください。セットアップおよびカストディモデルのガイダンスについては、
+[Keychain ドキュメント](/docs/tools/keychain)および
+[バックエンドの選択](/docs/tools/keychain/choosing-a-backend)を参照してください。

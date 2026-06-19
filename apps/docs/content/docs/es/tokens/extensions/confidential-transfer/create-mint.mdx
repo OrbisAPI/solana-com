@@ -5,22 +5,14 @@ description:
   Confidencial.
 ---
 
-<Callout type="warn">
-  El ZK ElGamal Program está temporalmente deshabilitado en mainnet y devnet
-  mientras se somete a una auditoría de seguridad. Esto significa que la
-  extensión de transferencias confidenciales no está disponible actualmente.
-  Aunque los conceptos siguen siendo válidos, los ejemplos de código no se
-  ejecutarán.
-</Callout>
+## Cómo crear un mint con la extensión Confidential Transfer
 
-## Cómo crear un mint con la extensión de Transferencia Confidencial
-
-La extensión de Transferencia Confidencial permite transferencias de tokens
-privadas al agregar estado adicional a la cuenta del mint. Esta sección explica
-cómo crear un token mint con esta extensión habilitada.
+La extensión Confidential Transfer permite transferencias de tokens privadas
+añadiendo estado adicional al mint account. Esta sección explica cómo crear un
+token mint con esta extensión habilitada.
 
 El siguiente diagrama muestra los pasos involucrados en la creación de un mint
-con la extensión de Transferencia Confidencial:
+con la extensión Confidential Transfer:
 
 ```mermaid title="Create Mint with Confidential Transfer Extension"
 sequenceDiagram
@@ -34,11 +26,11 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Estado del mint de Transferencia Confidencial
+### Estado del Mint con Confidential Transfer
 
-La extensión agrega el estado
+La extensión añade el estado
 [ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)
-a la cuenta del mint:
+al mint account:
 
 ```rust title="Confidential Mint State"
 #[repr(C)]
@@ -66,58 +58,59 @@ pub struct ConfidentialTransferMint {
 
 El _rs`ConfidentialTransferMint`_ contiene tres campos de configuración:
 
-- **authority**: La cuenta que tiene permiso para cambiar la configuración de
-  transferencia confidencial para el mint y aprobar nuevas cuentas
-  confidenciales si la aprobación automática está deshabilitada.
+- **authority**: La cuenta que tiene permiso para modificar la configuración de
+  transferencias confidenciales del mint y aprobar nuevas cuentas confidenciales
+  si la aprobación automática está deshabilitada.
 
 - **auto_approve_new_accounts**: Cuando se establece en true, los usuarios
   pueden crear token accounts con transferencias confidenciales habilitadas por
-  defecto. Cuando es false, la autoridad debe aprobar cada nueva token account
-  antes de que pueda usarse para transferencias confidenciales.
+  defecto. Cuando es false, la autoridad debe aprobar cada nuevo token account
+  antes de que pueda utilizarse para transferencias confidenciales.
 
 - **auditor_elgamal_pubkey**: Un auditor opcional que puede descifrar los montos
   de transferencia en transacciones confidenciales, proporcionando un mecanismo
-  de cumplimiento mientras se mantiene la privacidad del público en general.
+  de cumplimiento normativo mientras se mantiene la privacidad frente al público
+  general.
 
-### Instrucciones requeridas
+### Instrucciones Requeridas
 
-Crear un mint con Transferencia Confidencial habilitada requiere tres
-instrucciones en una sola transacción:
+Crear un mint con Confidential Transfer habilitado requiere tres instrucciones
+en una sola transacción:
 
-1. **Crear la cuenta del mint**: Invoca la instrucción _rs`CreateAccount`_ del
-   System Program para crear la cuenta del mint.
+1. **Crear el Mint Account**: Invocar la instrucción _rs`CreateAccount`_ del
+   System Program para crear el mint account.
 
-2. **Inicializar extensión de Transferencia Confidencial**: Invoca la
-   instrucción
+2. **Inicializar la Extensión Confidential Transfer**: Invocar la instrucción
    [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
-   del Token Extension Program para configurar el estado
-   _rs`ConfidentialTransferMint`_ para el mint.
+   del Token Extensions Program para configurar el estado
+   _rs`ConfidentialTransferMint`_ del mint.
 
-3. **Inicializar Mint**: Invoca la instrucción _rs`Instruction::InitializeMint`_
-   del Token Extension Program para inicializar el estado estándar del mint.
+3. **Inicializar el Mint**: Invocar la instrucción
+   _rs`Instruction::InitializeMint`_ del Token Extensions Program para
+   inicializar el estado estándar del mint.
 
 Si bien podrías escribir estas instrucciones manualmente, el crate
 `spl_token_client` proporciona un método `create_mint` que construye y envía una
-transacción con las tres instrucciones en una sola llamada de función, como se
-demuestra en el ejemplo a continuación.
+transacción con las tres instrucciones en una sola llamada a función, como se
+muestra en el ejemplo a continuación.
 
-### Código de ejemplo
+### Código de Ejemplo
 
-El siguiente código demuestra cómo crear un mint con la extensión de
-Transferencia Confidencial.
+El siguiente código demuestra cómo crear un mint con la extensión Confidential
+Transfer.
 
-Para ejecutar el ejemplo, inicia un validador local con el Token Extension
+Para ejecutar el ejemplo, inicia un validator local con el Token Extensions
 Program clonado desde mainnet usando el siguiente comando. Debes tener la CLI de
-Solana instalada para iniciar el validador local.
+Solana instalada para iniciar el validator local.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Al momento de escribir esto, las Transferencias Confidenciales no están
-  habilitadas en el validador local predeterminado. Debes clonar el Token
-  Extension Program de mainnet para ejecutar el código de ejemplo.
+  En el momento de redactar este documento, Confidential Transfers no está
+  habilitado en el validator local predeterminado. Debes clonar el Token
+  Extensions Program de mainnet para ejecutar el código de ejemplo.
 </Callout>
 
 <CodeTabs>

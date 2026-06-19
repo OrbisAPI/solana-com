@@ -3,34 +3,31 @@ title: 提取代币
 description: 了解如何从保密状态中提取代币。
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program
-  目前在主网和开发网暂时禁用，正在进行安全审计。这意味着保密转账扩展当前不可用。虽然相关概念依然适用，但代码示例将无法运行。
-</Callout>
+## 如何从机密可用余额中提取代币
 
-## 如何从保密可用余额中提取代币
+将代币从机密可用余额提取到公开余额：
 
-要将代币从保密可用余额提取到公开余额：
-
-1. 在客户端生成
+1. 在客户端创建
    [两个证明](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/proof-generation/src/withdraw.rs#L22)：
 
-   **等式证明 ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**：验证提取后剩余可用余额的密文与其对应的
-   [Pedersen 承诺](https://en.wikipedia.org/wiki/Commitment_scheme)是否一致，确保账户新的可用余额正确计算为`remaining_balance = current_balance - withdraw_amount`。
+   **等式证明 ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**：验证提款后剩余可用余额密文与其对应的
+   [Pedersen 承诺](https://en.wikipedia.org/wiki/Commitment_scheme)
+   相匹配，确保账户新的可用余额被正确计算为
+   `remaining_balance = current_balance - withdraw_amount`。
 
-   **区间证明 ([BatchedRangeProofU64Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u64.rs#L37))**：验证提取后剩余的可用余额为非负数且在指定区间内。
+   **范围证明 ([BatchedRangeProofU64Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u64.rs#L37))**：验证提款后剩余可用余额为非负数且在指定范围内。
 
-2. 对于每个证明：
-   - 调用 ZK ElGamal 证明程序验证证明数据。
-   - 将证明相关的元数据存储在证明“上下文状态”账户中，以便在其他指令中使用。
+2. 针对每个证明：
+   - 调用 ZK ElGamal 证明程序以验证证明数据。
+   - 将证明特定的元数据存储在证明"上下文状态"账户中，以供其他指令使用。
 
 3. 调用
    [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
-   指令，并提供两个证明账户。
+   指令，提供两个证明账户。
 
-4. 关闭证明账户以回收用于创建它们的 SOL。
+4. 关闭证明账户以回收创建时使用的 SOL。
 
-下图展示了将代币从保密可用余额提取到公开余额的步骤：
+下图展示了将代币从机密可用余额提取到公开余额的步骤：
 
 ```mermaid title="Withdraw Tokens"
 sequenceDiagram
@@ -59,16 +56,16 @@ sequenceDiagram
 
 ### 所需指令
 
-要将代币从保密可用余额提取到公开余额，你需要：
+要将代币从机密可用余额提取到公开余额，您必须：
 
-- 客户端生成等式证明和区间证明
-- 调用 Zk ElGamal 证明程序验证证明并初始化“上下文状态”账户
+- 在客户端生成等式证明和范围证明
+- 调用 ZK ElGamal 证明程序以验证证明并初始化"上下文状态"账户
 - 调用
   [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
-  指令，并提供两个证明账户。
+  指令，提供两个证明账户。
 - 关闭两个证明账户以回收 rent。
 
-`spl_token_client` crate 提供了以下方法：
+`spl_token_client` crate 提供以下方法：
 
 - `confidential_transfer_create_context_state_account` 方法用于创建证明账户。
 - `confidential_transfer_withdraw` 方法用于调用 `Withdraw` 指令。
@@ -76,18 +73,18 @@ sequenceDiagram
 
 ### 示例代码
 
-以下示例演示了如何将代币从保密可用余额提取到公开余额。
+以下示例演示如何将代币从机密可用余额提取到公开余额。
 
-要运行此示例，请使用以下命令启动一个本地 validator，并从主网克隆 Token Extension
-Program。你需要先安装 Solana CLI 才能启动本地 validator。
+要运行示例，请使用以下命令启动一个从主网克隆了 Token Extensions
+Program 的本地 validator。您必须安装 Solana CLI 才能启动本地 validator。
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  截至撰写本文时，Confidential Transfers 尚未在默认本地 validator
-  上启用。你必须克隆主网的 Token Extension Program 才能运行示例代码。
+  在撰写本文时，默认的本地 validator 尚未启用机密转账功能。您必须克隆主网的
+  Token Extensions Program 才能运行示例代码。
 </Callout>
 
 <CodeTabs>

@@ -3,28 +3,21 @@ title: Wypłata tokenów
 description: Dowiedz się, jak wypłacić tokeny ze stanu poufnego.
 ---
 
-<Callout type="warn">
-  Program ZK ElGamal jest tymczasowo wyłączony na mainnecie i devnecie ze
-  względu na trwający audyt bezpieczeństwa. Oznacza to, że rozszerzenie poufnych
-  transferów jest obecnie niedostępne. Chociaż koncepcje pozostają aktualne,
-  przykłady kodu nie będą działać.
-</Callout>
-
 ## Jak wypłacić tokeny z poufnego dostępnego salda
 
 Aby wypłacić tokeny z poufnego dostępnego salda na saldo publiczne:
 
-1. Wygeneruj
+1. Utwórz
    [dwa dowody](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/proof-generation/src/withdraw.rs#L22)
    po stronie klienta:
 
    **Dowód równości
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
-   Weryfikuje, że szyfrogram dostępnego salda po wypłacie odpowiada
-   odpowiedniemu
-   [zaangażowaniu Pedersena](https://pl.wikipedia.org/wiki/Schemat_zaanga%C5%BCowania),
-   zapewniając, że nowe dostępne saldo na koncie zostało poprawnie obliczone
-   jako `remaining_balance = current_balance - withdraw_amount`.
+   Weryfikuje, że szyfrogram pozostałego dostępnego salda po wypłacie odpowiada
+   swojemu powiązanemu
+   [zobowiązaniu Pedersena](https://en.wikipedia.org/wiki/Commitment_scheme),
+   zapewniając, że nowe dostępne saldo konta jest poprawnie obliczone jako
+   `remaining_balance = current_balance - withdraw_amount`.
 
    **Dowód zakresu
    ([BatchedRangeProofU64Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u64.rs#L37))**:
@@ -32,15 +25,15 @@ Aby wypłacić tokeny z poufnego dostępnego salda na saldo publiczne:
    się w określonym zakresie.
 
 2. Dla każdego dowodu:
-   - Wywołaj program dowodów ZK ElGamal, aby zweryfikować dane dowodu.
-   - Zapisz metadane specyficzne dla dowodu w koncie "context state", aby użyć
-     ich w innych instrukcjach.
+   - Wywołaj program dowodów ZK ElGamal w celu weryfikacji danych dowodu.
+   - Zapisz metadane specyficzne dla dowodu na koncie "stanu kontekstu" dowodu,
+     aby wykorzystać je w innych instrukcjach.
 
-3. Wywołaj
-   [instrukcję ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493),
-   przekazując dwa konta dowodów.
+3. Wywołaj instrukcję
+   [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
+   podając dwa konta dowodów.
 
-4. Zamknij konta dowodów, aby odzyskać SOL użyte do ich utworzenia.
+4. Zamknij konta dowodów, aby odzyskać SOL użyty do ich utworzenia.
 
 Poniższy diagram przedstawia kroki związane z wypłatą tokenów z poufnego
 dostępnego salda na saldo publiczne:
@@ -72,41 +65,41 @@ sequenceDiagram
 
 ### Wymagane instrukcje
 
-Aby wypłacić tokeny z poufnego dostępnego salda na saldo publiczne, należy:
+Aby wypłacić tokeny z poufnego dostępnego salda na saldo publiczne, musisz:
 
-- Wygenerować po stronie klienta dowód równości i dowód zakresu
-- Wywołać program dowodów ZK ElGamal, aby zweryfikować dowody i zainicjować
-  konta "context state"
-- Wywołać
-  [instrukcję ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493),
-  przekazując dwa konta dowodów.
-- Zamknąć oba konta dowodów, aby odzyskać rent.
+- Wygenerować dowód równości i dowód zakresu po stronie klienta
+- Wywołać program dowodów Zk ElGamal w celu weryfikacji dowodów i zainicjowania
+  kont "stanu kontekstu"
+- Wywołać instrukcję
+  [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
+  podając dwa konta dowodów.
+- Zamknąć dwa konta dowodów, aby odzyskać rent.
 
-Pakiet `spl_token_client` udostępnia następujące metody:
+Crate `spl_token_client` udostępnia następujące metody:
 
-- Metoda `confidential_transfer_create_context_state_account`, która tworzy
-  konto dowodu.
-- Metoda `confidential_transfer_withdraw`, która wywołuje instrukcję `Withdraw`.
-- Metoda `confidential_transfer_close_context_state_account`, która zamyka konto
+- Metoda `confidential_transfer_create_context_state_account` tworzy konto
+  dowodu.
+- Metoda `confidential_transfer_withdraw` wywołuje instrukcję `Withdraw`.
+- Metoda `confidential_transfer_close_context_state_account` zamyka konto
   dowodu.
 
 ### Przykładowy kod
 
-Poniższy przykład pokazuje, jak wypłacić tokeny z poufnego dostępnego salda na
-saldo publiczne.
+Poniższy przykład demonstruje, jak wypłacić tokeny z poufnego dostępnego salda
+na saldo publiczne.
 
-Aby uruchomić przykład, uruchom lokalnego validatora z Token Extension Program
-sklonowanym z mainnetu, używając poniższego polecenia. Musisz mieć zainstalowane
-Solana CLI, aby uruchomić lokalnego validatora.
+Aby uruchomić przykład, uruchom lokalny validator z Token Extensions Program
+sklonowanym z sieci mainnet, używając poniższego polecenia. Musisz mieć
+zainstalowane Solana CLI, aby uruchomić lokalny validator.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  W momencie pisania tego tekstu Confidential Transfers nie jest włączone w
-  domyślnym lokalnym validatorze. Aby uruchomić przykładowy kod, musisz
-  sklonować Token Extension Program z mainnetu.
+  W momencie pisania tego tekstu, Poufne Transfery nie są włączone w domyślnym
+  lokalnym validatorze. Musisz sklonować mainnetowy Token Extensions Program,
+  aby uruchomić przykładowy kod.
 </Callout>
 
 <CodeTabs>

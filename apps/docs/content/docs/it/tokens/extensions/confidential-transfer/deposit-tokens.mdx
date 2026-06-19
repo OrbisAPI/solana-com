@@ -3,30 +3,23 @@ title: Deposita token
 description: Scopri come depositare token nello stato confidenziale.
 ---
 
-<Callout type="warn">
-  Il programma ZK ElGamal è temporaneamente disabilitato su mainnet e devnet
-  mentre è sottoposto a un audit di sicurezza. Ciò significa che l'estensione
-  per i trasferimenti confidenziali non è attualmente disponibile. Sebbene i
-  concetti siano ancora validi, gli esempi di codice non funzioneranno.
-</Callout>
+## Come depositare token nel saldo in sospeso riservato
 
-## Come depositare token nel saldo confidenziale in attesa
+Prima che i token possano essere trasferiti in modo riservato, il saldo pubblico
+dei token deve essere convertito in un saldo riservato. Questa conversione
+avviene in due fasi:
 
-Prima che i token possano essere trasferiti in modo confidenziale, il saldo
-pubblico dei token deve essere convertito in un saldo confidenziale. Questa
-conversione avviene in due fasi:
-
-1. **Saldo confidenziale in attesa**: Inizialmente, i token vengono "depositati"
-   dal saldo pubblico a un saldo confidenziale "in attesa".
-2. **Saldo confidenziale disponibile**: Il saldo in attesa viene poi "applicato"
+1. **Saldo in sospeso riservato**: Inizialmente, i token vengono "depositati"
+   dal saldo pubblico a un saldo riservato "in sospeso".
+2. **Saldo disponibile riservato**: Il saldo in sospeso viene quindi "applicato"
    al saldo disponibile, rendendo i token disponibili per i trasferimenti
-   confidenziali.
+   riservati.
 
-Questa sezione spiega la prima fase: depositare il saldo pubblico dei token nel
-saldo confidenziale in attesa.
+Questa sezione spiega la prima fase: il deposito del saldo pubblico dei token
+nel saldo in sospeso riservato.
 
-Il seguente diagramma mostra i passaggi coinvolti nel deposito di token dal
-saldo pubblico al saldo confidenziale in attesa:
+Il diagramma seguente mostra i passaggi necessari per depositare token dal saldo
+pubblico al saldo in sospeso riservato:
 
 ```mermaid title="Deposit Tokens"
 sequenceDiagram
@@ -46,10 +39,10 @@ sequenceDiagram
 
 ### Istruzione richiesta
 
-Per convertire un saldo pubblico in un saldo confidenziale in attesa, invoca
-l'istruzione
-[ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386).
-L'[importo massimo](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
+Per convertire un saldo pubblico in un saldo in sospeso riservato, richiamare l'
+[ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386)
+istruzione. L'
+[importo massimo](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
 per istruzione di deposito è limitato a 2^48.
 
 Il crate `spl_token_client` fornisce un metodo `confidential_transfer_deposit`
@@ -58,21 +51,21 @@ dimostrato nell'esempio seguente.
 
 ### Codice di esempio
 
-Il seguente esempio dimostra come depositare il saldo pubblico dei token nel
-saldo confidenziale in attesa.
+L'esempio seguente mostra come depositare il saldo pubblico dei token nel saldo
+in sospeso riservato.
 
-Per eseguire l'esempio, avvia un validator locale con il Token Extensions
-Program clonato dalla mainnet usando il seguente comando. Devi avere la CLI di
-Solana installata per avviare il validator locale.
+Per eseguire l'esempio, avviare un validator locale con il Token Extensions
+Program clonato dalla mainnet utilizzando il comando seguente. È necessario
+avere la Solana CLI installata per avviare il validator locale.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Al momento della stesura, i trasferimenti confidenziali non sono abilitati sul
-  validator locale predefinito. Devi clonare il Token Extensions Program dalla
-  mainnet per eseguire il codice di esempio.
+  Al momento della stesura, i Trasferimenti Riservati non sono abilitati sul
+  validator locale predefinito. È necessario clonare il Token Extensions Program
+  della mainnet per eseguire il codice di esempio.
 </Callout>
 
 <CodeTabs>

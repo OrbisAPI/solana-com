@@ -3,16 +3,10 @@ title: Tokens opnemen
 description: Leer hoe je tokens opneemt uit vertrouwelijke staat.
 ---
 
-<Callout type="warn">
-  Het ZK ElGamal Program is tijdelijk uitgeschakeld op het mainnet en devnet
-  omdat het een beveiligingsaudit ondergaat. Dit betekent dat de confidential
-  transfers extensie momenteel niet beschikbaar is. Hoewel de concepten nog
-  steeds geldig zijn, zullen de codevoorbeelden niet werken.
-</Callout>
-
 ## Hoe tokens op te nemen uit vertrouwelijk beschikbaar saldo
 
-Om tokens op te nemen uit vertrouwelijk beschikbaar saldo naar openbaar saldo:
+Om tokens op te nemen van het vertrouwelijk beschikbaar saldo naar het publieke
+saldo:
 
 1. Maak
    [twee bewijzen](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/proof-generation/src/withdraw.rs#L22)
@@ -20,31 +14,32 @@ Om tokens op te nemen uit vertrouwelijk beschikbaar saldo naar openbaar saldo:
 
    **Gelijkheidsbewijs
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
-   Verifieert dat de resterende beschikbare saldo ciphertext na de opname
+   Verifieert dat de resterende beschikbare saldociphertext na de opname
    overeenkomt met de bijbehorende
-   [Pedersen commitment](https://en.wikipedia.org/wiki/Commitment_scheme), wat
-   ervoor zorgt dat het nieuwe beschikbare saldo van het account correct wordt
-   berekend als `remaining_balance = current_balance - withdraw_amount`.
+   [Pedersen-verbintenis](https://en.wikipedia.org/wiki/Commitment_scheme),
+   waardoor wordt gegarandeerd dat het nieuwe beschikbare saldo van het account
+   correct wordt berekend als
+   `remaining_balance = current_balance - withdraw_amount`.
 
-   **Bereiksbewijis
+   **Bereikbewijs
    ([BatchedRangeProofU64Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u64.rs#L37))**:
    Verifieert dat het resterende beschikbare saldo na opname niet-negatief is en
-   binnen een gespecificeerd bereik valt.
+   binnen een opgegeven bereik valt.
 
 2. Voor elk bewijs:
-   - Roep het ZK ElGamal proof program aan om de bewijsgegevens te verifiëren.
-   - Sla de bewijs-specifieke metadata op in een "context state" account om te
-     gebruiken in andere instructies.
+   - Roep het ZK ElGamal-bewijsprogramma aan om de bewijsgegevens te verifiëren.
+   - Sla de bewijsspecifieke metadata op in een bewijs-"contextstatus"-account
+     voor gebruik in andere instructies.
 
 3. Roep de
    [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
    instructie aan met de twee bewijsaccounts.
 
-4. Sluit de bewijsaccounts om de SOL die gebruikt is om ze te maken terug te
-   krijgen.
+4. Sluit de bewijsaccounts om de SOL die werd gebruikt om ze aan te maken terug
+   te vorderen.
 
-Het volgende diagram toont de stappen die betrokken zijn bij het opnemen van
-tokens uit vertrouwelijk beschikbaar saldo naar openbaar saldo:
+Het volgende diagram toont de stappen voor het opnemen van tokens van
+vertrouwelijk beschikbaar saldo naar publiek saldo:
 
 ```mermaid title="Withdraw Tokens"
 sequenceDiagram
@@ -73,16 +68,16 @@ sequenceDiagram
 
 ### Vereiste instructies
 
-Om tokens op te nemen uit vertrouwelijk beschikbaar saldo naar openbaar saldo,
-moet je:
+Om tokens op te nemen van het vertrouwelijk beschikbaar saldo naar het publieke
+saldo, moet u:
 
-- Een gelijkheidsbewijs en bereiksbewijis genereren aan de clientzijde
-- Het Zk ElGamal proof program aanroepen om de bewijzen te verifiëren en de
-  "context state" accounts te initialiseren
-- De
+- Genereer een gelijkheidsbewijs en bereikbewijs aan de clientzijde
+- Roep het Zk ElGamal-bewijsprogramma aan om de bewijzen te verifiëren en de
+  "contextstatusaccounts" te initialiseren
+- Roep de
   [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
-  instructie aanroepen met de twee bewijsaccounts.
-- De twee bewijsaccounts sluiten om de rent terug te krijgen.
+  instructie aan met de twee bewijsaccounts.
+- Sluit de twee bewijsaccounts om rent terug te vorderen.
 
 De `spl_token_client` crate biedt de volgende methoden:
 
@@ -95,12 +90,12 @@ De `spl_token_client` crate biedt de volgende methoden:
 
 ### Voorbeeldcode
 
-Het volgende voorbeeld demonstreert hoe je tokens opneemt uit het vertrouwelijke
-beschikbare saldo naar het openbare saldo.
+Het volgende voorbeeld laat zien hoe tokens kunnen worden opgenomen van
+vertrouwelijk beschikbaar saldo naar publiek saldo.
 
-Om het voorbeeld uit te voeren, start je een lokale validator met het Token
-Extension Program gekloond van mainnet met het volgende commando. Je moet de
-Solana CLI geïnstalleerd hebben om de lokale validator te starten.
+Om het voorbeeld uit te voeren, start een lokale validator met het Token
+Extensions Program gekloneerd van mainnet met behulp van de volgende opdracht. U
+moet de Solana CLI geïnstalleerd hebben om de lokale validator te starten.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
@@ -108,7 +103,7 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 
 <Callout type="info">
   Op het moment van schrijven is Confidential Transfers niet ingeschakeld op de
-  standaard lokale validator. Je moet het mainnet Token Extension Program klonen
+  standaard lokale validator. U moet het mainnet Token Extensions Program klonen
   om de voorbeeldcode uit te voeren.
 </Callout>
 

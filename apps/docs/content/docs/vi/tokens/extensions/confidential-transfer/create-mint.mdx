@@ -4,20 +4,13 @@ description:
   Tìm hiểu cách tạo token mint với tiện ích mở rộng Confidential Transfer.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program hiện đang tạm thời bị vô hiệu hóa trên mainnet và devnet do
-  đang trải qua kiểm toán bảo mật. Điều này có nghĩa là tiện ích mở rộng
-  confidential transfers hiện không khả dụng. Mặc dù các khái niệm vẫn còn giá
-  trị, nhưng các ví dụ mã sẽ không chạy được.
-</Callout>
+## Cách tạo mint với extension Confidential Transfer
 
-## Cách tạo mint với tiện ích mở rộng Confidential Transfer
+Extension Confidential Transfer cho phép chuyển token riêng tư bằng cách thêm
+trạng thái bổ sung vào mint account. Phần này giải thích cách tạo token mint với
+extension này được bật.
 
-Tiện ích mở rộng Confidential Transfer cho phép chuyển token riêng tư bằng cách
-thêm trạng thái bổ sung vào mint account. Phần này giải thích cách tạo token
-mint với tiện ích mở rộng này được kích hoạt.
-
-Sơ đồ sau đây cho thấy các bước liên quan đến việc tạo mint với tiện ích mở rộng
+Sơ đồ sau đây mô tả các bước liên quan đến việc tạo mint với extension
 Confidential Transfer:
 
 ```mermaid title="Create Mint with Confidential Transfer Extension"
@@ -32,9 +25,9 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Trạng thái Confidential Transfer Mint
+### Trạng thái Mint của Confidential Transfer
 
-Tiện ích mở rộng này thêm trạng thái
+Extension thêm trạng thái
 [ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)
 vào mint account:
 
@@ -64,45 +57,45 @@ pub struct ConfidentialTransferMint {
 
 _rs`ConfidentialTransferMint`_ chứa ba trường cấu hình:
 
-- **authority**: Tài khoản có quyền thay đổi cài đặt confidential transfer cho
-  mint và phê duyệt các confidential account mới nếu tính năng tự động phê duyệt
-  bị vô hiệu hóa.
+- **authority**: Tài khoản có quyền thay đổi cài đặt chuyển tiền bảo mật cho
+  mint và phê duyệt các tài khoản bảo mật mới nếu tính năng tự động phê duyệt bị
+  tắt.
 
 - **auto_approve_new_accounts**: Khi được đặt thành true, người dùng có thể tạo
-  token account với confidential transfer được kích hoạt theo mặc định. Khi là
-  false, authority phải phê duyệt từng token account mới trước khi nó có thể
-  được sử dụng cho confidential transfer.
+  token account với tính năng chuyển tiền bảo mật được bật theo mặc định. Khi
+  false, authority phải phê duyệt từng token account mới trước khi có thể sử
+  dụng cho các giao dịch chuyển tiền bảo mật.
 
-- **auditor_elgamal_pubkey**: Một auditor tùy chọn có thể giải mã số lượng
-  chuyển khoản trong các giao dịch bảo mật, cung cấp cơ chế tuân thủ trong khi
-  vẫn duy trì quyền riêng tư khỏi công chúng.
+- **auditor_elgamal_pubkey**: Một kiểm toán viên tùy chọn có thể giải mã số tiền
+  chuyển trong các giao dịch bảo mật, cung cấp cơ chế tuân thủ trong khi vẫn duy
+  trì quyền riêng tư với công chúng.
 
-### Các lệnh bắt buộc
+### Các Lệnh Bắt Buộc
 
-Tạo mint với Confidential Transfer được kích hoạt yêu cầu ba lệnh trong một giao
+Việc tạo mint với Confidential Transfer được bật yêu cầu ba lệnh trong một giao
 dịch duy nhất:
 
-1. **Tạo mint account**: Gọi lệnh _rs`CreateAccount`_ của System Program để tạo
+1. **Tạo Mint Account**: Gọi lệnh _rs`CreateAccount`_ của System Program để tạo
    mint account.
 
-2. **Khởi tạo tiện ích mở rộng Confidential Transfer**: Gọi lệnh
+2. **Khởi tạo Extension Confidential Transfer**: Gọi lệnh
    [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
-   của Token Extension Program để cấu hình trạng thái
+   của Token Extensions Program để cấu hình trạng thái
    _rs`ConfidentialTransferMint`_ cho mint.
 
 3. **Khởi tạo Mint**: Gọi lệnh _rs`Instruction::InitializeMint`_ của Token
-   Extension Program để khởi tạo trạng thái mint tiêu chuẩn.
+   Extensions Program để khởi tạo trạng thái mint tiêu chuẩn.
 
-Mặc dù bạn có thể viết các lệnh này thủ công, crate `spl_token_client` cung cấp
-phương thức `create_mint` để xây dựng và gửi một giao dịch với cả ba lệnh trong
-một lần gọi hàm duy nhất, như được minh họa trong ví dụ dưới đây.
+Mặc dù bạn có thể viết các lệnh này theo cách thủ công, crate `spl_token_client`
+cung cấp phương thức `create_mint` để xây dựng và gửi một giao dịch với cả ba
+lệnh trong một lần gọi hàm duy nhất, như được minh họa trong ví dụ bên dưới.
 
-### Mã ví dụ
+### Mã Ví Dụ
 
-Đoạn mã sau đây minh họa cách tạo một mint với tiện ích mở rộng Confidential
+Đoạn mã sau đây minh họa cách tạo một mint với phần mở rộng Confidential
 Transfer.
 
-Để chạy ví dụ, hãy khởi động một validator cục bộ với Token Extension Program
+Để chạy ví dụ, hãy khởi động một validator cục bộ với Token Extensions Program
 được sao chép từ mainnet bằng lệnh sau. Bạn phải cài đặt Solana CLI để khởi động
 validator cục bộ.
 
@@ -111,8 +104,8 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 ```
 
 <Callout type="info">
-  Tại thời điểm viết bài, Confidential Transfers chưa được kích hoạt trên
-  validator cục bộ mặc định. Bạn phải sao chép Token Extension Program từ
+  Tại thời điểm viết bài, tính năng Confidential Transfers chưa được bật trên
+  validator cục bộ mặc định. Bạn phải sao chép Token Extensions Program từ
   mainnet để chạy mã ví dụ.
 </Callout>
 

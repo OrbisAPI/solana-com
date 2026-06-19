@@ -5,19 +5,12 @@ description:
   token lainnya.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program sementara dinonaktifkan di mainnet dan devnet karena sedang
-  menjalani audit keamanan. Ini berarti ekstensi confidential transfers saat ini
-  tidak tersedia. Meskipun konsepnya masih valid, contoh kode tidak akan
-  berjalan.
-</Callout>
+## Cara mentransfer token secara rahasia dari satu token account ke token account lain
 
-## Cara mentransfer token secara rahasia dari satu akun token ke akun token lainnya
-
-Untuk mentransfer token secara rahasia dari satu akun token ke akun token
-lainnya, baik pengirim maupun penerima harus memiliki akun token yang
-dikonfigurasi dengan state _rs`ConfidentialTransferAccount`_ dan disetujui untuk
-confidential transfers. Akun token pengirim juga harus memiliki saldo rahasia
+Untuk mentransfer token secara rahasia dari satu token account ke token account
+lain, baik pengirim maupun penerima harus memiliki token account yang
+dikonfigurasi dengan status _rs`ConfidentialTransferAccount`_ dan disetujui
+untuk transfer rahasia. Token account pengirim juga harus memiliki saldo rahasia
 yang tersedia untuk ditransfer.
 
 Untuk mentransfer token secara rahasia:
@@ -26,36 +19,35 @@ Untuk mentransfer token secara rahasia:
    [tiga bukti](https://github.com/solana-program/token-2022/blob/d073cb89dbcd430387b5c6fb4b7157911351e4a3/confidential-transfer/proof-generation/src/transfer.rs#L35)
    di sisi klien:
 
-   **Equality proof
+   **Bukti Kesetaraan
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
-   Memverifikasi bahwa ciphertext saldo tersedia yang baru setelah transfer
-   cocok dengan
-   [Pedersen commitment](https://en.wikipedia.org/wiki/Commitment_scheme) yang
-   sesuai, memastikan saldo tersedia baru akun sumber dihitung dengan benar
-   sebagai `new_balance = current_balance - transfer_amount`.
+   Memverifikasi bahwa ciphertext saldo tersedia baru setelah transfer sesuai
+   dengan [komitmen Pedersen](https://en.wikipedia.org/wiki/Commitment_scheme)
+   yang berkaitan, memastikan saldo tersedia baru akun sumber dihitung dengan
+   benar sebagai `new_balance = current_balance - transfer_amount`.
 
-   **Ciphertext validity proof
+   **Bukti Validitas Ciphertext
    ([BatchedGroupedCiphertext3HandlesValidityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_grouped_ciphertext_validity/handles_3.rs#L63))**:
    Memverifikasi bahwa ciphertext jumlah transfer dibuat dengan benar untuk
    ketiga pihak (sumber, tujuan, dan auditor), memastikan jumlah transfer
-   dienkripsi dengan benar di bawah kunci publik masing-masing pihak.
+   dienkripsi dengan benar menggunakan kunci publik masing-masing pihak.
 
-   **Range proof
+   **Bukti Rentang
    ([BatchedRangeProofU128Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u128.rs#L37))**:
-   Memverifikasi bahwa saldo tersedia yang baru dan jumlah transfer (dibagi
-   menjadi bit rendah/tinggi) semuanya non-negatif dan berada dalam rentang yang
+   Memverifikasi bahwa saldo tersedia baru dan jumlah transfer (dibagi menjadi
+   bit rendah/tinggi) semuanya tidak negatif dan berada dalam rentang yang
    ditentukan.
 
 2. Untuk setiap bukti:
-   - Panggil ZK ElGamal proof program untuk memverifikasi data bukti.
-   - Simpan metadata spesifik bukti dalam akun "context state" bukti untuk
+   - Panggil program bukti ZK ElGamal untuk memverifikasi data bukti.
+   - Simpan metadata khusus bukti dalam akun "context state" bukti untuk
      digunakan dalam instruksi lain.
 
 3. Panggil instruksi
    [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604),
-   dengan menyediakan akun context state bukti.
+   dengan menyertakan akun context state bukti.
 
-4. Tutup akun state konteks proof untuk memulihkan SOL yang digunakan untuk
+4. Tutup akun context state bukti untuk memulihkan SOL yang digunakan untuk
    membuatnya.
 
 Diagram berikut menunjukkan langkah-langkah yang terlibat dalam mentransfer
@@ -87,36 +79,36 @@ sequenceDiagram
     deactivate ElGamal
 ```
 
-### Instruksi yang diperlukan
+### Instruksi yang Diperlukan
 
-Untuk mentransfer token secara konfidensial dari satu token account ke token
-account lainnya, Anda harus:
+Untuk mentransfer token secara rahasia dari satu token account ke token account
+lain, Anda harus:
 
-- Generate equality proof, ciphertext validity proof, dan range proof di sisi
-  klien
-- Invoke program Zk ElGamal proof untuk memverifikasi proof dan menginisialisasi
-  akun "context state"
-- Invoke instruksi
+- Hasilkan bukti kesetaraan, bukti validitas ciphertext, dan bukti rentang di
+  sisi klien
+- Panggil program bukti Zk ElGamal untuk memverifikasi bukti dan
+  menginisialisasi akun "context state"
+- Panggil instruksi
   [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604)
-  dengan menyediakan tiga akun proof.
-- Tutup ketiga akun proof untuk memulihkan rent.
+  dengan menyertakan tiga akun bukti.
+- Tutup ketiga akun bukti untuk memulihkan rent.
 
 Crate `spl_token_client` menyediakan metode-metode berikut:
 
-- Metode `confidential_transfer_create_context_state_account` yang membuat akun
-  proof.
-- Metode `confidential_transfer_transfer` yang meng-invoke instruksi `Transfer`.
-- Metode `confidential_transfer_close_context_state_account` yang menutup akun
-  proof.
+- Metode `confidential_transfer_create_context_state_account` yang membuat
+  sebuah proof account.
+- Metode `confidential_transfer_transfer` yang memanggil instruksi `Transfer`.
+- Metode `confidential_transfer_close_context_state_account` yang menutup sebuah
+  proof account.
 
-### Contoh kode
+### Contoh Kode
 
-Contoh berikut mendemonstrasikan cara mentransfer token secara konfidensial
-antara token account.
+Contoh berikut mendemonstrasikan cara mentransfer token secara rahasia antara
+token account.
 
-Untuk menjalankan contoh ini, mulai validator lokal dengan Token Extension
-Program yang di-clone dari mainnet menggunakan perintah berikut. Anda harus
-menginstal Solana CLI untuk memulai validator lokal.
+Untuk menjalankan contoh ini, mulai validator lokal dengan Token Extensions
+Program yang dikloning dari mainnet menggunakan perintah berikut. Anda harus
+menginstal Solana CLI terlebih dahulu untuk memulai validator lokal.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
@@ -124,8 +116,8 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 
 <Callout type="info">
   Pada saat penulisan ini, Confidential Transfers belum diaktifkan pada
-  validator lokal default. Anda harus meng-clone Token Extension Program dari
-  mainnet untuk menjalankan contoh kode.
+  validator lokal default. Anda harus mengkloning Token Extension Program
+  mainnet untuk menjalankan kode contoh ini.
 </Callout>
 
 <CodeTabs>

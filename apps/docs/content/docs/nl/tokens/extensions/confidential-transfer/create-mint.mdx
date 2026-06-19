@@ -4,21 +4,14 @@ description:
   Leer hoe je een token mint aanmaakt met de Confidential Transfer-extensie.
 ---
 
-<Callout type="warn">
-  Het ZK ElGamal Program is tijdelijk uitgeschakeld op het mainnet en devnet
-  terwijl het een beveiligingsaudit ondergaat. Dit betekent dat de confidential
-  transfers-extensie momenteel niet beschikbaar is. Hoewel de concepten nog
-  steeds geldig zijn, zullen de codevoorbeelden niet werken.
-</Callout>
+## Hoe maak je een mint met de Confidential Transfer-extensie
 
-## Hoe maak je een mint aan met de Confidential Transfer-extensie
+De Confidential Transfer-extensie maakt privétokenoverdrachten mogelijk door
+extra status toe te voegen aan het mint account. In dit gedeelte wordt uitgelegd
+hoe je een token mint maakt met deze extensie ingeschakeld.
 
-De Confidential Transfer-extensie maakt privé-tokenoverdrachten mogelijk door
-extra status toe te voegen aan het mint account. Deze sectie legt uit hoe je een
-token mint aanmaakt met deze extensie ingeschakeld.
-
-Het volgende diagram toont de stappen die betrokken zijn bij het aanmaken van
-een mint met de Confidential Transfer-extensie:
+Het volgende diagram toont de stappen voor het maken van een mint met de
+Confidential Transfer-extensie:
 
 ```mermaid title="Create Mint with Confidential Transfer Extension"
 sequenceDiagram
@@ -32,7 +25,7 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Confidential Transfer mint-status
+### Status van de Confidential Transfer Mint
 
 De extensie voegt de
 [ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)
@@ -64,49 +57,50 @@ pub struct ConfidentialTransferMint {
 
 De _rs`ConfidentialTransferMint`_ bevat drie configuratievelden:
 
-- **authority**: Het account dat toestemming heeft om confidential
-  transfer-instellingen voor de mint te wijzigen en nieuwe confidential accounts
-  goed te keuren als automatische goedkeuring is uitgeschakeld.
+- **authority**: Het account dat toestemming heeft om de instellingen voor
+  vertrouwelijke overdrachten van de mint te wijzigen en nieuwe vertrouwelijke
+  accounts goed te keuren als automatische goedkeuring is uitgeschakeld.
 
 - **auto_approve_new_accounts**: Wanneer ingesteld op true, kunnen gebruikers
-  standaard token accounts aanmaken met confidential transfers ingeschakeld.
-  Wanneer false, moet de authority elk nieuw token account goedkeuren voordat
-  het kan worden gebruikt voor confidential transfers.
+  token accounts aanmaken met standaard ingeschakelde vertrouwelijke
+  overdrachten. Wanneer false, moet de authority elk nieuw token account
+  goedkeuren voordat het kan worden gebruikt voor vertrouwelijke overdrachten.
 
 - **auditor_elgamal_pubkey**: Een optionele auditor die overdrachtsbedragen in
-  confidential transacties kan ontsleutelen, wat een compliancemechanisme biedt
+  vertrouwelijke transacties kan ontsleutelen, wat een nalevingsmechanisme biedt
   terwijl de privacy ten opzichte van het grote publiek behouden blijft.
 
 ### Vereiste instructies
 
-Het aanmaken van een mint met Confidential Transfer ingeschakeld vereist drie
+Het aanmaken van een mint met ingeschakelde Confidential Transfer vereist drie
 instructies in één enkele transactie:
 
-1. **Maak het mint account aan**: Roep de _rs`CreateAccount`_ instructie van het
-   System Program aan om het mint account aan te maken.
+1. **Maak het Mint Account aan**: Roep de instructie _rs`CreateAccount`_ van het
+   System Program aan om het mint account te maken.
 
-2. **Initialiseer Confidential Transfer-extensie**: Roep de
+2. **Initialiseer de Confidential Transfer-extensie**: Roep de instructie
    [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
-   instructie van het Token Extension Program aan om de
-   _rs`ConfidentialTransferMint`_ status voor de mint te configureren.
+   van het Token Extensions Program aan om de
+   _rs`ConfidentialTransferMint`_-status voor de mint te configureren.
 
-3. **Initialiseer mint**: Roep de _rs`Instruction::InitializeMint`_ instructie
-   van het Token Extension Program aan om de standaard mint status te
+3. **Initialiseer Mint**: Roep de instructie _rs`Instruction::InitializeMint`_
+   van het Token Extensions Program aan om de standaard mint-status te
    initialiseren.
 
-Hoewel je deze instructies handmatig zou kunnen schrijven, biedt de
-`spl_token_client` crate een `create_mint` methode die een transactie met alle
-drie de instructies in één functieaanroep bouwt en verstuurt, zoals
+Hoewel je deze instructies handmatig kunt schrijven, biedt de
+`spl_token_client`-crate een `create_mint`-methode die een transactie samenstelt
+en verstuurt met alle drie de instructies in één enkele functieaanroep, zoals
 gedemonstreerd in het onderstaande voorbeeld.
 
 ### Voorbeeldcode
 
-De volgende code demonstreert hoe je een mint aanmaakt met de Confidential
+De volgende code laat zien hoe je een mint aanmaakt met de Confidential
 Transfer-extensie.
 
 Om het voorbeeld uit te voeren, start je een lokale validator met het Token
-Extension Program gekloond van mainnet met het volgende commando. Je moet de
-Solana CLI geïnstalleerd hebben om de lokale validator te starten.
+Extensions Program dat gekloond is van mainnet met behulp van de volgende
+opdracht. Je moet de Solana CLI geïnstalleerd hebben om de lokale validator te
+starten.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
@@ -114,8 +108,8 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 
 <Callout type="info">
   Op het moment van schrijven is Confidential Transfers niet ingeschakeld op de
-  standaard lokale validator. Je moet het mainnet Token Extension Program klonen
-  om de voorbeeldcode uit te voeren.
+  standaard lokale validator. Je moet het mainnet Token Extensions Program
+  klonen om de voorbeeldcode uit te voeren.
 </Callout>
 
 <CodeTabs>

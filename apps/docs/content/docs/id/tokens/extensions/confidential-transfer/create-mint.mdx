@@ -4,13 +4,6 @@ description:
   Pelajari cara membuat token mint dengan ekstensi Confidential Transfer.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program sementara dinonaktifkan di mainnet dan devnet karena sedang
-  menjalani audit keamanan. Ini berarti ekstensi confidential transfers saat ini
-  tidak tersedia. Meskipun konsepnya masih valid, contoh kode tidak akan
-  berjalan.
-</Callout>
-
 ## Cara membuat mint dengan ekstensi Confidential Transfer
 
 Ekstensi Confidential Transfer memungkinkan transfer token secara privat dengan
@@ -32,7 +25,7 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### State Confidential Transfer Mint
+### State Mint Confidential Transfer
 
 Ekstensi ini menambahkan state
 [ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)
@@ -62,59 +55,59 @@ pub struct ConfidentialTransferMint {
 }
 ```
 
-_rs`ConfidentialTransferMint`_ berisi tiga field konfigurasi:
+_rs`ConfidentialTransferMint`_ memiliki tiga field konfigurasi:
 
 - **authority**: Akun yang memiliki izin untuk mengubah pengaturan confidential
-  transfer untuk mint dan menyetujui confidential account baru jika
-  auto-approval dinonaktifkan.
+  transfer pada mint dan menyetujui token account baru jika auto-approval
+  dinonaktifkan.
 
-- **auto_approve_new_accounts**: Ketika diatur ke true, pengguna dapat membuat
-  token account dengan confidential transfer diaktifkan secara default. Ketika
-  false, authority harus menyetujui setiap token account baru sebelum dapat
-  digunakan untuk confidential transfer.
+- **auto_approve_new_accounts**: Ketika disetel ke true, pengguna dapat membuat
+  token account dengan confidential transfer yang diaktifkan secara default.
+  Ketika false, authority harus menyetujui setiap token account baru sebelum
+  dapat digunakan untuk confidential transfer.
 
 - **auditor_elgamal_pubkey**: Auditor opsional yang dapat mendekripsi jumlah
-  transfer dalam transaksi confidential, menyediakan mekanisme kepatuhan sambil
+  transfer dalam transaksi konfidensial, menyediakan mekanisme kepatuhan sambil
   menjaga privasi dari publik umum.
 
-### Instruksi yang diperlukan
+### Instruksi yang Diperlukan
 
-Membuat mint dengan Confidential Transfer diaktifkan memerlukan tiga instruksi
-dalam satu transaksi:
+Membuat mint dengan Confidential Transfer yang diaktifkan memerlukan tiga
+instruksi dalam satu transaksi:
 
-1. **Membuat mint account**: Panggil instruksi _rs`CreateAccount`_ dari System
+1. **Buat Mint Account**: Panggil instruksi _rs`CreateAccount`_ dari System
    Program untuk membuat mint account.
 
-2. **Inisialisasi ekstensi Confidential Transfer**: Panggil instruksi
+2. **Inisialisasi Ekstensi Confidential Transfer**: Panggil instruksi
    [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
-   dari Token Extension Program untuk mengonfigurasi state
-   _rs`ConfidentialTransferMint`_ untuk mint.
+   dari Token Extensions Program untuk mengonfigurasi state
+   _rs`ConfidentialTransferMint`_ pada mint.
 
 3. **Inisialisasi Mint**: Panggil instruksi _rs`Instruction::InitializeMint`_
-   dari Token Extension Program untuk menginisialisasi state mint standar.
+   dari Token Extensions Program untuk menginisialisasi state mint standar.
 
-Meskipun Anda dapat menulis instruksi ini secara manual, crate
-`spl_token_client` menyediakan metode `create_mint` yang membangun dan mengirim
-transaksi dengan ketiga instruksi dalam satu pemanggilan fungsi, seperti yang
-ditunjukkan dalam contoh di bawah ini.
+Meskipun Anda dapat menulis instruksi-instruksi ini secara manual, crate
+`spl_token_client` menyediakan metode `create_mint` yang membangun dan
+mengirimkan transaksi dengan ketiga instruksi tersebut dalam satu pemanggilan
+fungsi, seperti yang ditunjukkan pada contoh di bawah ini.
 
-### Contoh kode
+### Contoh Kode
 
 Kode berikut menunjukkan cara membuat mint dengan ekstensi Confidential
 Transfer.
 
-Untuk menjalankan contoh ini, mulai validator lokal dengan Token Extension
-Program yang dikloning dari mainnet menggunakan perintah berikut. Anda harus
-menginstal Solana CLI untuk memulai validator lokal.
+Untuk menjalankan contoh, mulai validator lokal dengan Token Extensions Program
+yang dikloning dari mainnet menggunakan perintah berikut. Anda harus memiliki
+Solana CLI yang terinstal untuk memulai validator lokal.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Pada saat penulisan, Confidential Transfers belum diaktifkan pada validator
-  lokal default. Anda harus mengkloning Token Extension Program dari mainnet
-  untuk menjalankan contoh kode.
+  Pada saat penulisan ini, Confidential Transfers belum diaktifkan pada
+  validator lokal default. Anda harus mengkloning Token Extensions Program
+  mainnet untuk menjalankan kode contoh.
 </Callout>
 
 <CodeTabs>

@@ -3,31 +3,23 @@ title: Depositar tokens
 description: Aprende cómo depositar tokens al estado confidencial.
 ---
 
-<Callout type="warn">
-  El programa ZK ElGamal está temporalmente deshabilitado en la mainnet y devnet
-  mientras se somete a una auditoría de seguridad. Esto significa que la
-  extensión de transferencias confidenciales no está disponible actualmente.
-  Aunque los conceptos siguen siendo válidos, los ejemplos de código no
-  funcionarán.
-</Callout>
-
-## Cómo depositar tokens al saldo confidencial pendiente
+## Cómo depositar tokens en el saldo pendiente confidencial
 
 Antes de que los tokens puedan transferirse de forma confidencial, el saldo
 público de tokens debe convertirse a un saldo confidencial. Esta conversión
 ocurre en dos etapas:
 
-1. **Saldo confidencial pendiente**: Inicialmente, los tokens se "depositan"
+1. **Saldo Pendiente Confidencial**: Inicialmente, los tokens se "depositan"
    desde el saldo público a un saldo confidencial "pendiente".
-2. **Saldo confidencial disponible**: El saldo pendiente se "aplica" luego al
+2. **Saldo Disponible Confidencial**: El saldo pendiente se "aplica" luego al
    saldo disponible, haciendo que los tokens estén disponibles para
    transferencias confidenciales.
 
-Esta sección explica la primera etapa: depositar el saldo público de tokens al
-saldo confidencial pendiente.
+Esta sección explica la primera etapa: depositar el saldo público de tokens en
+el saldo pendiente confidencial.
 
-El siguiente diagrama muestra los pasos involucrados en depositar tokens desde
-el saldo público al saldo confidencial pendiente:
+El siguiente diagrama muestra los pasos involucrados en el depósito de tokens
+desde el saldo público al saldo pendiente confidencial:
 
 ```mermaid title="Deposit Tokens"
 sequenceDiagram
@@ -45,36 +37,36 @@ sequenceDiagram
     Note over TokenAccount: Pending balance must then be <br> applied to available balance before use
 ```
 
-### Instrucción requerida
+### Instrucción Requerida
 
-Para convertir un saldo público a un saldo confidencial pendiente, invoca la
+Para convertir un saldo público a un saldo pendiente confidencial, invoca la
 instrucción
 [ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386).
-La
-[cantidad máxima](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
-por instrucción de depósito está limitada a 2^48.
+El
+[monto máximo](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
+por instrucción de depósito está limitado a 2^48.
 
 El crate `spl_token_client` proporciona un método
 `confidential_transfer_deposit` que construye y envía una transacción con la
-instrucción `Deposit`, como se demuestra en el ejemplo a continuación.
+instrucción `Deposit`, como se muestra en el ejemplo a continuación.
 
-### Código de ejemplo
+### Código de Ejemplo
 
-El siguiente ejemplo demuestra cómo depositar el saldo público de tokens al
-saldo confidencial pendiente.
+El siguiente ejemplo muestra cómo depositar el saldo público de tokens en el
+saldo pendiente confidencial.
 
-Para ejecutar el ejemplo, inicia un validador local con el Token Extensions
-Program clonado desde la mainnet usando el siguiente comando. Debes tener
-instalado el CLI de Solana para iniciar el validador local.
+Para ejecutar el ejemplo, inicia un validator local con el Token Extensions
+Program clonado desde mainnet usando el siguiente comando. Debes tener la CLI de
+Solana instalada para iniciar el validator local.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  En el momento de escribir esto, las Transferencias Confidenciales no están
+  En el momento de redactar esto, las Transferencias Confidenciales no están
   habilitadas en el validator local predeterminado. Debes clonar el Token
-  Extensions Program de la red principal para ejecutar el código de ejemplo.
+  Extensions Program de mainnet para ejecutar el código de ejemplo.
 </Callout>
 
 <CodeTabs>

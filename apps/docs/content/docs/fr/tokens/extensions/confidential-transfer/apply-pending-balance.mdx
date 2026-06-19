@@ -5,33 +5,26 @@ description:
   disponibles.
 ---
 
-<Callout type="warn">
-  Le programme ZK ElGamal est temporairement désactivé sur le mainnet et le
-  devnet pendant qu'il fait l'objet d'un audit de sécurité. Cela signifie que
-  l'extension de transferts confidentiels est actuellement indisponible. Bien
-  que les concepts restent valides, les exemples de code ne fonctionneront pas.
-</Callout>
-
 ## Comment appliquer le solde en attente au solde disponible
 
 Avant que les tokens puissent être transférés de manière confidentielle, le
-solde de tokens public doit être converti en solde confidentiel. Cette
+solde public de tokens doit être converti en solde confidentiel. Cette
 conversion se déroule en deux étapes :
 
-1. **Solde confidentiel en attente** : initialement, les tokens sont « déposés »
-   du solde public vers un solde confidentiel « en attente ».
-2. **Solde confidentiel disponible** : le solde en attente est ensuite «
-   appliqué » au solde disponible, rendant les tokens disponibles pour les
+1. **Solde confidentiel en attente** : Dans un premier temps, les tokens sont «
+   déposés » depuis le solde public vers un solde confidentiel « en attente ».
+2. **Solde confidentiel disponible** : Le solde en attente est ensuite «
+   appliqué » au solde disponible, rendant les tokens utilisables pour des
    transferts confidentiels.
 
-Cette section explique la deuxième étape : appliquer le solde en attente au
+Cette section explique la deuxième étape : l'application du solde en attente au
 solde disponible.
 
-Lorsque les tokens sont « déposés » depuis le solde public ou lorsque les tokens
-sont transférés de manière confidentielle d'un token account à un autre, les
-tokens sont initialement ajoutés au solde confidentiel en attente. Avant que les
-tokens puissent être utilisés pour des transferts confidentiels, le solde en
-attente doit être « appliqué » au solde disponible.
+Lorsque des tokens sont « déposés » depuis le solde public ou lorsqu'ils sont
+transférés de manière confidentielle d'un token account à un autre, les tokens
+sont initalement ajoutés au solde confidentiel en attente. Avant que les tokens
+puissent être utilisés pour des transferts confidentiels, le solde en attente
+doit être « appliqué » au solde disponible.
 
 ```mermaid title="Apply Pending Balance"
 sequenceDiagram
@@ -51,7 +44,7 @@ CC->>BB: Transfer
 B->>BB: Apply
 ```
 
-Le diagramme suivant montre les étapes impliquées dans l'application du solde en
+Le diagramme suivant illustre les étapes nécessaires à l'application du solde en
 attente au solde disponible :
 
 ```mermaid title="Apply Pending Balance"
@@ -80,7 +73,7 @@ Pour convertir un solde en attente en solde disponible, invoquez l'instruction
 
 La crate `spl_token_client` fournit une méthode
 `confidential_transfer_apply_pending_balance` qui construit et envoie une
-transaction avec l'instruction `ApplyPendingBalance`, comme démontré dans
+transaction avec l'instruction `ApplyPendingBalance`, comme illustré dans
 l'exemple ci-dessous.
 
 ### Exemple de code
@@ -88,10 +81,9 @@ l'exemple ci-dessous.
 L'exemple suivant montre comment appliquer le solde confidentiel en attente au
 solde confidentiel disponible.
 
-Pour exécuter l'exemple, démarrez un validateur local avec le programme
-d'extension de jetons cloné depuis le réseau principal en utilisant la commande
-suivante. Vous devez avoir la CLI Solana installée pour démarrer le validateur
-local.
+Pour exécuter l'exemple, démarrez un validator local avec le Token Extension
+Program cloné depuis le mainnet à l'aide de la commande suivante. Vous devez
+avoir le Solana CLI installé pour démarrer le validator local.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
@@ -99,8 +91,8 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 
 <Callout type="info">
   Au moment de la rédaction, les transferts confidentiels ne sont pas activés
-  sur le validateur local par défaut. Vous devez cloner le programme d'extension
-  de jetons du réseau principal pour exécuter l'exemple de code.
+  sur le validator local par défaut. Vous devez cloner le Token Extension
+  Program du mainnet pour exécuter le code d'exemple.
 </Callout>
 
 <CodeTabs>

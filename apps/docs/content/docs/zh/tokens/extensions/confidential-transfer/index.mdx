@@ -3,25 +3,20 @@ title: 保密转账
 description: 了解保密转账扩展，以及如何使用它为 token mint 和账户添加可选功能。
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program 目前在主网和 devnet
-  上暂时禁用，正在进行安全审计。这意味着保密转账扩展当前不可用。虽然相关概念依然有效，但代码示例将无法运行。
-</Callout>
+## 什么是隐私转账？
 
-## 什么是保密转账？
-
-保密转账允许你在 token
-account 之间转移代币时不公开转账金额。这对于保护隐私的交易非常有用。只有转账金额和 token 余额是私密的，token
+隐私转账使您能够在 token
+account 之间转移代币，而无需披露转账金额。这对于注重隐私保护的交易非常有用。只有转账金额和代币余额是私密的，token
 account 地址仍然是公开的。
 
-- [协议概览](https://www.solana-program.com/docs/confidential-balances/overview) - 了解底层密码学协议的细节
-- [快速入门指南](https://www.solana-program.com/docs/confidential-balances#setup) - 设置和基础 CLI 命令
-- [保密余额 Cookbook](https://github.com/solana-developers/Confidential-Balances-Sample) - 如何使用保密转账扩展的代码片段
+- [协议概述](https://www.solana-program.com/docs/confidential-balances/overview) - 底层密码学协议的详细说明
+- [快速入门指南](https://www.solana-program.com/docs/confidential-balances#setup) - 配置步骤与基础 CLI 命令
+- [隐私余额示例手册](https://github.com/solana-developers/Confidential-Balances-Sample) - 如何使用隐私转账扩展的代码片段
 
 ### 它是如何工作的？
 
-保密转账扩展为 Token
-Extension 程序添加了[instructions](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)，允许你在账户之间转移代币时不公开转账金额。
+隐私转账扩展为 Token Extensions Program 添加了
+[指令](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)，使您能够在账户之间转移代币而无需披露转账金额。
 
 ```mermaid title="Confidential Transfer Basic Overview"
     sequenceDiagram
@@ -41,61 +36,67 @@ Extension 程序添加了[instructions](https://github.com/solana-program/token-
 
 ```
 
-保密 token 转账的基本流程如下：
+隐私代币转账的基本流程如下：
 
-1. 创建带有保密转账扩展的 mint account。
-2. 为发送方和接收方创建带有保密转账扩展的 token account。
-3. 向发送方账户铸造代币。
-4. **存入**发送方的公共余额到**保密待处理余额**。
-5. **应用**发送方的待处理余额到**保密可用余额**。
-6. 从发送方 token account 向接收方 token account **保密转账**代币。
-7. **应用**接收方的待处理余额到**保密可用余额**。
-8. **提取**接收方的保密可用余额到**公共余额**。
+1. 创建带有隐私转账扩展的 mint account。
+2. 为发送方和接收方创建带有隐私转账扩展的 token account。
+3. 将代币铸造到发送方账户。
+4. 将发送方的公开余额**存入\*\***隐私待处理余额\*\*。
+5. 将发送方的待处理余额**应用**至**隐私可用余额**。
+6. 将代币从发送方 token account 隐私**转账**至接收方 token account。
+7. 将接收方的待处理余额**应用**至**隐私可用余额**。
+8. 将接收方的隐私可用余额**提取**至**公开余额**。
 
-有关保密转账流程各步骤的详细说明，请参阅以下相关页面：
+有关隐私转账流程中各步骤的更多详情，请参阅对应页面：
 
 <Cards>
   <Card
     title="创建 Mint Account"
     href="/docs/tokens/extensions/confidential-transfer/create-mint"
   >
-    如何使用保密转账扩展创建 mint account
+    如何创建带有隐私转账扩展的 mint account
   </Card>
   <Card
     title="创建 Token Account"
     href="/docs/tokens/extensions/confidential-transfer/create-token-account"
   >
-    如何使用保密转账扩展配置 token account
+    如何为 token account 配置隐私转账扩展
   </Card>
   <Card
     title="存入代币"
     href="/docs/tokens/extensions/confidential-transfer/deposit-tokens"
   >
-    如何将代币存入保密待处理余额
+    如何将代币存入隐私待处理余额
   </Card>
   <Card
     title="应用待处理余额"
     href="/docs/tokens/extensions/confidential-transfer/apply-pending-balance"
   >
-    如何将待处理余额应用至可用保密余额
+    如何将待处理余额应用至隐私可用余额
   </Card>
   <Card
     title="提取代币"
     href="/docs/tokens/extensions/confidential-transfer/withdraw-tokens"
   >
-    如何从保密可用余额中提取代币
+    如何从隐私可用余额中提取代币
   </Card>
   <Card
     title="转账代币"
     href="/docs/tokens/extensions/confidential-transfer/transfer-tokens"
   >
-    如何在 token account 之间进行保密代币转账
+    如何在 token account 之间进行隐私代币转账
+  </Card>
+  <Card
+    title="集成指南"
+    href="/docs/tokens/extensions/confidential-transfer/integration-guide"
+  >
+    钱包、区块链浏览器和交易所如何支持隐私转账代币
   </Card>
   <Card
     title="发行方指南"
     href="/docs/tokens/extensions/confidential-transfer/issuer-guide"
   >
-    如何发行和运营保密转账代币（审批策略、审计员、手续费、铸造与销毁）
+    如何发行和管理隐私转账代币（审批策略、审计方、费用、铸造与销毁）
   </Card>
 </Cards>
 
@@ -246,18 +247,18 @@ sequenceDiagram
 
 ### 示例代码
 
-下面的 Rust 示例展示了与前述流程图对应的保密代币转账步骤。为便于理解，各步骤被拆分为辅助函数。
+以下 Rust 示例展示了与前述流程图对应的保密代币转账步骤。为便于理解，各步骤被拆分为独立的辅助函数。
 
-要运行该示例，请使用以下命令启动一个本地 validator，并从主网克隆 Token Extension
-Program。你需要先安装 Solana CLI 才能使用本地 validator。
+要运行此示例，请使用以下命令启动一个从主网克隆了 Token Extensions
+Program 的本地 validator。您需要安装 Solana CLI 才能使用本地 validator。
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  截至目前，默认本地 validator 尚未启用保密转账功能。你需要从主网克隆 Token
-  Extension Program 才能运行示例代码。
+  在撰写本文时，默认本地 validator 上尚未启用保密转账功能。您必须克隆主网 Token
+  Extensions Program 才能运行示例代码。
 </Callout>
 
 <CodeTabs>
@@ -1140,22 +1141,22 @@ tokio = { version = "1.44.2", features = ["full"] }
 
 ## 保密转账指令
 
-保密转账扩展的全部[instructions](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)如下：
+保密转账扩展的完整[指令](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)列表如下：
 
-| 指令                                | 说明                                                                                                                         |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| _rs`InitializeMint`_                | 设置 mint account 以支持保密转账。此指令必须与 _rs`TokenInstruction::InitializeMint`_ 指令在同一笔交易中使用。               |
-| _rs`UpdateMint`_                    | 更新 mint 的保密转账设置。                                                                                                   |
-| _rs`ConfigureAccount`_              | 设置 token account 以支持保密转账。                                                                                          |
-| _rs`ApproveAccount`_                | 如果 mint 需要新 token account 获得批准，则批准该 token account 进行保密转账。                                               |
-| _rs`EmptyAccount`_                  | 清空待处理和可用的保密余额，以便关闭 token account。                                                                         |
-| _rs`Deposit`_                       | 将公开代币余额转换为保密待处理余额。                                                                                         |
-| _rs`Withdraw`_                      | 将可用的保密余额转换回公开余额。                                                                                             |
-| _rs`Transfer`_                      | 在 token account 之间进行保密转账。                                                                                          |
-| _rs`ApplyPendingBalance`_           | 存入或转账后，将待处理余额转换为可用余额。                                                                                   |
-| _rs`EnableConfidentialCredits`_     | 允许 token account 接收保密代币转账。                                                                                        |
-| _rs`DisableConfidentialCredits`_    | 阻止接收保密转账，但仍允许公开转账。                                                                                         |
-| _rs`EnableNonConfidentialCredits`_  | 允许 token account 接收公开代币转账。                                                                                        |
-| _rs`DisableNonConfidentialCredits`_ | 阻止常规转账，使账户仅接收保密转账。                                                                                         |
-| _rs`TransferWithFee`_               | 在 token account 之间进行带手续费的保密转账。                                                                                |
-| _rs`ConfigureAccountWithRegistry`_  | 通过使用 _rs`ElGamalRegistry`_ 账户而不是 _rs`VerifyPubkeyValidity`_ 证明，作为另一种方式配置 token account 以支持保密转账。 |
+| 指令                                | 描述                                                                                                           |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| _rs`InitializeMint`_                | 为 mint account 设置保密转账配置。此指令必须与 _rs`TokenInstruction::InitializeMint`_ 指令包含在同一笔交易中。 |
+| _rs`UpdateMint`_                    | 更新 mint 的保密转账设置。                                                                                     |
+| _rs`ConfigureAccount`_              | 为 token account 设置保密转账配置。                                                                            |
+| _rs`ApproveAccount`_                | 若 mint 要求对新 token account 进行审批，则批准该 token account 进行保密转账。                                 |
+| _rs`EmptyAccount`_                  | 清空待处理和可用的保密余额，以允许关闭 token account。                                                         |
+| _rs`Deposit`_                       | 将公开代币余额转换为待处理的保密余额。                                                                         |
+| _rs`Withdraw`_                      | 将可用的保密余额转换回公开余额。                                                                               |
+| _rs`Transfer`_                      | 在 token account 之间以保密方式转移代币。                                                                      |
+| _rs`ApplyPendingBalance`_           | 在存款或转账后，将待处理余额转换为可用余额。                                                                   |
+| _rs`EnableConfidentialCredits`_     | 允许 token account 接收保密代币转账。                                                                          |
+| _rs`DisableConfidentialCredits`_    | 阻止传入的保密转账，同时仍允许公开转账。                                                                       |
+| _rs`EnableNonConfidentialCredits`_  | 允许 token account 接收公开代币转账。                                                                          |
+| _rs`DisableNonConfidentialCredits`_ | 阻止常规转账，使账户仅接收保密转账。                                                                           |
+| _rs`TransferWithFee`_               | 在 token account 之间以保密方式转移代币，并附带手续费。                                                        |
+| _rs`ConfigureAccountWithRegistry`_  | 使用 _rs`ElGamalRegistry`_ 账户代替 _rs`VerifyPubkeyValidity`_ 证明，为 token account 配置保密转账的替代方式。 |

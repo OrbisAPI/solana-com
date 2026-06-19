@@ -3,18 +3,12 @@ title: إنشاء mint للرمز المميز
 description: تعلم كيفية إنشاء mint للرمز المميز مع ملحق التحويل السري.
 ---
 
-<Callout type="warn">
-  برنامج ZK ElGamal معطل مؤقتاً على الشبكة الرئيسية وشبكة المطورين حيث يخضع
-  لتدقيق أمني. هذا يعني أن ملحق التحويلات السرية غير متاح حالياً. بينما المفاهيم
-  لا تزال صالحة، فإن أمثلة الكود لن تعمل.
-</Callout>
+## كيفية إنشاء mint مع امتداد النقل السري
 
-## كيفية إنشاء mint مع ملحق التحويل السري
+يتيح امتداد النقل السري إجراء تحويلات رمزية خاصة عن طريق إضافة حالة إضافية إلى
+mint account. يشرح هذا القسم كيفية إنشاء token mint مع تفعيل هذا الامتداد.
 
-يتيح ملحق التحويل السري تحويلات الرموز المميزة الخاصة من خلال إضافة حالة إضافية
-إلى حساب mint. يشرح هذا القسم كيفية إنشاء mint للرمز المميز مع تمكين هذا الملحق.
-
-يوضح الرسم التخطيطي التالي الخطوات المتضمنة في إنشاء mint مع ملحق التحويل السري:
+يوضح المخطط التالي الخطوات المتبعة في إنشاء mint مع امتداد النقل السري:
 
 ```mermaid title="Create Mint with Confidential Transfer Extension"
 sequenceDiagram
@@ -28,11 +22,11 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### حالة mint للتحويل السري
+### حالة Mint للنقل السري
 
-يضيف الملحق حالة
+يضيف الامتداد حالة
 [ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)
-إلى حساب mint:
+إلى mint account:
 
 ```rust title="Confidential Mint State"
 #[repr(C)]
@@ -58,54 +52,55 @@ pub struct ConfidentialTransferMint {
 }
 ```
 
-تحتوي _rs`ConfidentialTransferMint`_ على ثلاثة حقول تكوين:
+يحتوي _rs`ConfidentialTransferMint`_ على ثلاثة حقول تكوين:
 
-- **authority**: الحساب الذي لديه إذن لتغيير إعدادات التحويل السري لحساب mint
-  والموافقة على حسابات سرية جديدة إذا كانت الموافقة التلقائية معطلة.
+- **authority**: الحساب الذي يمتلك صلاحية تغيير إعدادات النقل السري لـ mint
+  والموافقة على الحسابات السرية الجديدة في حال تعطيل الموافقة التلقائية.
 
-- **auto_approve_new_accounts**: عند تعيينها على true، يمكن للمستخدمين إنشاء
-  حسابات رموز مميزة مع تمكين التحويلات السرية افتراضياً. عند تعيينها على false،
-  يجب على authority الموافقة على كل حساب رمز مميز جديد قبل أن يمكن استخدامه في
-  التحويلات السرية.
+- **auto_approve_new_accounts**: عند تعيينه على true، يمكن للمستخدمين إنشاء
+  token accounts مع تفعيل النقل السري بشكل افتراضي. وعند تعيينه على false، يجب
+  على الجهة المخوّلة الموافقة على كل token account جديد قبل أن يتمكن من استخدامه
+  للنقل السري.
 
-- **auditor_elgamal_pubkey**: مدقق اختياري يمكنه فك تشفير مبالغ التحويل في
+- **auditor_elgamal_pubkey**: مدقق اختياري يستطيع فك تشفير مبالغ التحويل في
   المعاملات السرية، مما يوفر آلية امتثال مع الحفاظ على الخصوصية من عامة الناس.
 
 ### التعليمات المطلوبة
 
-يتطلب إنشاء mint مع تمكين التحويل السري ثلاث تعليمات في معاملة واحدة:
+يتطلب إنشاء mint مع تفعيل النقل السري ثلاث تعليمات في معاملة واحدة:
 
-1. **إنشاء حساب mint**: استدعاء تعليمة _rs`CreateAccount`_ من System Program
-   لإنشاء حساب mint.
+1. **إنشاء Mint Account**: استدعاء تعليمة _rs`CreateAccount`_ الخاصة بـ System
+   Program لإنشاء mint account.
 
-2. **تهيئة امتداد التحويل السري**: استدعاء تعليمة
+2. **تهيئة امتداد النقل السري**: استدعاء تعليمة
    [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
-   من برنامج امتداد الرموز المميزة لتكوين حالة `ConfidentialTransferMint` لحساب
-   mint.
+   الخاصة بـ Token Extensions Program لتكوين حالة _rs`ConfidentialTransferMint`_
+   لـ mint.
 
-3. **تهيئة حساب Mint**: استدعاء تعليمة `Instruction::InitializeMint` من برنامج
-   امتداد الرموز المميزة لتهيئة حالة mint القياسية.
+3. **تهيئة Mint**: استدعاء تعليمة _rs`Instruction::InitializeMint`_ الخاصة بـ
+   Token Extensions Program لتهيئة حالة mint القياسية.
 
 بينما يمكنك كتابة هذه التعليمات يدويًا، توفر حزمة `spl_token_client` طريقة
-`create_mint` التي تبني وترسل معاملة تحتوي على جميع التعليمات الثلاث في استدعاء
-دالة واحدة، كما هو موضح في المثال أدناه.
+`create_mint` التي تبني معاملة وترسلها تحتوي على التعليمات الثلاث في استدعاء
+دالة واحد، كما هو موضح في المثال أدناه.
 
 ### مثال على الكود
 
-يوضح الكود التالي كيفية إنشاء حساب mint مع امتداد التحويل السري.
+يوضح الكود التالي كيفية إنشاء سك العملة مع امتداد النقل السري (Confidential
+Transfer).
 
-لتشغيل المثال، ابدأ مدقق محلي مع برنامج امتداد الرموز المميزة المستنسخ من الشبكة
-الرئيسية باستخدام الأمر التالي. يجب أن يكون لديك Solana CLI مثبتًا لبدء المدقق
-المحلي.
+لتشغيل المثال، ابدأ تشغيل validator محلي مع Token Extensions Program المستنسخ من
+الشبكة الرئيسية باستخدام الأمر التالي. يجب أن يكون لديك سولانا CLI مثبتاً لبدء
+تشغيل validator المحلي.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  في وقت كتابة هذا المحتوى، لم يتم تفعيل التحويلات السرية على المدقق المحلي
-  الافتراضي. يجب عليك استنساخ برنامج امتداد الرموز المميزة من الشبكة الرئيسية
-  لتشغيل مثال الكود.
+  في وقت كتابة هذه السطور، لم يتم تفعيل النقل السري (Confidential Transfers) على
+  validator المحلي الافتراضي. يجب عليك استنساخ Token Extensions Program من
+  الشبكة الرئيسية لتشغيل الكود التجريبي.
 </Callout>
 
 <CodeTabs>

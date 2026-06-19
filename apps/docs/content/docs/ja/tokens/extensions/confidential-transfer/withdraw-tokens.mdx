@@ -3,38 +3,33 @@ title: トークンの出金
 description: 機密状態からトークンを出金する方法を学びます。
 ---
 
-<Callout type="warn">
-  ZK ElGamal
-  Programは、セキュリティ監査を受けているため、メインネットとdevnetで一時的に無効化されています。これは、機密転送拡張機能が現在利用できないことを意味します。概念は依然として有効ですが、コード例は実行されません。
-</Callout>
-
 ## 機密利用可能残高からトークンを出金する方法
 
-機密利用可能残高から公開残高にトークンを出金するには:
+機密利用可能残高からパブリック残高にトークンを出金するには：
 
 1. クライアント側で
    [2つの証明](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/proof-generation/src/withdraw.rs#L22)
-   を作成します:
+   を作成します：
 
-   **等価性証明 ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**: 出金後の残りの利用可能残高暗号文が対応する
-   [Pedersenコミットメント](https://en.wikipedia.org/wiki/Commitment_scheme)
+   **等価証明 ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**: 出金後の残存する利用可能残高の暗号文が、対応する
+   [Pedersen コミットメント](https://en.wikipedia.org/wiki/Commitment_scheme)
    と一致することを検証し、アカウントの新しい利用可能残高が
    `remaining_balance = current_balance - withdraw_amount`
    として正しく計算されることを保証します。
 
-   **範囲証明 ([BatchedRangeProofU64Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u64.rs#L37))**: 出金後の残りの利用可能残高が非負であり、指定された範囲内にあることを検証します。
+   **範囲証明 ([BatchedRangeProofU64Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u64.rs#L37))**: 出金後の残存する利用可能残高が非負であり、指定された範囲内であることを検証します。
 
-2. 各証明について:
-   - ZK ElGamal証明programを呼び出して証明データを検証します。
-   - 証明固有のメタデータを証明「コンテキスト状態」アカウントに保存し、他のinstructionsで使用します。
+2. 各証明について：
+   - ZK ElGamal 証明プログラムを呼び出して証明データを検証します。
+   - 他の instructions で使用するため、証明固有のメタデータを証明「コンテキスト状態」アカウントに保存します。
 
 3. 2つの証明アカウントを提供して
    [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
    instructionを呼び出します。
 
-4. 証明アカウントを閉じて、それらの作成に使用したSOLを回収します。
+4. 証明アカウントを閉じて、作成に使用した SOL を回収します。
 
-次の図は、機密利用可能残高から公開残高にトークンを出金する際の手順を示しています:
+次の図は、機密利用可能残高からパブリック残高にトークンを出金する際の手順を示しています：
 
 ```mermaid title="Withdraw Tokens"
 sequenceDiagram
@@ -61,34 +56,33 @@ sequenceDiagram
     deactivate ElGamal
 ```
 
-### 必要なinstructions
+### 必要な instructions
 
-機密利用可能残高から公開残高にトークンを出金するには、次のことを行う必要があります:
+機密利用可能残高からパブリック残高にトークンを出金するには、以下を行う必要があります：
 
-- クライアント側で等価性証明と範囲証明を生成する
+- クライアント側で等価証明と範囲証明を生成する
 - ZK
-  ElGamal証明programを呼び出して証明を検証し、「コンテキスト状態」アカウントを初期化する
+  ElGamal 証明プログラムを呼び出して証明を検証し、「コンテキスト状態」アカウントを初期化する
 - 2つの証明アカウントを提供して
   [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
   instructionを呼び出す
-- rentを回収するために2つの証明アカウントを閉じる
+- 2つの証明アカウントを閉じて rent を回収する
 
 `spl_token_client` クレートは以下のメソッドを提供します：
 
 - `confidential_transfer_create_context_state_account`
-  メソッド：証明アカウントを作成します。
-- `confidential_transfer_withdraw` メソッド：`Withdraw`
-  instructionを呼び出します。
+  は証明アカウントを作成するメソッドです。
+- `confidential_transfer_withdraw` は `Withdraw`
+  instructionを呼び出すメソッドです。
 - `confidential_transfer_close_context_state_account`
-  メソッド：証明アカウントを閉じます。
+  は証明アカウントを閉じるメソッドです。
 
 ### サンプルコード
 
-以下の例は、機密利用可能残高から公開残高にトークンを引き出す方法を示しています。
+次の例は、機密利用可能残高からパブリック残高にトークンを出金する方法を示しています。
 
-この例を実行するには、以下のコマンドを使用して、mainnetからクローンしたToken
-Extension
-Programを使用してローカルバリデータを起動します。ローカルバリデータを起動するには、Solana
+サンプルを実行するには、以下のコマンドを使用してメインネットからToken Extension
+Programをクローンしたローカルvalidatorを起動してください。ローカルvalidatorを起動するには、Solana
 CLIがインストールされている必要があります。
 
 ```terminal
@@ -97,7 +91,7 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 
 <Callout type="info">
   執筆時点では、Confidential
-  Transfersはデフォルトのローカルバリデータでは有効になっていません。サンプルコードを実行するには、mainnetのToken
+  TransfersはデフォルトのローカルvalidatorではValidatorが有効になっていません。サンプルコードを実行するには、メインネットのToken
   Extension Programをクローンする必要があります。
 </Callout>
 

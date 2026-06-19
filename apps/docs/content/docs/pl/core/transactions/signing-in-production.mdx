@@ -1,0 +1,73 @@
+---
+title: Podpisywanie w środowisku produkcyjnym
+description:
+  Gdzie przechowywane są klucze podpisujące w produkcyjnej aplikacji Solana oraz
+  jak wybrać między kluczami lokalnymi, portfelami przeglądarkowymi, usługami
+  KMS/HSM w chmurze a zarządzanymi backendami podpisującymi.
+type: conceptual
+prerequisites:
+  - /docs/core/transactions/transaction-structure
+related:
+  - /docs/tools/keychain
+  - /docs/payments/production-readiness
+---
+
+Transakcja zostanie wykonana tylko wtedy, gdy zawiera prawidłowy
+[podpis](/docs/core/transactions/transaction-structure#signatures) od każdego
+wymaganego sygnatariusza. Podczas lokalnego tworzenia zazwyczaj przechowujesz
+ten klucz jako [`Keypair`](/developers/cookbook/wallets/create-keypair) i
+podpisujesz bezpośrednio. W środowisku produkcyjnym ważne pytanie jest inne:
+**gdzie przechowywany jest klucz prywatny i kto jest uprawniony do autoryzowania
+podpisu za jego pomocą?**
+
+<Callout type="warn">
+  Nigdy nie osadzaj kluczy prywatnych w kodzie po stronie klienta, nie dołączaj
+  ich do frontendu ani nie umieszczaj w kontroli wersji. Każdy, kto uzyska
+  dostęp do klucza, przejmuje pełną kontrolę nad środkami na tym koncie.
+</Callout>
+
+## Metody podpisywania
+
+| Metoda                        | Gdzie przechowywany jest klucz                              | Kto podpisuje                                    | Najlepsze zastosowanie                                               |
+| ----------------------------- | ----------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------- |
+| **Lokalny keypair**           | Plik lub zmienna środowiskowa na maszynie                   | Twój kod, bezpośrednio                           | Lokalny rozwój, testy, CI                                            |
+| **Portfel przeglądarkowy**    | Portfel użytkownika końcowego (np. Phantom, Solflare)       | Użytkownik końcowy, per transakcja               | Frontendowe dApps, gdzie użytkownicy podpisują własne transakcje     |
+| **KMS / HSM w chmurze**       | Usługa kluczy wspierana sprzętowo (AWS KMS, GCP KMS, Vault) | Twój backend wysyła żądanie podpisu do usługi    | Usługi backendowe, operacje skarbcowe, środowiska regulowane         |
+| **Portfele zarządzane / MPC** | Podzielone lub powierzone w infrastrukturze dostawcy        | Dostawca współpodpisuje zgodnie z Twoją polityką | Wbudowane portfele, przepływy zatwierdzania, custody instytucjonalny |
+
+Lokalny keypair to jedyne podejście, które umieszcza surowy materiał klucza
+bezpośrednio w aplikacji. Każde podejście produkcyjne przechowuje klucz w
+dedykowanej infrastrukturze i zleca tej infrastrukturze podpisywanie w Twoim
+imieniu.
+
+## Podpisywanie po stronie serwera
+
+Gdy serwer musi podpisywać — opłacać prowizje, wysyłać transakcje programów lub
+zarządzać skarbcem — użyj dedykowanego backendu do zarządzania kluczami zamiast
+surowego keypair. Solana Foundation utrzymuje [Keychain](/docs/tools/keychain),
+ujednoliconą bibliotekę do podpisywania (Rust i TypeScript), która udostępnia
+jeden interfejs `SolanaSigner` dla każdego backendu wymienionego w powyższej
+tabeli: Memory, HashiCorp Vault, AWS KMS, GCP KMS, Fireblocks, Privy, Turnkey,
+CDP, Crossmint, Dfns, Para, Openfort i Utila.
+
+Ponieważ interfejs jest identyczny dla wszystkich backendów, możesz tworzyć
+aplikację lokalnie z kluczem przechowywanym w pamięci, a następnie przełączyć
+się na backend produkcyjny poprzez konfigurację — bez przepisywania kodu
+aplikacji. Keychain jest kompatybilny z
+[`@solana/kit`](/docs/clients/official/javascript) oraz
+[Rust SDK](/docs/clients/official/rust).
+
+<Cards>
+  <Card title="Keychain" href="/docs/tools/keychain">
+    Ujednolicone podpisywanie dla kluczy lokalnych, KMS, HSM i zarządzanych
+    backendów portfeli.
+  </Card>
+  <Card title="Wybór backendu" href="/docs/tools/keychain/choosing-a-backend">
+    Porównaj modele powiernictwa i wybierz odpowiedni backend do podpisywania
+    dla swojej aplikacji.
+  </Card>
+</Cards>
+
+Pełną listę kontrolną dla środowisk produkcyjnych — zarządzanie kluczami,
+bezpieczeństwo RPC i monitorowanie — znajdziesz w sekcji
+[Gotowość produkcyjna](/docs/payments/production-readiness).

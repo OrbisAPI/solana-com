@@ -5,33 +5,26 @@ description:
   optionele functies toe te voegen aan token mints en accounts.
 ---
 
-<Callout type="warn">
-  Het ZK ElGamal-programma is tijdelijk uitgeschakeld op het mainnet en devnet
-  terwijl het een beveiligingsaudit ondergaat. Dit betekent dat de confidential
-  transfers-extensie momenteel niet beschikbaar is. Hoewel de concepten nog
-  steeds geldig zijn, zullen de codevoorbeelden niet werken.
-</Callout>
-
 ## Wat zijn vertrouwelijke overdrachten?
 
-Vertrouwelijke overdrachten stellen je in staat om tokens tussen token accounts
-over te dragen zonder het overdrachtsbedrag te onthullen. Dit is nuttig voor
+Vertrouwelijke overdrachten stellen je in staat om tokens over te dragen tussen
+token accounts zonder het overdrachtsbedrag te onthullen. Dit is handig voor
 privacybeschermende transacties. Alleen de overdrachtsbedragen en tokensaldi
 zijn privé. De token account-adressen blijven openbaar.
 
 - [Protocoloverzicht](https://www.solana-program.com/docs/confidential-balances/overview) -
   Details over het onderliggende cryptografische protocol
 - [Snelstartgids](https://www.solana-program.com/docs/confidential-balances#setup) -
-  Installatie en basis CLI-commando's
+  Instelling en basale CLI-opdrachten
 - [Confidential Balances Cookbook](https://github.com/solana-developers/Confidential-Balances-Sample) -
-  Codefragmenten over hoe de Confidential Transfer-extensie te gebruiken
+  Codevoorbeelden over het gebruik van de Confidential Transfer-extensie
 
 ### Hoe werkt het?
 
 De Confidential Transfer-extensie voegt
 [instructies](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
-toe aan het Token Extension-programma waarmee je tokens tussen accounts kunt
-overdragen zonder het overdrachtsbedrag te onthullen.
+toe aan het Token Extensions Program waarmee je tokens kunt overdragen tussen
+accounts zonder het overdrachtsbedrag te onthullen.
 
 ```mermaid title="Confidential Transfer Basic Overview"
     sequenceDiagram
@@ -53,72 +46,79 @@ overdragen zonder het overdrachtsbedrag te onthullen.
 
 De basisstroom van vertrouwelijke tokenoverdrachten is als volgt:
 
-1. Maak een mint account aan met de confidential transfer-extensie.
-2. Maak token accounts aan met confidential transfer-extensie voor de verzender
-   en ontvanger.
-3. Mint tokens naar het verzenderaccount.
-4. **Stort** het openbare saldo van de verzender naar het **vertrouwelijke
-   wachtende saldo**.
-5. **Pas** het wachtende saldo van de verzender toe op het **vertrouwelijke
-   beschikbare saldo**.
-6. **Draag** vertrouwelijk tokens over van het verzender token account naar het
-   ontvanger token account.
-7. **Pas** het wachtende saldo van de ontvanger toe op het **vertrouwelijke
-   beschikbare saldo**.
-8. **Neem** het vertrouwelijke beschikbare saldo van de ontvanger op naar het
-   **openbare saldo**.
+1. Maak een mint account aan met de Confidential Transfer-extensie.
+2. Maak token accounts aan met de Confidential Transfer-extensie voor de
+   verzender en ontvanger.
+3. Mint tokens naar het account van de verzender.
+4. **Stort** het publieke saldo van de verzender naar het **vertrouwelijk
+   uitstaand saldo**.
+5. **Verwerk** het uitstaande saldo van de verzender naar het **vertrouwelijk
+   beschikbaar saldo**.
+6. **Draag** tokens vertrouwelijk over van het token account van de verzender
+   naar het token account van de ontvanger.
+7. **Verwerk** het uitstaande saldo van de ontvanger naar het **vertrouwelijk
+   beschikbaar saldo**.
+8. **Onttrek** het vertrouwelijk beschikbare saldo van de ontvanger naar het
+   **publieke saldo**.
 
-Voor meer details over de stappen in de vertrouwelijke overdracht-flow, zie de
+Voor meer details over de stappen in de vertrouwelijke overdrachtstroom, zie de
 bijbehorende pagina's:
 
 <Cards>
   <Card
-    title="Create Mint Account"
+    title="Mint Account Aanmaken"
     href="/docs/tokens/extensions/confidential-transfer/create-mint"
   >
-    Hoe een mint account aanmaken met de Confidential Transfer-extensie
+    Een mint account aanmaken met de Confidential Transfer-extensie
   </Card>
   <Card
-    title="Create Token Account"
+    title="Token Account Aanmaken"
     href="/docs/tokens/extensions/confidential-transfer/create-token-account"
   >
-    Hoe een token account configureren met de Confidential Transfer-extensie
+    Een token account configureren met de Confidential Transfer-extensie
   </Card>
   <Card
-    title="Deposit Tokens"
+    title="Tokens Storten"
     href="/docs/tokens/extensions/confidential-transfer/deposit-tokens"
   >
-    Hoe tokens storten naar het vertrouwelijke openstaande saldo
+    Tokens storten naar het vertrouwelijk uitstaand saldo
   </Card>
   <Card
-    title="Apply Pending Balance"
+    title="Uitstaand Saldo Verwerken"
     href="/docs/tokens/extensions/confidential-transfer/apply-pending-balance"
   >
-    Hoe het openstaande saldo toepassen op het beschikbare vertrouwelijke saldo
+    Uitstaand saldo verwerken naar het beschikbare vertrouwelijke saldo
   </Card>
   <Card
-    title="Withdraw Tokens"
+    title="Tokens Onttrekken"
     href="/docs/tokens/extensions/confidential-transfer/withdraw-tokens"
   >
-    Hoe tokens opnemen uit het vertrouwelijke beschikbare saldo
+    Tokens onttrekken uit het vertrouwelijk beschikbaar saldo
   </Card>
   <Card
-    title="Transfer Tokens"
+    title="Tokens Overdragen"
     href="/docs/tokens/extensions/confidential-transfer/transfer-tokens"
   >
-    Hoe tokens vertrouwelijk overdragen tussen token accounts
+    Tokens vertrouwelijk overdragen tussen token accounts
   </Card>
   <Card
-    title="Issuer Guide"
+    title="Integratiegids"
+    href="/docs/tokens/extensions/confidential-transfer/integration-guide"
+  >
+    Hoe wallets, explorers en exchanges vertrouwelijke overdrachtstokens kunnen
+    ondersteunen
+  </Card>
+  <Card
+    title="Uitgevers­gids"
     href="/docs/tokens/extensions/confidential-transfer/issuer-guide"
   >
-    Hoe een vertrouwelijk overdrachtstoken uitgeven en beheren
-    (goedkeuringsbeleid, auditors, vergoedingen, aanmaken en vernietigen)
+    Een vertrouwelijk overdrachtstoken uitgeven en beheren (goedkeuringsbeleid,
+    auditors, kosten, mint en burn)
   </Card>
 </Cards>
 
-Het onderstaande diagram toont een gedetailleerde volgorde van de basisflow voor
-vertrouwelijke token-overdrachten:
+Het onderstaande diagram toont een gedetailleerde volgorde van de basisstroom
+voor vertrouwelijke tokenoverdrachten:
 
 ```mermaid title="Confidential Transfer Detailed Overview"
 sequenceDiagram
@@ -266,21 +266,22 @@ sequenceDiagram
 ### Voorbeeldcode
 
 Het onderstaande Rust-voorbeeld toont de stappen voor vertrouwelijke
-token-overdrachten die overeenkomen met het voorgaande diagram. De stappen zijn
-voor de duidelijkheid opgesplitst in hulpfuncties.
+tokenoverdrachten die overeenkomen met het voorgaande diagram. De stappen zijn
+voor de duidelijkheid opgesplitst in helperfuncties.
 
-Om het voorbeeld uit te voeren, start je een lokale validator met het Token
-Extension Program gekloond van mainnet met het volgende commando. Je moet de
-Solana CLI geïnstalleerd hebben om de lokale validator te gebruiken.
+Om het voorbeeld uit te voeren, start u een lokale validator met het Token
+Extensions Program gekloond van mainnet met behulp van de volgende opdracht. U
+moet de Solana CLI geïnstalleerd hebben om de lokale validator te kunnen
+gebruiken.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Op het moment van schrijven is vertrouwelijke overdrachten niet ingeschakeld
-  op de standaard lokale validator. Je moet het mainnet Token Extension Program
-  klonen om de voorbeeldcode uit te voeren.
+  Op het moment van schrijven is Confidential Transfers niet ingeschakeld op de
+  standaard lokale validator. U moet het mainnet Token Extensions Program klonen
+  om de voorbeeldcode uit te voeren.
 </Callout>
 
 <CodeTabs>
@@ -1161,26 +1162,26 @@ tokio = { version = "1.44.2", features = ["full"] }
 
 </CodeTabs>
 
-## Vertrouwelijke overdracht-instructies
+## Instructies voor Vertrouwelijke Overdracht
 
-De volledige lijst met vertrouwelijke overdracht-extensie
+De volledige lijst met Confidential Transfer-extensie
 [instructies](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
 zijn als volgt:
 
-| Instructie                          | Beschrijving                                                                                                                                                                            |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _rs`InitializeMint`_                | Stelt mint account in voor vertrouwelijke overdrachten. Deze instructie moet worden opgenomen in dezelfde transactie als _rs`TokenInstruction::InitializeMint`_ instructie.             |
-| _rs`UpdateMint`_                    | Werkt vertrouwelijke overdracht-instellingen voor een mint bij.                                                                                                                         |
-| _rs`ConfigureAccount`_              | Stelt een token account in voor vertrouwelijke overdrachten.                                                                                                                            |
-| _rs`ApproveAccount`_                | Keurt een token account goed voor vertrouwelijke overdrachten als de mint goedkeuring vereist voor nieuwe token accounts.                                                               |
-| _rs`EmptyAccount`_                  | Maakt het wachtende en beschikbare vertrouwelijke saldo leeg om het sluiten van een token account mogelijk te maken.                                                                    |
-| _rs`Deposit`_                       | Converteert openbaar token-saldo naar wachtend vertrouwelijk saldo.                                                                                                                     |
-| _rs`Withdraw`_                      | Converteert beschikbaar vertrouwelijk saldo terug naar openbaar saldo.                                                                                                                  |
-| _rs`Transfer`_                      | Draagt tokens vertrouwelijk over tussen token accounts.                                                                                                                                 |
-| _rs`ApplyPendingBalance`_           | Converteert wachtend saldo naar beschikbaar saldo na stortingen of overdrachten.                                                                                                        |
-| _rs`EnableConfidentialCredits`_     | Stelt een token account in staat om vertrouwelijke token-overdrachten te ontvangen.                                                                                                     |
-| _rs`DisableConfidentialCredits`_    | Blokkeert inkomende vertrouwelijke overdrachten terwijl openbare overdrachten nog steeds zijn toegestaan.                                                                               |
-| _rs`EnableNonConfidentialCredits`_  | Stelt een token account in staat om openbare token-overdrachten te ontvangen.                                                                                                           |
-| _rs`DisableNonConfidentialCredits`_ | Blokkeert reguliere overdrachten om account alleen vertrouwelijke overdrachten te laten ontvangen.                                                                                      |
-| _rs`TransferWithFee`_               | Draagt tokens vertrouwelijk over tussen token accounts met een vergoeding.                                                                                                              |
-| _rs`ConfigureAccountWithRegistry`_  | Alternatieve manier om token accounts te configureren voor vertrouwelijke overdrachten met behulp van een _rs`ElGamalRegistry`_ account in plaats van _rs`VerifyPubkeyValidity`_ proof. |
+| Instructie                          | Beschrijving                                                                                                                                                                       |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _rs`InitializeMint`_                | Configureert mint account voor vertrouwelijke overdrachten. Deze instructie moet worden opgenomen in dezelfde transactie als de instructie _rs`TokenInstruction::InitializeMint`_. |
+| _rs`UpdateMint`_                    | Werkt de instellingen voor vertrouwelijke overdrachten bij voor een mint.                                                                                                          |
+| _rs`ConfigureAccount`_              | Configureert een token account voor vertrouwelijke overdrachten.                                                                                                                   |
+| _rs`ApproveAccount`_                | Keurt een token account goed voor vertrouwelijke overdrachten als de mint goedkeuring vereist voor nieuwe token accounts.                                                          |
+| _rs`EmptyAccount`_                  | Leegt de openstaande en beschikbare vertrouwelijke saldi om het sluiten van een token account mogelijk te maken.                                                                   |
+| _rs`Deposit`_                       | Converteert het publieke tokensaldo naar een openstaand vertrouwelijk saldo.                                                                                                       |
+| _rs`Withdraw`_                      | Converteert het beschikbare vertrouwelijke saldo terug naar een publiek saldo.                                                                                                     |
+| _rs`Transfer`_                      | Draagt tokens vertrouwelijk over tussen token accounts.                                                                                                                            |
+| _rs`ApplyPendingBalance`_           | Converteert het openstaande saldo naar een beschikbaar saldo na stortingen of overdrachten.                                                                                        |
+| _rs`EnableConfidentialCredits`_     | Staat een token account toe om vertrouwelijke tokenoverdrachten te ontvangen.                                                                                                      |
+| _rs`DisableConfidentialCredits`_    | Blokkeert inkomende vertrouwelijke overdrachten terwijl publieke overdrachten nog steeds zijn toegestaan.                                                                          |
+| _rs`EnableNonConfidentialCredits`_  | Staat een token account toe om publieke tokenoverdrachten te ontvangen.                                                                                                            |
+| _rs`DisableNonConfidentialCredits`_ | Blokkeert reguliere overdrachten zodat het account alleen vertrouwelijke overdrachten ontvangt.                                                                                    |
+| _rs`TransferWithFee`_               | Draagt tokens vertrouwelijk over tussen token accounts met een vergoeding.                                                                                                         |
+| _rs`ConfigureAccountWithRegistry`_  | Alternatieve manier om token accounts te configureren voor vertrouwelijke overdrachten met een _rs`ElGamalRegistry`_ account in plaats van _rs`VerifyPubkeyValidity`_ bewijs.      |

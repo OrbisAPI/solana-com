@@ -4,29 +4,22 @@ description:
   Pelajari cara menerapkan saldo tertunda untuk membuat dana tersedia.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program sementara dinonaktifkan di mainnet dan devnet karena sedang
-  menjalani audit keamanan. Ini berarti ekstensi transfer konfidensial saat ini
-  tidak tersedia. Meskipun konsepnya masih valid, contoh kode tidak akan
-  berjalan.
-</Callout>
-
 ## Cara menerapkan saldo tertunda ke saldo tersedia
 
-Sebelum token dapat ditransfer secara konfidensial, saldo token publik harus
-dikonversi menjadi saldo konfidensial. Konversi ini terjadi dalam dua tahap:
+Sebelum token dapat ditransfer secara rahasia, saldo token publik harus
+dikonversi ke saldo rahasia. Konversi ini berlangsung dalam dua tahap:
 
-1. **Saldo tertunda konfidensial**: Awalnya, token "didepositkan" dari saldo
-   publik ke saldo konfidensial "tertunda".
-2. **Saldo tersedia konfidensial**: Saldo tertunda kemudian "diterapkan" ke
-   saldo tersedia, membuat token tersedia untuk transfer konfidensial.
+1. **Saldo Tertunda Rahasia**: Awalnya, token "disetor" dari saldo publik ke
+   saldo rahasia "tertunda".
+2. **Saldo Tersedia Rahasia**: Saldo tertunda kemudian "diterapkan" ke saldo
+   tersedia, sehingga token siap digunakan untuk transfer rahasia.
 
 Bagian ini menjelaskan tahap kedua: menerapkan saldo tertunda ke saldo tersedia.
 
-Ketika token "didepositkan" dari saldo publik atau ketika token ditransfer
-secara konfidensial dari satu token account ke token account lain, token awalnya
-ditambahkan ke saldo tertunda konfidensial. Sebelum token dapat digunakan untuk
-transfer konfidensial, saldo tertunda harus "diterapkan" ke saldo tersedia.
+Ketika token "disetor" dari saldo publik atau ketika token ditransfer secara
+rahasia dari satu token account ke token account lain, token tersebut awalnya
+ditambahkan ke saldo tertunda rahasia. Sebelum token dapat digunakan untuk
+transfer rahasia, saldo tertunda harus "diterapkan" ke saldo tersedia.
 
 ```mermaid title="Apply Pending Balance"
 sequenceDiagram
@@ -68,33 +61,33 @@ sequenceDiagram
     Note over TokenAccount: Tokens now in available confidential balance<br>ready for confidential transfers
 ```
 
-### Instruksi yang diperlukan
+### Instruksi yang Diperlukan
 
-Untuk mengonversi saldo tertunda menjadi saldo tersedia, panggil instruksi
+Untuk mengonversi saldo tertunda ke saldo tersedia, panggil instruksi
 [ConfidentialTransferInstruction::ApplyPendingBalance](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1152).
 
 Crate `spl_token_client` menyediakan metode
-`confidential_transfer_apply_pending_balance` yang membangun dan mengirim
+`confidential_transfer_apply_pending_balance` yang membangun dan mengirimkan
 transaksi dengan instruksi `ApplyPendingBalance`, seperti yang ditunjukkan dalam
 contoh di bawah ini.
 
-### Contoh kode
+### Contoh Kode
 
-Contoh berikut mendemonstrasikan cara menerapkan saldo tertunda konfidensial ke
-saldo tersedia konfidensial.
+Contoh berikut menunjukkan cara menerapkan saldo tertunda rahasia ke saldo
+tersedia rahasia.
 
 Untuk menjalankan contoh, mulai validator lokal dengan Token Extension Program
-yang dikloning dari mainnet menggunakan perintah berikut. Anda harus menginstal
-Solana CLI untuk memulai validator lokal.
+yang di-clone dari mainnet menggunakan perintah berikut. Anda harus memiliki
+Solana CLI yang terinstal untuk memulai validator lokal.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Pada saat penulisan, Confidential Transfers belum diaktifkan pada validator
-  lokal default. Anda harus mengkloning Token Extension Program mainnet untuk
-  menjalankan contoh kode.
+  Pada saat penulisan ini, Confidential Transfers belum diaktifkan pada
+  validator lokal default. Anda harus meng-clone Token Extension Program dari
+  mainnet untuk menjalankan kode contoh.
 </Callout>
 
 <CodeTabs>

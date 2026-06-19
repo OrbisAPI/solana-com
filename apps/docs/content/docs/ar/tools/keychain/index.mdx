@@ -3,47 +3,56 @@ title: Keychain
 description: توقيع موحد لـ سولانا عبر خلفيات متعددة لإدارة المفاتيح
 ---
 
-**يوفر Solana Keychain واجهة موحدة لتوقيع معاملات سولانا عبر خلفيات متعددة
-لإدارة المفاتيح.** استخدمه لدمج التوقيع على مستوى المؤسسات في خدمات الخلفية
-الخاصة بك.
+**توفر سولانا Keychain واجهة موحدة لتوقيع معاملات سولانا عبر أنظمة متعددة لإدارة
+المفاتيح.** طوِّر محلياً باستخدام مفتاح في الذاكرة، ثم انتقل إلى إدارة مفاتيح
+المؤسسات، أو وحدات HSM السحابية، أو خدمات المحافظ المُدارة في بيئة الإنتاج — دون
+الحاجة إلى إعادة كتابة كود التوقيع الخاص بك.
 
 ### لماذا Keychain؟
 
-- **واجهة واحدة**: سمة `SolanaSigner` واحدة تعمل عبر جميع الخلفيات
-- **تبديل الخلفيات**: غيّر موفري إدارة المفاتيح دون إعادة كتابة الكود
-- **تجريد بدون تكلفة**: أعلام الميزات تتضمن فقط ما تحتاجه
+- **واجهة موحدة**: سمة `SolanaSigner` واحدة تعمل عبر جميع الأنظمة الخلفية
+- **تبديل الأنظمة الخلفية**: غيِّر مزودي إدارة المفاتيح من خلال الإعدادات، لا
+  الكود
+- **تجريد بدون تكلفة**: تتضمن أعلام الميزات فقط ما تحتاجه
+- **مُدقَّق**: تمت مراجعته أمنياً بواسطة [Accretion](https://accretion.xyz)
 
 ### البنية المعمارية
 
-- **اللغات**: Rust + TypeScript
-- **السمة**: واجهة `SolanaSigner` موحدة
-- **الخلفيات**: Memory، Vault، AWS KMS، GCP KMS، Privy، Turnkey، Fireblocks،
-  CDP، Crossmint، Dfns، Openfort، Para
+- **اللغات**: Rust + TypeScript، بتكافؤ كامل
+- **السمة**: واجهة `SolanaSigner` الموحدة
+- **الأنظمة الخلفية**: Memory، Vault، AWS KMS، GCP KMS، Privy، Turnkey،
+  Fireblocks، CDP، Crossmint، Dfns، Openfort، Para، Utila
 - **التوافق**: متوافق مع `@solana/kit` و `@solana/signers` (TypeScript) | متوافق
   مع `solana-sdk` و `solana-sdk-v3` (Rust)
 
 ### الخلفيات المدعومة
 
-| الخلفية         | حالة الاستخدام           | Rust | TypeScript |
-| --------------- | ------------------------ | ---- | ---------- |
-| Memory          | التطوير، الاختبار        | ✓    | ✓          |
-| HashiCorp Vault | HSM ذاتي الاستضافة       | ✓    | ✓          |
-| AWS KMS         | سحابي أصلي (AWS)         | ✓    | ✓          |
-| GCP KMS         | سحابي أصلي (GCP)         | ✓    | ✓          |
-| Privy           | محافظ مدمجة              | ✓    | ✓          |
-| Turnkey         | غير احتجازي              | ✓    | ✓          |
-| Fireblocks      | MPC مؤسسي                | ✓    | ✓          |
-| CDP             | منصة مطوري Coinbase      | ✓    | ✓          |
-| Crossmint       | محافظ Crossmint المُدارة | ✓    | ✓          |
-| Dfns            | بنية محافظ Dfns التحتية  | ✓    | ✓          |
-| Openfort        | محافظ Openfort المدمجة   | ✓    | ✓          |
-| Para            | محافظ Para MPC           | ✓    | ✓          |
+تمتد الأنظمة الخلفية لتشمل التطوير المحلي، وإدارة المفاتيح ذاتية الاستضافة
+والسحابية، وخدمات المحافظ المُدارة أو MPC. راجع
+[اختيار نظام خلفي](/docs/tools/keychain/choosing-a-backend) لمقارنة نماذج
+الحضانة واختيار المناسب منها.
 
-## البدء السريع
+| النظام الخلفي   | حالة الاستخدام                 | Rust | TypeScript |
+| --------------- | ------------------------------ | ---- | ---------- |
+| Memory          | التطوير والاختبار              | ✓    | ✓          |
+| HashiCorp Vault | إدارة المفاتيح ذاتية الاستضافة | ✓    | ✓          |
+| AWS KMS         | سحابي أصلي (AWS)               | ✓    | ✓          |
+| GCP KMS         | سحابي أصلي (GCP)               | ✓    | ✓          |
+| Privy           | محافظ مدمجة                    | ✓    | ✓          |
+| Turnkey         | إدارة المفاتيح غير الحافظة     | ✓    | ✓          |
+| Fireblocks      | حضانة مؤسسية                   | ✓    | ✓          |
+| CDP             | منصة مطوري Coinbase            | ✓    | ✓          |
+| Crossmint       | محافظ Crossmint المُدارة       | ✓    | ✓          |
+| Dfns            | بنية تحتية لمحافظ Dfns         | ✓    | ✓          |
+| Openfort        | محافظ خلفية Openfort           | ✓    | ✓          |
+| Para            | محافظ Para MPC                 | ✓    | ✓          |
+| Utila           | حضانة Utila MPC                | ✓    | ✓          |
+
+## البداية السريعة
 
 ### Rust
 
-قم بتثبيت حزمة Rust:
+ثبّت حزمة Rust:
 
 ```bash
 cargo add solana-keychain
@@ -64,11 +73,11 @@ let signature = signer.sign_transaction(&mut tx).await?;
 
 - [دليل Rust](/docs/tools/keychain/getting-started/rust) - التثبيت الكامل وإعداد
   الخلفية
-- [Crates.io](https://crates.io/crates/solana-keychain/1.2.0) - حزمة Rust
+- [Crates.io](https://crates.io/crates/solana-keychain) - حزمة Rust
 
 ### TypeScript
 
-قم بتثبيت حزمة TypeScript:
+ثبّت حزمة TypeScript:
 
 ```bash
 pnpm add @solana/keychain
@@ -98,21 +107,40 @@ const signedTx = await signTransactionWithSigners(
 
 - [دليل TypeScript](/docs/tools/keychain/getting-started/typescript) - حزم
   `@solana/keychain`
-- [حزمة npm](https://www.npmjs.com/package/@solana/keychain/v/1.2.0) - حزمة npm
+- [حزمة npm](https://www.npmjs.com/package/@solana/keychain) - حزمة npm
 
-## موارد أخرى
+## الخطوات التالية
 
-- [إضافة موقعين مخصصين](https://github.com/solana-foundation/solana-keychain/blob/main/docs/ADDING_SIGNERS.md) -
-  دمج خلفيات جديدة
-- [إصدارات GitHub](https://github.com/solana-foundation/solana-keychain/releases) -
-  سجل الإصدارات
+<Cards>
+  <Card title="دليل Rust" href="/docs/tools/keychain/getting-started/rust">
+    ثبّت الحزمة وقم بإعداد كل خلفية.
+  </Card>
+  <Card
+    title="دليل TypeScript"
+    href="/docs/tools/keychain/getting-started/typescript"
+  >
+    ثبّت الحزم وقم بإعداد كل خلفية.
+  </Card>
+  <Card
+    title="اختيار الخلفية المناسبة"
+    href="/docs/tools/keychain/choosing-a-backend"
+  >
+    قارن بين نماذج الحضانة واختر خلفية التوقيع المناسبة.
+  </Card>
+  <Card
+    title="أفضل الممارسات في بيئة الإنتاج"
+    href="/docs/tools/keychain/production-best-practices"
+  >
+    إدارة التوقيع بأمان: الفصل بين الساخن والبارد، والتناوب، والمراقبة.
+  </Card>
+  <Card title="إضافة موقّعين مخصصين" href="/docs/tools/keychain/adding-signers">
+    دمج خلفية جديدة لإدارة المفاتيح.
+  </Card>
+</Cards>
 
 ## المصدر
 
-[مستودع GitHub](https://github.com/solana-foundation/solana-keychain)
+- [مستودع GitHub](https://github.com/solana-foundation/solana-keychain)
+- [سجل الإصدارات](https://github.com/solana-foundation/solana-keychain/releases)
 
-تم بناؤه وصيانته بواسطة [مؤسسة سولانا](https://solana.org).
-
-مرخص بموجب MIT. راجع
-[LICENSE](https://github.com/solana-foundation/solana-keychain/blob/main/LICENSE)
-للحصول على التفاصيل.
+تم بناؤه وصيانته من قِبَل [مؤسسة سولانا](https://solana.org). مرخَّص بموجب MIT.

@@ -5,24 +5,17 @@ description:
   menambahkan fitur opsional pada mint dan akun token.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program sementara dinonaktifkan di mainnet dan devnet karena sedang
-  menjalani audit keamanan. Ini berarti ekstensi confidential transfer saat ini
-  tidak tersedia. Meskipun konsepnya masih valid, contoh kode tidak akan
-  berjalan.
-</Callout>
+## Apa itu Confidential Transfers?
 
-## Apa itu confidential transfer?
+Confidential transfers memungkinkan Anda mentransfer token antara token account
+tanpa mengungkapkan jumlah transfer. Ini berguna untuk transaksi yang menjaga
+privasi. Hanya jumlah transfer dan saldo token yang bersifat privat. Alamat
+token account tetap bersifat publik.
 
-Confidential transfer memungkinkan Anda mentransfer token antar akun token tanpa
-mengungkapkan jumlah transfer. Ini berguna untuk transaksi yang menjaga privasi.
-Hanya jumlah transfer dan saldo token yang bersifat privat. Alamat akun token
-tetap publik.
-
-- [Ikhtisar protokol](https://www.solana-program.com/docs/confidential-balances/overview) -
+- [Ikhtisar Protokol](https://www.solana-program.com/docs/confidential-balances/overview) -
   Detail tentang protokol kriptografi yang mendasarinya
-- [Panduan quick start](https://www.solana-program.com/docs/confidential-balances#setup) -
-  Setup dan perintah CLI dasar
+- [Panduan Mulai Cepat](https://www.solana-program.com/docs/confidential-balances#setup) -
+  Pengaturan dan perintah CLI dasar
 - [Confidential Balances Cookbook](https://github.com/solana-developers/Confidential-Balances-Sample) -
   Cuplikan kode tentang cara menggunakan ekstensi Confidential Transfer
 
@@ -30,7 +23,7 @@ tetap publik.
 
 Ekstensi Confidential Transfer menambahkan
 [instruksi](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
-ke program Token Extension yang memungkinkan Anda mentransfer token antar akun
+ke Token Extensions Program yang memungkinkan Anda mentransfer token antara akun
 tanpa mengungkapkan jumlah transfer.
 
 ```mermaid title="Confidential Transfer Basic Overview"
@@ -51,7 +44,7 @@ tanpa mengungkapkan jumlah transfer.
 
 ```
 
-Alur dasar confidential token transfer adalah sebagai berikut:
+Alur dasar confidential token transfers adalah sebagai berikut:
 
 1. Buat mint account dengan ekstensi confidential transfer.
 2. Buat token account dengan ekstensi confidential transfer untuk pengirim dan
@@ -64,8 +57,8 @@ Alur dasar confidential token transfer adalah sebagai berikut:
 7. **Apply** pending balance penerima ke **confidential available balance**.
 8. **Withdraw** confidential available balance penerima ke **saldo publik**.
 
-Untuk detail lebih lanjut tentang langkah-langkah dalam alur transfer rahasia,
-lihat halaman terkait:
+Untuk detail lebih lanjut mengenai langkah-langkah dalam alur confidential
+transfer, lihat halaman yang sesuai:
 
 <Cards>
   <Card
@@ -81,40 +74,47 @@ lihat halaman terkait:
     Cara mengonfigurasi token account dengan ekstensi Confidential Transfer
   </Card>
   <Card
-    title="Setor Token"
+    title="Deposit Token"
     href="/docs/tokens/extensions/confidential-transfer/deposit-tokens"
   >
-    Cara menyetor token ke saldo tertunda rahasia
+    Cara mendepositkan token ke confidential pending balance
   </Card>
   <Card
-    title="Terapkan Saldo Tertunda"
+    title="Terapkan Pending Balance"
     href="/docs/tokens/extensions/confidential-transfer/apply-pending-balance"
   >
-    Cara menerapkan saldo tertunda ke saldo rahasia yang tersedia
+    Cara menerapkan pending balance ke confidential available balance
   </Card>
   <Card
-    title="Tarik Token"
+    title="Withdraw Token"
     href="/docs/tokens/extensions/confidential-transfer/withdraw-tokens"
   >
-    Cara menarik token dari saldo rahasia yang tersedia
+    Cara menarik token dari confidential available balance
   </Card>
   <Card
     title="Transfer Token"
     href="/docs/tokens/extensions/confidential-transfer/transfer-tokens"
   >
-    Cara mentransfer token secara rahasia antar token account
+    Cara mentransfer token secara rahasia antara token account
+  </Card>
+  <Card
+    title="Panduan Integrasi"
+    href="/docs/tokens/extensions/confidential-transfer/integration-guide"
+  >
+    Cara dompet, penjelajah, dan bursa dapat mendukung token confidential
+    transfer
   </Card>
   <Card
     title="Panduan Penerbit"
     href="/docs/tokens/extensions/confidential-transfer/issuer-guide"
   >
-    Cara menerbitkan dan mengoperasikan token transfer rahasia (kebijakan
+    Cara menerbitkan dan mengoperasikan token confidential transfer (kebijakan
     persetujuan, auditor, biaya, mint dan burn)
   </Card>
 </Cards>
 
-Diagram di bawah ini menunjukkan urutan detail dari alur dasar untuk transfer
-token rahasia:
+Diagram di bawah ini menunjukkan urutan detail alur dasar untuk transfer token
+rahasia:
 
 ```mermaid title="Confidential Transfer Detailed Overview"
 sequenceDiagram
@@ -262,21 +262,21 @@ sequenceDiagram
 ### Contoh Kode
 
 Contoh Rust di bawah ini menunjukkan langkah-langkah untuk transfer token
-rahasia yang sesuai dengan diagram sebelumnya. Langkah-langkahnya dipisahkan ke
-dalam fungsi pembantu untuk kejelasan.
+rahasia yang sesuai dengan diagram sebelumnya. Langkah-langkah tersebut
+dipisahkan ke dalam fungsi pembantu untuk kejelasan.
 
-Untuk menjalankan contoh, mulai validator lokal dengan Token Extension Program
-yang dikloning dari mainnet menggunakan perintah berikut. Anda harus menginstal
-Solana CLI untuk menggunakan validator lokal.
+Untuk menjalankan contoh ini, mulai validator lokal dengan Token Extension
+Program yang dikloning dari mainnet menggunakan perintah berikut. Anda harus
+menginstal Solana CLI untuk menggunakan validator lokal.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Pada saat penulisan, Confidential Transfers belum diaktifkan pada validator
-  lokal default. Anda harus mengkloning Token Extension Program mainnet untuk
-  menjalankan contoh kode.
+  Pada saat penulisan ini, Confidential Transfers belum diaktifkan pada
+  validator lokal default. Anda harus mengkloning Token Extension Program
+  mainnet untuk menjalankan kode contoh.
 </Callout>
 
 <CodeTabs>
@@ -1159,24 +1159,24 @@ tokio = { version = "1.44.2", features = ["full"] }
 
 ## Instruksi Confidential Transfer
 
-Daftar lengkap
-[instruksi](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
-ekstensi Confidential Transfer adalah sebagai berikut:
+Daftar lengkap instruksi ekstensi Confidential Transfer
+[instructions](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/instruction.rs#L29)
+adalah sebagai berikut:
 
-| Instruksi                           | Deskripsi                                                                                                                                                         |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _rs`InitializeMint`_                | Menyiapkan mint account untuk transfer rahasia. Instruksi ini harus disertakan dalam transaksi yang sama dengan instruksi _rs`TokenInstruction::InitializeMint`_. |
-| _rs`UpdateMint`_                    | Memperbarui pengaturan transfer rahasia untuk mint.                                                                                                               |
-| _rs`ConfigureAccount`_              | Menyiapkan token account untuk transfer rahasia.                                                                                                                  |
-| _rs`ApproveAccount`_                | Menyetujui token account untuk transfer rahasia jika mint memerlukan persetujuan untuk token account baru.                                                        |
-| _rs`EmptyAccount`_                  | Mengosongkan saldo rahasia tertunda dan tersedia untuk memungkinkan penutupan token account.                                                                      |
-| _rs`Deposit`_                       | Mengonversi saldo token publik menjadi saldo rahasia tertunda.                                                                                                    |
-| _rs`Withdraw`_                      | Mengonversi saldo rahasia tersedia kembali ke saldo publik.                                                                                                       |
-| _rs`Transfer`_                      | Mentransfer token antar token account secara rahasia.                                                                                                             |
-| _rs`ApplyPendingBalance`_           | Mengonversi saldo tertunda menjadi saldo tersedia setelah deposit atau transfer.                                                                                  |
-| _rs`EnableConfidentialCredits`_     | Memungkinkan token account menerima transfer token rahasia.                                                                                                       |
-| _rs`DisableConfidentialCredits`_    | Memblokir transfer rahasia masuk sambil tetap mengizinkan transfer publik.                                                                                        |
-| _rs`EnableNonConfidentialCredits`_  | Memungkinkan token account menerima transfer token publik.                                                                                                        |
-| _rs`DisableNonConfidentialCredits`_ | Memblokir transfer reguler untuk membuat akun hanya menerima transfer rahasia.                                                                                    |
-| _rs`TransferWithFee`_               | Mentransfer token antar token account secara rahasia dengan biaya.                                                                                                |
-| _rs`ConfigureAccountWithRegistry`_  | Cara alternatif untuk mengonfigurasi token account untuk transfer rahasia menggunakan akun _rs`ElGamalRegistry`_ alih-alih bukti _rs`VerifyPubkeyValidity`_.      |
+| Instruksi                           | Deskripsi                                                                                                                                                            |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _rs`InitializeMint`_                | Menyiapkan mint account untuk transfer rahasia. Instruksi ini harus disertakan dalam transaksi yang sama dengan instruksi _rs`TokenInstruction::InitializeMint`_.    |
+| _rs`UpdateMint`_                    | Memperbarui pengaturan confidential transfer untuk sebuah mint.                                                                                                      |
+| _rs`ConfigureAccount`_              | Menyiapkan token account untuk transfer rahasia.                                                                                                                     |
+| _rs`ApproveAccount`_                | Menyetujui token account untuk transfer rahasia jika mint memerlukan persetujuan untuk token account baru.                                                           |
+| _rs`EmptyAccount`_                  | Mengosongkan saldo rahasia yang tertunda dan tersedia untuk memungkinkan penutupan token account.                                                                    |
+| _rs`Deposit`_                       | Mengonversi saldo token publik menjadi saldo rahasia yang tertunda.                                                                                                  |
+| _rs`Withdraw`_                      | Mengonversi saldo rahasia yang tersedia kembali menjadi saldo publik.                                                                                                |
+| _rs`Transfer`_                      | Mentransfer token antar token account secara rahasia.                                                                                                                |
+| _rs`ApplyPendingBalance`_           | Mengonversi saldo tertunda menjadi saldo tersedia setelah deposit atau transfer.                                                                                     |
+| _rs`EnableConfidentialCredits`_     | Mengizinkan token account untuk menerima transfer token rahasia.                                                                                                     |
+| _rs`DisableConfidentialCredits`_    | Memblokir transfer rahasia yang masuk sambil tetap mengizinkan transfer publik.                                                                                      |
+| _rs`EnableNonConfidentialCredits`_  | Mengizinkan token account untuk menerima transfer token publik.                                                                                                      |
+| _rs`DisableNonConfidentialCredits`_ | Memblokir transfer biasa agar akun hanya menerima transfer rahasia.                                                                                                  |
+| _rs`TransferWithFee`_               | Mentransfer token antar token account secara rahasia dengan biaya.                                                                                                   |
+| _rs`ConfigureAccountWithRegistry`_  | Cara alternatif untuk mengonfigurasi token account untuk transfer rahasia menggunakan akun _rs`ElGamalRegistry`_ sebagai pengganti bukti _rs`VerifyPubkeyValidity`_. |

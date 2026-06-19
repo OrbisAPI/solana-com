@@ -3,21 +3,16 @@ title: トークンの入金
 description: 機密状態へトークンを入金する方法を学びましょう。
 ---
 
-<Callout type="warn">
-  ZK
-  ElGamalプログラムは、セキュリティ監査を受けている間、メインネットとdevnetで一時的に無効化されています。これは、機密転送拡張機能が現在利用できないことを意味します。概念自体は有効ですが、コード例は実行できません。
-</Callout>
+## トークンをコンフィデンシャル保留残高に入金する方法
 
-## 機密保留残高にトークンを入金する方法
+トークンを機密転送するには、まず公開トークン残高をコンフィデンシャル残高に変換する必要があります。この変換は2つの段階で行われます：
 
-トークンを機密転送する前に、公開トークン残高を機密残高に変換する必要があります。この変換は2段階で行われます：
+1. **コンフィデンシャル保留残高**：最初に、トークンは公開残高から「保留中」のコンフィデンシャル残高へ「入金」されます。
+2. **コンフィデンシャル利用可能残高**：次に、保留残高が利用可能残高に「適用」され、トークンがコンフィデンシャル転送に使用できる状態になります。
 
-1. **機密保留残高**：最初に、トークンは公開残高から「保留中」の機密残高に「入金」されます。
-2. **機密利用可能残高**：その後、保留残高が利用可能残高に「適用」され、トークンが機密転送に利用できるようになります。
+このセクションでは、第1段階である公開トークン残高をコンフィデンシャル保留残高に入金する手順を説明します。
 
-このセクションでは、最初の段階について説明します：公開トークン残高を機密保留残高に入金する方法です。
-
-以下の図は、公開残高から機密保留残高にトークンを入金する手順を示しています：
+以下の図は、公開残高からコンフィデンシャル保留残高へトークンを入金する際の手順を示しています：
 
 ```mermaid title="Deposit Tokens"
 sequenceDiagram
@@ -37,20 +32,23 @@ sequenceDiagram
 
 ### 必要なinstruction
 
-公開残高を機密保留残高に変換するには、[ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386)
-instructionを呼び出します。入金instructionごとの[最大金額](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)は2^48に制限されています。
+公開残高をコンフィデンシャル保留残高に変換するには、
+[ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386)
+instructionを呼び出します。入金instructionあたりの
+[最大金額](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
+は2^48に制限されています。
 
-`spl_token_client` クレートは、以下の例で示されているように、`Deposit`
-命令を使用してトランザクションを構築および送信する
+`spl_token_client` クレートは、以下の例に示すように、`Deposit`
+instructionを含むトランザクションをビルドして送信する
 `confidential_transfer_deposit` メソッドを提供します。
 
 ### サンプルコード
 
-以下の例は、公開トークン残高を機密保留残高に入金する方法を示しています。
+以下の例では、公開トークン残高をコンフィデンシャル保留残高に入金する方法を示します。
 
-この例を実行するには、以下のコマンドを使用してメインネットからクローンしたToken
+この例を実行するには、以下のコマンドを使用して、メインネットからクローンしたToken
 Extensions
-Programでローカルvalidatorを起動します。ローカルvalidatorを起動するにはSolana
+Programを使用してローカルvalidatorを起動してください。ローカルvalidatorを起動するには、Solana
 CLIがインストールされている必要があります。
 
 ```terminal
@@ -58,7 +56,7 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 ```
 
 <Callout type="info">
-  執筆時点では、機密転送はデフォルトのローカルvalidatorで有効になっていません。サンプルコードを実行するには、メインネットのToken
+  本稿執筆時点では、コンフィデンシャル転送はデフォルトのローカルvalidatorでは有効になっていません。サンプルコードを実行するには、メインネットのToken
   Extensions Programをクローンする必要があります。
 </Callout>
 

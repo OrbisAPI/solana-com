@@ -5,66 +5,58 @@ description:
   übertragen.
 ---
 
-<Callout type="warn">
-  Das ZK ElGamal-Programm ist vorübergehend im Mainnet und Devnet deaktiviert,
-  da es einem Sicherheitsaudit unterzogen wird. Dies bedeutet, dass die
-  Erweiterung für vertrauliche Überweisungen derzeit nicht verfügbar ist. Die
-  Konzepte sind zwar weiterhin gültig, die Code-Beispiele werden jedoch nicht
-  funktionieren.
-</Callout>
+## So übertragen Sie Token vertraulich von einem token account auf einen anderen
 
-## Wie man Tokens vertraulich von einem Token-Konto auf ein anderes überträgt
-
-Um Tokens vertraulich von einem Token-Konto auf ein anderes zu übertragen,
-müssen sowohl der Absender als auch der Empfänger über Token-Konten verfügen,
+Um Token vertraulich von einem token account auf einen anderen zu übertragen,
+müssen sowohl der Sender als auch der Empfänger über token accounts verfügen,
 die mit dem _rs`ConfidentialTransferAccount`_-Status konfiguriert und für
-vertrauliche Überweisungen genehmigt sind. Das Token-Konto des Absenders muss
-außerdem über ein verfügbares vertrauliches Guthaben verfügen, von dem
-übertragen werden kann.
+vertrauliche Übertragungen genehmigt sind. Der token account des Senders muss
+außerdem ein verfügbares vertrauliches Guthaben für die Übertragung aufweisen.
 
-Um Tokens vertraulich zu übertragen:
+So übertragen Sie Token vertraulich:
 
 1. Erstellen Sie
-   [drei Nachweise](https://github.com/solana-program/token-2022/blob/d073cb89dbcd430387b5c6fb4b7157911351e4a3/confidential-transfer/proof-generation/src/transfer.rs#L35)
+   [drei Beweise](https://github.com/solana-program/token-2022/blob/d073cb89dbcd430387b5c6fb4b7157911351e4a3/confidential-transfer/proof-generation/src/transfer.rs#L35)
    clientseitig:
 
-   **Gleichheitsbeweis
+   **Gleichheitsnachweis
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
-   Überprüft, dass der neue Chiffretext des verfügbaren Guthabens nach der
-   Überweisung mit seinem entsprechenden
-   [Pedersen-Commitment](https://en.wikipedia.org/wiki/Commitment_scheme)
+   Überprüft, ob der neue verfügbare Guthaben-Geheimtext nach der Übertragung
+   mit seiner entsprechenden
+   [Pedersen-Verpflichtung](https://en.wikipedia.org/wiki/Commitment_scheme)
    übereinstimmt und stellt sicher, dass das neue verfügbare Guthaben des
-   Quellkontos korrekt als `new_balance = current_balance - transfer_amount`
-   berechnet wird.
+   Quellkontos korrekt berechnet wird als
+   `new_balance = current_balance - transfer_amount`.
 
-   **Chiffretext-Gültigkeitsbeweis
+   **Geheimtext-Gültigkeitsnachweis
    ([BatchedGroupedCiphertext3HandlesValidityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_grouped_ciphertext_validity/handles_3.rs#L63))**:
-   Überprüft, dass die Chiffretexte des Überweisungsbetrags für alle drei
-   Parteien (Quelle, Ziel und Prüfer) ordnungsgemäß generiert wurden und stellt
-   sicher, dass der Überweisungsbetrag korrekt unter dem öffentlichen Schlüssel
-   jeder Partei verschlüsselt ist.
+   Überprüft, ob die Übertragungsbetrag-Geheimtexte für alle drei Parteien
+   (Quelle, Ziel und Prüfer) ordnungsgemäß generiert wurden, und stellt sicher,
+   dass der Übertragungsbetrag unter dem öffentlichen Schlüssel jeder Partei
+   korrekt verschlüsselt ist.
 
-   **Bereichsbeweis
+   **Bereichsnachweis
    ([BatchedRangeProofU128Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u128.rs#L37))**:
-   Überprüft, dass das neue verfügbare Guthaben und der Überweisungsbetrag
-   (aufgeteilt in niedrige/hohe Bits) alle nicht negativ und innerhalb eines
-   bestimmten Bereichs liegen.
+   Überprüft, ob das neue verfügbare Guthaben und der Übertragungsbetrag
+   (aufgeteilt in Nieder-/Hochbits) alle nicht-negativ und innerhalb eines
+   festgelegten Bereichs liegen.
 
-2. Für jeden Beweis:
-   - Rufen Sie das ZK ElGamal-Beweisprogramm auf, um die Beweisdaten zu
+2. Für jeden Nachweis:
+   - Rufen Sie das ZK-ElGamal-Nachweisprogramm auf, um die Nachweisdaten zu
      verifizieren.
-   - Speichern Sie die beweisspezifischen Metadaten in einem
-     "Kontext-Status"-Konto des Beweises zur Verwendung in anderen Anweisungen.
+   - Speichern Sie die nachwesspezifischen Metadaten in einem
+     Nachweis-"Kontextzustands"-Konten zur Verwendung in anderen Anweisungen.
 
 3. Rufen Sie die
-   [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604)-Anweisung
-   auf und geben Sie die Kontext-Status-Konten des Beweises an.
+   [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604)
+   Anweisungen auf und geben Sie die Nachweiskontextzustands-Konten an.
 
-4. Schließen Sie die Proof-Context-State-Konten, um die SOL zurückzuerhalten,
-   die für deren Erstellung verwendet wurden.
+4. Schließen Sie die Nachweiskontextzustands-Konten, um das zur Erstellung
+   verwendete SOL zurückzuerhalten.
 
 Das folgende Diagramm zeigt die Schritte, die beim Übertragen von Token vom
-Token-Konto eines Absenders zum Token-Konto eines Empfängers erforderlich sind.
+token account eines Senders auf den token account eines Empfängers erforderlich
+sind.
 
 ```mermaid title="Transfer Tokens"
 sequenceDiagram
@@ -94,44 +86,45 @@ sequenceDiagram
 
 ### Erforderliche Anweisungen
 
-Um vertraulich Token von einem Token-Konto auf ein anderes zu übertragen, müssen
-Sie:
+Um Token vertraulich von einem token account auf einen anderen zu übertragen,
+müssen Sie:
 
-- Einen Equality-Proof, Ciphertext-Validity-Proof und Range-Proof clientseitig
-  generieren
-- Das Zk-ElGamal-Proof-Programm aufrufen, um die Proofs zu verifizieren und die
-  "Context-State"-Konten zu initialisieren
+- Einen Gleichheitsnachweis, einen Geheimtext-Gültigkeitsnachweis und einen
+  Bereichsnachweis clientseitig generieren
+- Das ZK-ElGamal-Nachweisprogramm aufrufen, um die Nachweise zu verifizieren und
+  die "Kontextzustands"-Konten zu initialisieren
 - Die
-  [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604)-Anweisung
-  aufrufen und dabei die drei Proof-Konten angeben.
-- Die drei Proof-Konten schließen, um die Miete zurückzuerhalten.
+  [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604)
+  Anweisungen aufrufen und dabei die drei Nachweiskonten angeben.
+- Die drei Nachweiskonten schließen, um rent zurückzuerhalten.
 
-Die `spl_token_client`-Crate bietet die folgenden Methoden:
+Das `spl_token_client` Crate bietet folgende Methoden:
 
-- `confidential_transfer_create_context_state_account`-Methode, die ein
-  Proof-Konto erstellt.
-- `confidential_transfer_transfer`-Methode, die die `Transfer`-Anweisung
+- `confidential_transfer_create_context_state_account` Methode, die ein
+  Proof-Konten erstellt.
+- `confidential_transfer_transfer` Methode, die die `Transfer` Anweisungen
   aufruft.
-- `confidential_transfer_close_context_state_account`-Methode, die ein
-  Proof-Konto schließt.
+- `confidential_transfer_close_context_state_account` Methode, die ein Proof-
+  Konten schließt.
 
 ### Beispielcode
 
-Das folgende Beispiel zeigt, wie man vertraulich Token zwischen Token-Konten
-überträgt.
+Das folgende Beispiel zeigt, wie Token vertraulich zwischen token account
+übertragen werden.
 
-Um das Beispiel auszuführen, starten Sie einen lokalen Validator mit dem von
-Mainnet geklonten Token Extension Program mit folgendem Befehl. Sie müssen die
-Solana CLI installiert haben, um den lokalen Validator zu starten.
+Um das Beispiel auszuführen, starten Sie einen lokalen validator mit dem Token
+Extensions Program, das vom Mainnet geklont wurde, mithilfe des folgenden
+Befehls. Sie müssen die Solana CLI installiert haben, um den lokalen validator
+zu starten.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Zum Zeitpunkt der Erstellung dieses Dokuments sind vertrauliche Überweisungen
-  auf dem Standard-Local-Validator nicht aktiviert. Sie müssen das Mainnet Token
-  Extension Program klonen, um den Beispielcode auszuführen.
+  Zum Zeitpunkt der Erstellung ist Confidential Transfers beim standardmäßigen
+  lokalen validator nicht aktiviert. Sie müssen das Mainnet Token Extensions
+  Program klonen, um den Beispielcode auszuführen.
 </Callout>
 
 <CodeTabs>

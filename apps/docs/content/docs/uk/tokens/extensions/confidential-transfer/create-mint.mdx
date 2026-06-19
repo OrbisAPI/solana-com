@@ -4,20 +4,13 @@ description:
   Дізнайтеся, як створити токен мінт з розширенням Confidential Transfer.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program тимчасово вимкнено в мейннеті та девнеті, оскільки
-  проводиться аудит безпеки. Це означає, що розширення конфіденційних переказів
-  наразі недоступне. Хоча концепції залишаються актуальними, приклади коду не
-  працюватимуть.
-</Callout>
+## Як створити mint з розширенням Confidential Transfer
 
-## Як створити мінт з розширенням Confidential Transfer
+Розширення Confidential Transfer забезпечує приватні перекази токенів шляхом
+додавання додаткового стану до mint account. У цьому розділі пояснюється, як
+створити token mint з увімкненим розширенням.
 
-Розширення Confidential Transfer забезпечує приватні перекази токенів, додаючи
-додатковий стан до облікового запису мінту. У цьому розділі пояснюється, як
-створити токен мінт з увімкненим цим розширенням.
-
-Наступна діаграма показує кроки, необхідні для створення мінту з розширенням
+На наступній діаграмі показано кроки, необхідні для створення mint з розширенням
 Confidential Transfer:
 
 ```mermaid title="Create Mint with Confidential Transfer Extension"
@@ -32,11 +25,11 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Стан Confidential Transfer мінту
+### Стан Mint для Confidential Transfer
 
 Розширення додає стан
 [ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)
-до облікового запису мінту:
+до mint account:
 
 ```rust title="Confidential Mint State"
 #[repr(C)]
@@ -62,59 +55,60 @@ pub struct ConfidentialTransferMint {
 }
 ```
 
-_rs`ConfidentialTransferMint`_ містить три конфігураційні поля:
+_rs`ConfidentialTransferMint`_ містить три поля конфігурації:
 
-- **authority**: обліковий запис, який має дозвіл змінювати налаштування
-  конфіденційних переказів для мінту та схвалювати нові конфіденційні облікові
+- **authority**: Обліковий запис, який має дозвіл змінювати налаштування
+  конфіденційних переказів для mint та схвалювати нові конфіденційні облікові
   записи, якщо автоматичне схвалення вимкнено.
 
-- **auto_approve_new_accounts**: коли встановлено значення true, користувачі
-  можуть створювати токен акаунти з увімкненими конфіденційними переказами за
-  замовчуванням. Коли false, authority повинен схвалити кожен новий токен акаунт
-  перед тим, як його можна буде використовувати для конфіденційних переказів.
+- **auto_approve_new_accounts**: Якщо встановлено значення true, користувачі
+  можуть створювати token account з увімкненими конфіденційними переказами за
+  замовчуванням. Якщо false, authority повинен схвалити кожний новий token
+  account перед тим, як його можна буде використовувати для конфіденційних
+  переказів.
 
-- **auditor_elgamal_pubkey**: опціональний аудитор, який може розшифровувати
+- **auditor_elgamal_pubkey**: Необов'язковий аудитор, який може розшифровувати
   суми переказів у конфіденційних транзакціях, забезпечуючи механізм
-  відповідності вимогам, зберігаючи при цьому конфіденційність від широкої
-  публіки.
+  відповідності вимогам при збереженні конфіденційності від широкої
+  громадськості.
 
 ### Необхідні інструкції
 
-Створення мінту з увімкненим Confidential Transfer вимагає трьох інструкцій в
+Для створення mint з увімкненим Confidential Transfer потрібні три інструкції в
 одній транзакції:
 
-1. **Створення облікового запису мінту**: викликати інструкцію
-   _rs`CreateAccount`_ System Program для створення облікового запису мінту.
+1. **Створення Mint Account**: Викличте інструкцію _rs`CreateAccount`_ System
+   Program для створення mint account.
 
-2. **Ініціалізація розширення Confidential Transfer**: Викликати інструкцію
+2. **Ініціалізація розширення Confidential Transfer**: Викличте інструкцію
    [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
-   програми Token Extension для налаштування стану
-   _rs`ConfidentialTransferMint`_ для мінту.
+   Token Extensions Program для налаштування стану
+   _rs`ConfidentialTransferMint`_ для mint.
 
-3. **Ініціалізація мінту**: Викликати інструкцію
-   _rs`Instruction::InitializeMint`_ програми Token Extension для ініціалізації
-   стандартного стану мінту.
+3. **Ініціалізація Mint**: Викличте інструкцію _rs`Instruction::InitializeMint`_
+   Token Extensions Program для ініціалізації стандартного стану mint.
 
-Хоча ви можете написати ці інструкції вручну, крейт `spl_token_client` надає
-метод `create_mint`, який створює та надсилає транзакцію з усіма трьома
-інструкціями в одному виклику функції, як показано в прикладі нижче.
+Хоча ці інструкції можна написати вручну, крейт `spl_token_client` надає метод
+`create_mint`, який збирає та надсилає транзакцію з усіма трьома інструкціями в
+одному виклику функції, як показано в прикладі нижче.
 
 ### Приклад коду
 
-Наступний код демонструє, як створити мінт з розширенням Confidential Transfer.
+Наступний код демонструє, як створити монетний двір із розширенням Confidential
+Transfer.
 
-Щоб запустити приклад, запустіть локальний validator з програмою Token
-Extension, клонованою з mainnet, використовуючи наступну команду. Для запуску
-локального validator у вас має бути встановлений Solana CLI.
+Щоб запустити приклад, запустіть локальний validator із Token Extensions
+Program, клонованою з основної мережі, за допомогою наведеної нижче команди. Для
+запуску локального validator необхідно встановити Solana CLI.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  На момент написання Confidential Transfers не увімкнено на стандартному
-  локальному validator. Ви повинні клонувати програму Token Extension з mainnet,
-  щоб запустити приклад коду.
+  На момент написання цієї статті Confidential Transfers не підтримується у
+  стандартному локальному validator. Щоб запустити приклад коду, необхідно
+  клонувати Token Extensions Program з основної мережі.
 </Callout>
 
 <CodeTabs>

@@ -3,33 +3,26 @@ title: Pending saldo toepassen
 description: Leer hoe je pending saldo toepast om fondsen beschikbaar te maken.
 ---
 
-<Callout type="warn">
-  Het ZK ElGamal Program is tijdelijk uitgeschakeld op het mainnet en devnet
-  omdat het een beveiligingsaudit ondergaat. Dit betekent dat de confidential
-  transfers extension momenteel niet beschikbaar is. Hoewel de concepten nog
-  steeds geldig zijn, zullen de code voorbeelden niet werken.
-</Callout>
+## Hoe het openstaande saldo op het beschikbare saldo toepassen
 
-## Hoe je pending saldo toepast op beschikbaar saldo
+Voordat tokens vertrouwelijk kunnen worden overgedragen, moet het publieke
+tokensaldo worden omgezet naar een vertrouwelijk saldo. Deze omzetting verloopt
+in twee fasen:
 
-Voordat tokens vertrouwelijk kunnen worden overgedragen, moet het publieke token
-saldo worden omgezet naar een vertrouwelijk saldo. Deze conversie gebeurt in
-twee fasen:
-
-1. **Vertrouwelijk pending saldo**: Aanvankelijk worden tokens "gestort" van
-   publiek saldo naar een "pending" vertrouwelijk saldo.
-2. **Vertrouwelijk beschikbaar saldo**: Het pending saldo wordt vervolgens
-   "toegepast" op het beschikbare saldo, waardoor de tokens beschikbaar komen
+1. **Vertrouwelijk openstaand saldo**: Initieel worden tokens "gestort" van het
+   publieke saldo naar een "openstaand" vertrouwelijk saldo.
+2. **Vertrouwelijk beschikbaar saldo**: Het openstaande saldo wordt vervolgens
+   "toegepast" op het beschikbare saldo, waardoor de tokens beschikbaar worden
    voor vertrouwelijke overdrachten.
 
-Deze sectie legt de tweede fase uit: het toepassen van het pending saldo op het
-beschikbare saldo.
+Dit gedeelte legt de tweede fase uit: het toepassen van het openstaande saldo op
+het beschikbare saldo.
 
-Wanneer tokens worden "gestort" van het publieke saldo of wanneer tokens
-vertrouwelijk worden overgedragen van het ene token account naar het andere,
-worden de tokens aanvankelijk toegevoegd aan het vertrouwelijke pending saldo.
-Voordat tokens kunnen worden gebruikt voor vertrouwelijke overdrachten, moet het
-pending saldo worden "toegepast" op het beschikbare saldo.
+Wanneer tokens worden "gestort" vanuit het publieke saldo of wanneer tokens
+vertrouwelijk worden overgedragen van de ene token account naar de andere,
+worden de tokens aanvankelijk toegevoegd aan het vertrouwelijke openstaande
+saldo. Voordat tokens kunnen worden gebruikt voor vertrouwelijke overdrachten,
+moet het openstaande saldo worden "toegepast" op het beschikbare saldo.
 
 ```mermaid title="Apply Pending Balance"
 sequenceDiagram
@@ -50,7 +43,7 @@ B->>BB: Apply
 ```
 
 Het volgende diagram toont de stappen die betrokken zijn bij het toepassen van
-het pending saldo op het beschikbare saldo:
+het openstaande saldo op het beschikbare saldo:
 
 ```mermaid title="Apply Pending Balance"
 sequenceDiagram
@@ -73,32 +66,32 @@ sequenceDiagram
 
 ### Vereiste instructie
 
-Om een pending saldo om te zetten naar een beschikbaar saldo, roep je de
+Om een openstaand saldo om te zetten naar een beschikbaar saldo, roep de
 [ConfidentialTransferInstruction::ApplyPendingBalance](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1152)
 instructie aan.
 
 De `spl_token_client` crate biedt een
 `confidential_transfer_apply_pending_balance` methode die een transactie bouwt
-en verstuurt met de `ApplyPendingBalance` instructie, zoals gedemonstreerd in
-het voorbeeld hieronder.
+en verzendt met de `ApplyPendingBalance` instructie, zoals gedemonstreerd in het
+onderstaande voorbeeld.
 
 ### Voorbeeldcode
 
-Het volgende voorbeeld demonstreert hoe je het vertrouwelijke openstaande saldo
-toepast op het vertrouwelijke beschikbare saldo.
+Het volgende voorbeeld laat zien hoe het vertrouwelijke openstaande saldo op het
+vertrouwelijke beschikbare saldo kan worden toegepast.
 
-Om het voorbeeld uit te voeren, start je een lokale validator met het Token
-Extension Program gekloond van mainnet met het volgende commando. Je moet de
-Solana CLI geïnstalleerd hebben om de lokale validator te starten.
+Om het voorbeeld uit te voeren, start een lokale validator met het Token
+Extensions Program gekloond van mainnet met behulp van de volgende opdracht. De
+Solana CLI moet geïnstalleerd zijn om de lokale validator te starten.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Op het moment van schrijven is Confidential Transfers niet ingeschakeld op de
-  standaard lokale validator. Je moet het mainnet Token Extension Program klonen
-  om de voorbeeldcode uit te voeren.
+  Op het moment van schrijven zijn Vertrouwelijke Overdrachten niet ingeschakeld
+  op de standaard lokale validator. U moet het mainnet Token Extensions Program
+  klonen om de voorbeeldcode uit te voeren.
 </Callout>
 
 <CodeTabs>

@@ -3,16 +3,13 @@ title: トークンミントの作成
 description: 機密転送拡張機能を使用したトークンミントの作成方法を学びます。
 ---
 
-<Callout type="warn">
-  ZK
-  ElGamalプログラムは、セキュリティ監査中のため、メインネットとdevnetで一時的に無効化されています。これは、機密転送拡張機能が現在利用できないことを意味します。概念は依然として有効ですが、コード例は実行されません。
-</Callout>
+## Confidential Transfer拡張機能でmint accountを作成する方法
 
-## 機密転送拡張機能を持つミントの作成方法
+Confidential Transfer拡張機能は、mint
+accountに追加の状態を付与することで、プライベートなトークン転送を可能にします。このセクションでは、この拡張機能を有効にしたトークンmintの作成方法について説明します。
 
-機密転送拡張機能は、ミントアカウントに追加の状態を加えることで、プライベートなトークン転送を可能にします。このセクションでは、この拡張機能を有効にしたトークンミントの作成方法を説明します。
-
-以下の図は、機密転送拡張機能を持つミントの作成に関わるステップを示しています。
+以下の図は、Confidential
+Transfer拡張機能を使用してmintを作成する手順を示しています：
 
 ```mermaid title="Create Mint with Confidential Transfer Extension"
 sequenceDiagram
@@ -26,9 +23,11 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### 機密転送ミントの状態
+### Confidential Transfer Mintの状態
 
-この拡張機能は、ミントアカウントに[ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)状態を追加します。
+この拡張機能は、mint accountに
+[ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)
+状態を追加します：
 
 ```rust title="Confidential Mint State"
 #[repr(C)]
@@ -54,43 +53,48 @@ pub struct ConfidentialTransferMint {
 }
 ```
 
-_rs`ConfidentialTransferMint`_ には、3つの設定フィールドが含まれています。
+_rs`ConfidentialTransferMint`_ には3つの設定フィールドが含まれています：
 
-- **authority**: ミントの機密転送設定を変更し、自動承認が無効の場合に新しい機密アカウントを承認する権限を持つアカウント。
+- **authority**: mint accountのConfidential
+  Transfer設定を変更し、自動承認が無効な場合に新しいConfidentialアカウントを承認する権限を持つアカウント。
 
 - **auto_approve_new_accounts**:
-  trueに設定すると、ユーザーはデフォルトで機密転送が有効なtoken
-  accountを作成できます。falseの場合、authorityが各新しいtoken
-  accountを承認してから、機密転送に使用できるようになります。
+  trueに設定すると、ユーザーはデフォルトでConfidential Transferが有効なtoken
+  accountを作成できます。falseの場合、authorityがConfidential
+  Transferに使用する前に各新しいtoken accountを承認する必要があります。
 
-- **auditor_elgamal_pubkey**: 機密トランザクションの転送金額を復号化できるオプションの監査人。一般公開からプライバシーを維持しながら、コンプライアンスメカニズムを提供します。
+- **auditor_elgamal_pubkey**:
+  Confidentialトランザクションにおける転送金額を復号化できるオプションの監査人。一般公開からプライバシーを維持しつつ、コンプライアンスの仕組みを提供します。
 
 ### 必要なinstructions
 
-機密転送を有効にしたミントの作成には、単一のトランザクション内で3つのinstructionsが必要です。
+Confidential
+Transferを有効にしたmintの作成には、1つのトランザクションで3つのinstructionsが必要です：
 
-1. **ミントアカウントの作成**: System Programの _rs`CreateAccount`_
-   命令を呼び出して、ミントアカウントを作成します。
+1. **Mint Accountの作成**: System Programの _rs`CreateAccount`_
+   instructionを呼び出して、mint accountを作成します。
 
-2. **Confidential Transfer拡張機能の初期化**: Token Extension
-   Programの[ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
-   instructionを呼び出して、ミントの _rs`ConfidentialTransferMint`_
+2. **Confidential Transfer拡張機能の初期化**: Token Extensions Programの
+   [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
+   instructionを呼び出して、mintの _rs`ConfidentialTransferMint`_
    状態を設定します。
 
-3. **ミントの初期化**: Token Extension Programの
+3. **Mintの初期化**: Token Extensions Programの
    _rs`Instruction::InitializeMint`_
-   instructionを呼び出して、標準のミント状態を初期化します。
+   instructionを呼び出して、標準のmint状態を初期化します。
 
-これらのinstructionsを手動で記述することもできますが、`spl_token_client`クレートは`create_mint`メソッドを提供しており、以下の例で示すように、単一の関数呼び出しで3つすべてのinstructionsを含むトランザクションを構築して送信します。
+これらのinstructionsを手動で記述することもできますが、`spl_token_client`
+クレートは、以下の例に示すように、1回の関数呼び出しで3つのinstructionsすべてを含むトランザクションをビルドして送信する`create_mint`
+メソッドを提供しています。
 
-### サンプルコード
+### コード例
 
-以下のコードは、Confidential
-Transfer拡張機能を持つミントを作成する方法を示しています。
+以下のコードは、Confidential Transfer
+extensionを使用してミントを作成する方法を示しています。
 
-この例を実行するには、以下のコマンドを使用して、mainnetからクローンしたToken
-Extension
-Programを使用してローカルvalidatorを起動します。ローカルvalidatorを起動するには、Solana
+この例を実行するには、以下のコマンドを使用して、メインネットからクローンしたToken
+Extensions ProgramをローカルのvalidatorとしてToken Extensions
+Programを起動します。ローカルのvalidatorを起動するには、Solana
 CLIがインストールされている必要があります。
 
 ```terminal
@@ -99,8 +103,8 @@ $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC
 
 <Callout type="info">
   執筆時点では、Confidential
-  Transfersはデフォルトのローカルvalidatorでは有効になっていません。サンプルコードを実行するには、mainnetのToken
-  Extension Programをクローンする必要があります。
+  TransfersはデフォルトのローカルのvalidatorではHasBeenEnabledされていません。サンプルコードを実行するには、メインネットのToken
+  Extensions Programをクローンする必要があります。
 </Callout>
 
 <CodeTabs>

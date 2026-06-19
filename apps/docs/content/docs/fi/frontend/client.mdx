@@ -105,20 +105,28 @@ Käytä `prepareAndSend` valmiiseen prosessiin (simulaatio ja lokitus) tai kutsu
 `sign` / `toWire` kerätäksesi allekirjoitukset manuaalisesti ennen wire-muodon
 välittämistä itse.
 
+<Callout type="info">
+  Käynnistetäänkö headless-tilassa — API-reitissä, workerissa tai skriptissä
+  ilman selainlompakkoa? Käytä allekirjoitukseen taustapalvelun avainten
+  hallintapalvelua raa'an keypair:n sijaan. Katso
+  [Keychain](/docs/tools/keychain) ja [Allekirjoittaminen
+  tuotannossa](/docs/core/transactions/signing-in-production).
+</Callout>
+
 ## Yleisiä malleja Solana-kehittäjille
 
-- **Headless-tilakoneet**: Suorita asiakasohjelma API-reittien, skriptien tai
-  workereiden sisällä käyttääksesi uudelleen samaa lompakko- ja
-  RPC-orkestrointilogiikkaa, joka käyttää käyttöliittymääsi.
-- **Reaaliaikaiset kojelaudat**: Yhdistä tarkkailijat (saldot, tilit,
-  allekirjoitukset) haluamaasi käyttöliittymäkirjastoon; asiakasohjelma
-  käsittelee websocket-jakelun ja välimuistin mitätöinnin.
+- **Headless-tilakoneet**: Aja asiakasta API-reiteissä, skripteissä tai
+  workereissa käyttääksesi samaa lompakko- ja RPC-orkestrointi­logiikkaa, joka
+  toimii käyttöliittymäsi pohjana.
+- **Reaaliaikaiset koontinäytöt**: Yhdistä tarkkailijat (saldot, tilit,
+  allekirjoitukset) haluamaasi käyttöliittymäkirjastoon; asiakas hoitaa
+  websocket-fanijakelun ja välimuistin mitätöinnin.
 - **Mukautetut storet**: Injektoi oma Zustand-storesi hydratoidaksesi
-  IndexedDB:stä/localStoragesta, peilaa tila palvelinsessioihin tai koordinoi
-  selainvälilehtien välillä.
-- **Silta React-hookkeihin**: Välitä konfiguroitu asiakasinstanssi
-  `@solana/react-hooks` kun haluat ergonomisia hookkeja saman ajonaikaisen
+  IndexedDB:stä/localStoragesta, peilataksesi tilaa palvelinsessioihin tai
+  koordinoidaksesi selaimen välilehtien välillä.
+- **Silta React-hookeille**: Välitä konfiguroitu asiakas­instanssi
+  `@solana/react-hooks`:lle, kun haluat ergonomiset hookit saman ajoympäristön
   päälle.
-- **Testattavuus**: Yksittäinen asiakasrajapinta voidaan mockkata
-  yksikkötesteissä, mikä helpottaa RPC-vastausten tai lompakkosessioiden
-  simulointia ilman selaimen lompakkoa.
+- **Testattavuus**: Yksittäistä asiakasrajapintaa voidaan simuloida
+  yksikkötesteissä, mikä helpottaa RPC-vastausten tai lompakko­sessioiden
+  simulointia ilman selainlompakkoa.

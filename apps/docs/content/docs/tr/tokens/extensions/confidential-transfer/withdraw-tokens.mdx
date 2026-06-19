@@ -3,47 +3,41 @@ title: Token çekme
 description: Gizli durumdan token çekmeyi öğrenin.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Programı, güvenlik denetiminden geçerken mainnet ve devnet'te
-  geçici olarak devre dışı bırakılmıştır. Bu, gizli transfer uzantısının şu anda
-  kullanılamadığı anlamına gelir. Kavramlar hala geçerli olsa da, kod örnekleri
-  çalışmayacaktır.
-</Callout>
+## Gizli kullanılabilir bakiyeden token nasıl çekilir
 
-## Gizli kullanılabilir bakiyeden token çekme
-
-Gizli kullanılabilir bakiyeden genel bakiyeye token çekmek için:
+Gizli kullanılabilir bakiyeden token'ları genel bakiyeye çekmek için:
 
 1. İstemci tarafında
    [iki kanıt](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/proof-generation/src/withdraw.rs#L22)
    oluşturun:
 
-   **Eşitlik kanıtı
+   **Eşitlik Kanıtı
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
-   Çekme işleminden sonra kalan kullanılabilir bakiye şifreli metninin, karşılık
-   gelen [Pedersen taahhüdü](https://en.wikipedia.org/wiki/Commitment_scheme)
-   ile eşleştiğini doğrular, hesabın yeni kullanılabilir bakiyesinin
-   `remaining_balance = current_balance - withdraw_amount` olarak doğru şekilde
-   hesaplandığından emin olur.
+   Çekim sonrasında kalan kullanılabilir bakiye şifreli metninin, karşılık gelen
+   [Pedersen taahhüdü](https://en.wikipedia.org/wiki/Commitment_scheme) ile
+   eşleştiğini doğrular; hesabın yeni kullanılabilir bakiyesinin
+   `remaining_balance = current_balance - withdraw_amount` olarak doğru biçimde
+   hesaplandığını güvence altına alır.
 
-   **Aralık kanıtı
+   **Aralık Kanıtı
    ([BatchedRangeProofU64Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u64.rs#L37))**:
-   Çekme işleminden sonra kalan kullanılabilir bakiyenin negatif olmadığını ve
-   belirtilen aralıkta olduğunu doğrular.
+   Çekim sonrasında kalan kullanılabilir bakiyenin negatif olmadığını ve
+   belirtilen bir aralık içinde olduğunu doğrular.
 
 2. Her kanıt için:
-   - Kanıt verilerini doğrulamak için ZK ElGamal kanıt programını çağırın.
-   - Diğer talimatlarda kullanmak üzere kanıta özgü meta verileri bir kanıt
+   - Kanıt verilerini doğrulamak üzere ZK ElGamal kanıt programını çağırın.
+   - Diğer talimatlardan yararlanmak için kanıta özgü meta verileri bir kanıt
      "bağlam durumu" hesabında saklayın.
 
 3. İki kanıt hesabını sağlayarak
    [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
    talimatını çağırın.
 
-4. Oluşturmak için kullanılan SOL'u geri almak için kanıt hesaplarını kapatın.
+4. Bunları oluşturmak için kullanılan SOL'u geri kazanmak amacıyla kanıt
+   hesaplarını kapatın.
 
 Aşağıdaki diyagram, gizli kullanılabilir bakiyeden genel bakiyeye token çekme
-işleminde yer alan adımları gösterir:
+adımlarını göstermektedir:
 
 ```mermaid title="Withdraw Tokens"
 sequenceDiagram
@@ -70,9 +64,9 @@ sequenceDiagram
     deactivate ElGamal
 ```
 
-### Gerekli talimatlar
+### Gerekli Talimatlar
 
-Gizli kullanılabilir bakiyeden genel bakiyeye token çekmek için şunları
+Gizli kullanılabilir bakiyeden token'ları genel bakiyeye çekmek için şunları
 yapmalısınız:
 
 - İstemci tarafında bir eşitlik kanıtı ve aralık kanıtı oluşturun
@@ -81,9 +75,9 @@ yapmalısınız:
 - İki kanıt hesabını sağlayarak
   [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
   talimatını çağırın.
-- Kirayı geri almak için iki kanıt hesabını kapatın.
+- rent'i geri kazanmak için iki kanıt hesabını kapatın.
 
-`spl_token_client` crate'i aşağıdaki metodları sağlar:
+`spl_token_client` crate'i aşağıdaki metotları sağlar:
 
 - Bir kanıt hesabı oluşturan
   `confidential_transfer_create_context_state_account` metodu.
@@ -91,23 +85,23 @@ yapmalısınız:
 - Bir kanıt hesabını kapatan `confidential_transfer_close_context_state_account`
   metodu.
 
-### Örnek kod
+### Örnek Kod
 
-Aşağıdaki örnek, gizli kullanılabilir bakiyeden açık bakiyeye token çekme
-işlemini göstermektedir.
+Aşağıdaki örnek, gizli kullanılabilir bakiyeden genel bakiyeye token çekmenin
+nasıl yapılacağını göstermektedir.
 
-Örneği çalıştırmak için, aşağıdaki komutu kullanarak mainnet'ten klonlanan Token
-Extension Program ile yerel bir validator başlatın. Yerel validator'ı başlatmak
-için Solana CLI'nin yüklü olması gerekir.
+Örneği çalıştırmak için, aşağıdaki komutu kullanarak mainnet'ten klonlanmış
+Token Extensions Program ile yerel bir validator başlatın. Yerel validator'ı
+başlatmak için Solana CLI'nin kurulu olması gerekir.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Bu yazının yazıldığı sırada, Confidential Transfers varsayılan yerel
+  Bu yazının hazırlandığı sırada, Gizli Transferler varsayılan yerel
   validator'da etkin değildir. Örnek kodu çalıştırmak için mainnet Token
-  Extension Program'ı klonlamanız gerekir.
+  Extensions Program'ı klonlamanız gerekir.
 </Callout>
 
 <CodeTabs>

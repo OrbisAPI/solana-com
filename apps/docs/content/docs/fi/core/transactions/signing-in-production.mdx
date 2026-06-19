@@ -1,0 +1,75 @@
+---
+title: Allekirjoittaminen tuotantoympäristössä
+description:
+  Missä allekirjoitusavaimet sijaitsevat tuotanto-Solana-sovelluksessa ja miten
+  valita paikallisten avainten, selaimen lompakoiden, pilvi-KMS/HSM:n ja
+  hallittujen allekirjoitustaustajärjestelmien välillä.
+type: conceptual
+prerequisites:
+  - /docs/core/transactions/transaction-structure
+related:
+  - /docs/tools/keychain
+  - /docs/payments/production-readiness
+---
+
+Transaktio suoritetaan vain, jos sillä on voimassa oleva
+[allekirjoitus](/docs/core/transactions/transaction-structure#signatures)
+kaikilta vaadituilta allekirjoittajilta. Paikallisessa kehityksessä pidät
+yleensä avaimen [`Keypair`](/developers/cookbook/wallets/create-keypair)
+-muodossa ja allekirjoitat suoraan. Tuotantoympäristössä tärkeä kysymys on
+erilainen: **missä yksityinen avain sijaitsee ja kenellä on oikeus valtuuttaa
+allekirjoitus sillä?**
+
+<Callout type="warn">
+  Älä koskaan upota yksityisiä avaimia asiakaspuolen koodiin, sisällytä niitä
+  käyttöliittymäpakettiin tai tallenna niitä versionhallintaan. Jokainen, joka
+  saa avaimen haltuunsa, saa täyden hallinnan kyseisen tilin varoihin.
+</Callout>
+
+## Allekirjoitustavat
+
+| Tapa                        | Missä avain sijaitsee                                        | Kuka allekirjoittaa                                       | Parhaiten sopii                                                       |
+| --------------------------- | ------------------------------------------------------------ | --------------------------------------------------------- | --------------------------------------------------------------------- |
+| **Paikallinen keypair**     | Tiedosto tai ympäristömuuttuja koneella                      | Koodisi, suoraan                                          | Paikallinen kehitys, testit, CI                                       |
+| **Selaimen lompakko**       | Käyttäjän lompakko (esim. Phantom, Solflare)                 | Käyttäjä itse, per transaktio                             | Frontend-dAppit, joissa käyttäjät allekirjoittavat omat transaktionsa |
+| **Pilvi-KMS / HSM**         | Laitteistopohjainen avainpalvelu (AWS KMS, GCP KMS, Vault)   | Taustajärjestelmäsi pyytää allekirjoituksen palvelulta    | Taustajärjestelmät, treasury-operaatiot, säännellyt ympäristöt        |
+| **Hallittu / MPC-lompakko** | Jaettu tai säilytettynä palveluntarjoajan infrastruktuurissa | Palveluntarjoaja allekirjoittaa yhdessä käytäntösi mukaan | Upotetut lompakot, hyväksymistyönkulut, institutionaalinen säilytys   |
+
+Paikallinen keypair on ainoa lähestymistapa, joka sijoittaa raakaavaimen
+materiaalin suoraan sovellukseesi. Kaikki tuotantokäyttöön tarkoitetut
+lähestymistavat säilyttävät avaimen erillisessä infrastruktuurissa ja pyytävät
+tuota infrastruktuuria allekirjoittamaan puolestasi.
+
+## Taustajärjestelmän allekirjoitus
+
+Kun palvelin tarvitsee allekirjoittaa — maksaakseen maksuja, lähettääkseen
+ohjelmatransaktioita tai hallitakseen kassaa — käytä erillistä
+avaintenhallintajärjestelmää raakaparin sijaan. Solana Foundation ylläpitää
+[Keychainissa](/docs/tools/keychain) yhtenäistä allekirjoituskirjastoa (Rust ja
+TypeScript), joka tarjoaa yhden `SolanaSigner`-rajapinnan kaikkiin yllä oleviin
+taustajärjestelmiin: Memory, HashiCorp Vault, AWS KMS, GCP KMS, Fireblocks,
+Privy, Turnkey, CDP, Crossmint, Dfns, Para, Openfort ja Utila.
+
+Koska rajapinta on identtinen kaikissa taustajärjestelmissä, voit kehittää
+paikallisesti muistissa olevalla avaimella ja siirtyä tuotantojärjestelmään
+konfiguraation kautta ilman sovelluskooden uudelleenkirjoittamista. Keychain on
+yhteensopiva [`@solana/kit`](/docs/clients/official/javascript)- ja
+[Rust SDK](/docs/clients/official/rust):n kanssa.
+
+<Cards>
+  <Card title="Keychain" href="/docs/tools/keychain">
+    Yhtenäinen allekirjoitus paikallisilla avaimilla, KMS:llä, HSM:llä ja
+    hallituilla lompakkojärjestelmillä.
+  </Card>
+  <Card
+    title="Taustajärjestelmän valinta"
+    href="/docs/tools/keychain/choosing-a-backend"
+  >
+    Vertaile säilytysmallejaja valitse sovelluksellesi sopiva
+    allekirjoitusjärjestelmä.
+  </Card>
+</Cards>
+
+Täydellinen tuotantotarkistuslista — avaintenhallinta, RPC-tietoturva ja
+monitorointi — löytyy osoitteesta
+[Tuotantovalmius](/docs/payments/production-readiness).

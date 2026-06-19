@@ -44,44 +44,35 @@ permissioned burn και εξακολουθεί να χρειάζεται τη �
 `None` απενεργοποιεί το permissioned burning και επανενεργοποιεί τις τυπικές
 οδηγίες burn. Τα δεδομένα επέκτασης παραμένουν στο mint.
 
-<Callout type="warn" title="Διαθεσιμότητα">
-  Το Permissioned burn αποστέλλεται στο Token-2022
-  [`program@v11.0.0`](https://github.com/solana-program/token-2022/releases/tag/program%40v11.0.0).
-  Είναι διαθέσιμο στο devnet σήμερα και είναι προγραμματισμένο να ενεργοποιηθεί
-  στο mainnet τον Ιούνιο του 2026. Το Token Extension Program αναπτύσσεται
-  ξεχωριστά σε κάθε cluster, οπότε επιβεβαιώστε ότι η ανάπτυξη στο cluster που
-  στοχεύετε περιλαμβάνει v11.0.0 ή νεότερη έκδοση.
-</Callout>
-
-Ένας τοπικός δοκιμαστικός validator περιλαμβάνει επίσης μια παλαιότερη έκδοση
-του Token-2022, οπότε για να εκτελέσετε τα παραδείγματα αυτής της σελίδας,
-φορτώστε το πρόγραμμα v11.0.0 από το devnet στον δοκιμαστικό σας validator:
+Ένας τοπικός test validator περιλαμβάνει επίσης μια παλαιότερη έκδοση του
+Token-2022, οπότε για να εκτελέσετε τα παραδείγματα αυτής της σελίδας, φορτώστε
+το πρόγραμμα v11.0.0 από το devnet στον test validator σας:
 
 ```shell title="Terminal"
 solana program dump -u devnet TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb token_2022.so
 solana-test-validator --reset --bpf-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb token_2022.so
 ```
 
-## Πώς να Δημιουργήσετε Mint και Burn με Άδεια
+## Πώς να Δημιουργήσετε Mint και Burn Με Άδεια
 
 Για να δημιουργήσετε ένα mint με εξουσιοδοτημένο burn και να κάψετε tokens:
 
 1. Υπολογίστε το μέγεθος του mint account και το rent που απαιτείται για το mint
    και την επέκταση _rs`PermissionedBurnConfig`_.
-2. Δημιουργήστε το mint account με _rs`CreateAccount`_, αρχικοποιήστε την
-   επέκταση _rs`PermissionedBurnConfig`_ και αρχικοποιήστε το mint με
+2. Δημιουργήστε το mint account με _rs`CreateAccount`_, αρχικοποιήστε το
+   _rs`PermissionedBurnConfig`_ και αρχικοποιήστε το mint με
    _rs`InitializeMint`_.
-3. Δημιουργήστε ένα token account και κάντε mint tokens.
-4. Κάντε burn με _rs`PermissionedBurnInstruction::BurnChecked`_ υπογεγραμμένο
-   τόσο από τον κάτοχο του token account όσο και από την αρχή έγκρισης burn.
-5. Προαιρετικά, απενεργοποιήστε το εξουσιοδοτημένο burning με _rs`SetAuthority`_
-   χρησιμοποιώντας _rs`AuthorityType::PermissionedBurn`_ και εξουσία `None`, η
-   οποία επανενεργοποιεί τις τυπικές οδηγίες burn. Τα πλήρη παραδείγματα κώδικα
-   παρακάτω δείχνουν αυτό το βήμα.
+3. Δημιουργήστε ένα token account και κόψτε tokens.
+4. Κάψτε με _rs`PermissionedBurnInstruction::BurnChecked`_ υπογεγραμμένο και από
+   τον ιδιοκτήτη του token account και από την burn authority.
+5. Προαιρετικά απενεργοποιήστε το εξουσιοδοτημένο burning με _rs`SetAuthority`_
+   χρησιμοποιώντας _rs`AuthorityType::PermissionedBurn`_ και μια `None`
+   authority, που επανενεργοποιεί τις τυπικές οδηγίες burn. Τα πλήρη
+   παραδείγματα κώδικα παρακάτω δείχνουν αυτό το βήμα.
 
 <ScrollyCoding>
 
-## !!steps Υπολογισμός μεγέθους λογαριασμού
+## !!steps Υπολογισμός μεγέθους account
 
 Υπολογίστε το μέγεθος του mint account για το βασικό mint συν την επέκταση
 _rs`PermissionedBurnConfig`_. Αυτό είναι το μέγεθος που χρησιμοποιείται στο
@@ -192,8 +183,8 @@ await client.sendTransaction([
 
 ## !!steps Αρχικοποίηση PermissionedBurn
 
-Αρχικοποιήστε την επέκταση _rs`PermissionedBurnConfig`_ στο mint με την αρχή
-έγκρισης burn.
+Αρχικοποιήστε την επέκταση _rs`PermissionedBurnConfig`_ στο mint με την burn
+authority.
 
 <CodePlaceholder title="Example" />
 
@@ -291,9 +282,9 @@ await client.sendTransaction([
 ]);
 ```
 
-## !!steps Δημιουργία token account και κοπή token
+## !!steps Δημιουργία token account και κοπή tokens
 
-Δημιουργήστε ένα token account για τον πληρωτή και κόψτε token σε αυτό.
+Δημιουργήστε ένα token account για τον πληρωτή και κόψτε tokens σε αυτό.
 
 <CodePlaceholder title="Example" />
 
@@ -365,10 +356,10 @@ await client.sendTransaction([
 ]);
 ```
 
-## !!steps Καταστροφή με την αρχή καταστροφής
+## !!steps Κάψιμο με την αρχή καύσης
 
-Καταστροφή token με _rs`PermissionedBurnInstruction::BurnChecked`_ υπογεγραμμένη
-και από τον ιδιοκτήτη του token account και την αρχή καταστροφής.
+Κάψτε tokens με _rs`PermissionedBurnInstruction::BurnChecked`_ υπογεγραμμένο και
+από τον ιδιοκτήτη του token account και την αρχή καύσης.
 
 <CodePlaceholder title="Example" />
 
@@ -454,32 +445,32 @@ await client.sendTransaction([
 
 </ScrollyCoding>
 
-<Callout type="info" title="Σειρά Εντολών">
+<Callout type="info" title="Instruction Order">
   _rs`PermissionedBurnInstruction::Initialize`_ πρέπει να έρθει πριν από
-  _rs`InitializeMint`_. _rs`CreateAccount`_,
-  _rs`PermissionedBurnInstruction::Initialize`_, και _rs`InitializeMint`_ πρέπει
-  να συμπεριλαμβάνονται στην ίδια συναλλαγή.
+  _rs`InitializeMint`_. Τα _rs`CreateAccount`_,
+  _rs`PermissionedBurnInstruction::Initialize`_ και _rs`InitializeMint`_ πρέπει
+  να συμπεριληφθούν στην ίδια συναλλαγή.
 </Callout>
 
 ### Αναφορά Πηγής
 
-| Item                                           | Description                                                                                                                             | Source                                                                                                                                         |
-| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| _rs`PermissionedBurnConfig`_                   | Επέκταση mint που αποθηκεύει την αρχή που απαιτείται για συνυπογραφή κάθε καταστροφής για το mint.                                      | [Source](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/mod.rs#L16-L25)         |
-| _rs`PermissionedBurnInstruction::Initialize`_  | Εντολή που αρχικοποιεί τη ρύθμιση παραμέτρων permissioned burn πριν από _rs`InitializeMint`_.                                           | [Source](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L41-L49) |
-| _rs`PermissionedBurnInstruction::Burn`_        | Εντολή καταστροφής που απαιτεί υπογραφές από την αρχή καταστροφής και τον ιδιοκτήτη ή εκπρόσωπο του token account.                      | [Source](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L50-L71) |
-| _rs`PermissionedBurnInstruction::BurnChecked`_ | Εντολή καταστροφής με έλεγχο δεκαδικών που χρησιμοποιεί τους ίδιους λογαριασμούς με _rs`PermissionedBurnInstruction::Burn`_.            | [Source](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L72-L79) |
-| _rs`AuthorityType::PermissionedBurn`_          | Διακριτικό αρχής που χρησιμοποιείται με _rs`SetAuthority`_ για εναλλαγή ή απενεργοποίηση της αρχής καταστροφής σε ένα mint.             | [Source](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/instruction.rs#L1276-L1277)                         |
-| _rs`process_initialize`_                       | Λογική επεξεργαστή που αρχικοποιεί _rs`PermissionedBurnConfig`_ σε ένα μη αρχικοποιημένο mint και αποθηκεύει την αρχή καταστροφής.      | [Source](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/extension/permissioned_burn/processor.rs#L29-L47)     |
-| _rs`process_burn`_                             | Λογική επεξεργαστή που απορρίπτει τις τυπικές καταστροφές όταν είναι ορισμένη η αρχή καταστροφής και επαληθεύει την υπογραφή της αρχής. | [Source](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L1114-L1179)                             |
-| _rs`process_set_authority`_                    | Λογική επεξεργαστή που επικυρώνει και εναλλάσσει την αρχή καταστροφής όταν χρησιμοποιείται _rs`AuthorityType::PermissionedBurn`_.       | [Source](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L996-L1008)                              |
+| Στοιχείο                                       | Περιγραφή                                                                                                                     | Πηγή                                                                                                                                         |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| _rs`PermissionedBurnConfig`_                   | Επέκταση mint που αποθηκεύει την αρχή που απαιτείται για συνυπογραφή κάθε καύσης για το mint.                                 | [Πηγή](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/mod.rs#L16-L25)         |
+| _rs`PermissionedBurnInstruction::Initialize`_  | Εντολή που αρχικοποιεί τη διαμόρφωση permissioned burn πριν από _rs`InitializeMint`_.                                         | [Πηγή](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L41-L49) |
+| _rs`PermissionedBurnInstruction::Burn`_        | Εντολή καύσης που απαιτεί υπογραφές από την αρχή καύσης και τον ιδιοκτήτη ή εκπρόσωπο του token account.                      | [Πηγή](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L50-L71) |
+| _rs`PermissionedBurnInstruction::BurnChecked`_ | Εντολή καύσης με έλεγχο δεκαδικών που χρησιμοποιεί τους ίδιους λογαριασμούς με _rs`PermissionedBurnInstruction::Burn`_.       | [Πηγή](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/extension/permissioned_burn/instruction.rs#L72-L79) |
+| _rs`AuthorityType::PermissionedBurn`_          | Διακριτικό αρχής που χρησιμοποιείται με _rs`SetAuthority`_ για εναλλαγή ή απενεργοποίηση της αρχής καύσης σε ένα mint.        | [Πηγή](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/interface/src/instruction.rs#L1276-L1277)                         |
+| _rs`process_initialize`_                       | Λογική επεξεργαστή που αρχικοποιεί _rs`PermissionedBurnConfig`_ σε ένα μη αρχικοποιημένο mint και αποθηκεύει την αρχή καύσης. | [Πηγή](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/extension/permissioned_burn/processor.rs#L29-L47)     |
+| _rs`process_burn`_                             | Λογική επεξεργαστή που απορρίπτει τυπικές καύσεις όταν έχει οριστεί η αρχή καύσης και επαληθεύει την υπογραφή της αρχής.      | [Πηγή](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L1114-L1179)                             |
+| _rs`process_set_authority`_                    | Λογική επεξεργαστή που επικυρώνει και εναλλάσσει την αρχή καύσης όταν χρησιμοποιείται _rs`AuthorityType::PermissionedBurn`_.  | [Πηγή](https://github.com/solana-program/token-2022/blob/program%40v11.0.0/program/src/processor.rs#L996-L1008)                              |
 
 ### Typescript
 
 Το παρακάτω παράδειγμα με `Kit` χρησιμοποιεί απευθείας τις παραγόμενες οδηγίες.
-Το δημοσιευμένο πακέτο legacy `@solana/spl-token` δεν περιλαμβάνει ακόμη
-υποστήριξη για permissioned burn, οπότε δεν συμπεριλαμβάνεται αντίστοιχο
-παράδειγμα legacy.
+Το δημοσιευμένο παλαιό πακέτο `@solana/spl-token` δεν περιλαμβάνει ακόμη
+υποστήριξη για εξουσιοδοτημένη καύση, οπότε δεν υπάρχει παράδειγμα για το παλαιό
+πακέτο.
 
 #### Kit
 

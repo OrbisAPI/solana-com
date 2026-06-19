@@ -1,0 +1,67 @@
+---
+title: Najlepsze praktyki produkcyjne
+description:
+  Bezpieczna obsługa backendów podpisywania Keychain w środowisku produkcyjnym —
+  podział obowiązków, rotacja kluczy, dostęp z najniższymi uprawnieniami,
+  dostępność, bezpieczeństwo transportu, monitorowanie i audyt.
+related:
+  - /docs/tools/keychain/choosing-a-backend
+  - /docs/payments/production-readiness
+---
+
+Keychain abstrahuje backend podpisywania, jednak obsługa sygnatariusza w
+środowisku produkcyjnym nadal leży po Twojej stronie. Poniższe praktyki mają
+zastosowanie do wszystkich backendów; zapoznaj się z artykułem
+[Wybór backendu](/docs/tools/keychain/choosing-a-backend), aby dowiedzieć się,
+jak dokonać wyboru.
+
+## Oddziel sygnatariuszy hot i cold
+
+Używaj sygnatariusza operacyjnego z niskim saldem ("hot") do częstych,
+zautomatyzowanych transakcji oraz osobnego sygnatariusza wysokiej wartości
+("cold") do operacji skarbcowych. Zabezpiecz sygnatariusza cold za pomocą
+powiernictwa MPC lub sprzętowego modułu HSM w chmurze i wymagaj polityk
+zatwierdzania przed podpisaniem. Ponieważ interfejs jest identyczny, każda rola
+może korzystać z innego backendu bez konieczności modyfikowania miejsc wywołań.
+
+## Rotuj klucze w sposób przemyślany
+
+W sieci Solana klucz podpisywania _jest_ adresem konta, więc rotacja klucza
+powoduje powstanie nowego adresu. Planuj rotację jako migrację: utwórz nowy
+klucz, przypisz odpowiednie uprawnienia (lub przenieś środki) do nowego adresu,
+a następnie wycofaj stary. Używaj odrębnych kluczy dla każdego środowiska, aby
+klucze devnet nigdy nie były ponownie używane w sieci mainnet.
+
+## Przyznawaj dostęp z najniższymi uprawnienieniami
+
+Ogranicz poświadczenia każdego backendu do minimum niezbędnego do podpisywania.
+W przypadku AWS KMS są to `kms:Sign` i `kms:DescribeKey` dla konkretnego klucza;
+preferuj role IAM zamiast statycznych poświadczeń. Zastosuj tę samą zasadę do
+polityk Vault i kluczy API zarządzanych portfeli.
+
+## Zaplanuj dostępność
+
+Zdalne backendy są uzależnione od usługi sieciowej. Wywołaj `isAvailable()`
+przed poleganiem na sygnatariuszu, stosuj ponowne próby z opóźnieniem
+wykładniczym przy przejściowych awariach i zdefiniuj ścieżkę awaryjną na wypadek
+przerw w działaniu. Keychain wymusza protokół HTTPS dla zdalnych backendów i
+stosuje domyślny limit czasu żądania.
+
+## Chroń sekrety i transport
+
+- Wszystkie zdalne backendy komunikują się przez HTTPS; punkty końcowe inne niż
+  HTTPS są odrzucane.
+- Dostarczaj klucze API, tokeny i poświadczenia z menedżera sekretów lub
+  zmiennych środowiskowych — nigdy nie umieszczaj ich na stałe w kodzie ani nie
+  commituj do kontroli źródła.
+- Keychain oczyszcza odpowiedzi błędów, aby uniknąć wycieku sekretów do logów;
+  dbaj o to, aby własne logi były wolne od surowych poświadczeń i materiału
+  kluczowego.
+
+## Monitoruj i audytuj podpisywanie
+
+Śledź wskaźnik powodzenia podpisywania, opóźnienia i liczbę błędów, a także
+konfiguruj alerty przy skokach — zobacz metryki w
+[Gotowości Produkcyjnej](/docs/payments/production-readiness#monitoring). Włącz
+logi audytu po stronie dostawcy (KMS, Vault lub powiernik) i uzgadniaj je z
+transakcjami przesyłanymi przez Twoją aplikację.

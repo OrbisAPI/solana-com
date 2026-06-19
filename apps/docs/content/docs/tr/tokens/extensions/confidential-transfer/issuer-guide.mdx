@@ -21,41 +21,32 @@ transfer tutarlarını ve hesap bakiyelerini şifreli tutar. Zincir üstü kanı
 doğrulaması için ZK ElGamal Proof Program'a dayanırlar; bu nedenle mint,
 yalnızca söz konusu programın etkin olduğu kümelerde kullanılabilir.
 
-<Callout type="warn" title="Kullanılabilirlik">
-  Gizli transferler, Token-2022
-  [`program@v11.0.0`](https://github.com/solana-program/token-2022/releases/tag/program%40v11.0.0)
-  veya daha yeni bir sürümünü gerektirir. Bugün devnet'te kullanılabilir
-  durumdadır ve Haziran 2026'da mainnet'te etkinleştirilmesi planlanmaktadır.
-  Token Extensions Program her kümeye ayrı ayrı dağıtılır; bu nedenle
-  hedeflediğiniz kümedeki dağıtımı doğrulayın.
-</Callout>
-
-## Oluşturma sırasında alınan kararlar
+## Oluşturma sırasında aldığınız kararlar
 
 Gizli Transfer uzantısı, mint başlatılmadan önce başlatılmalıdır ve sonradan
 eklenemez. Oluşturma sırasında şunlara karar verirsiniz:
 
-- **Onay politikası**: hesapların gizli transferlere izinsiz (`auto`) ya da
-  mint'in gizli transfer yetkilisi tarafından onaylanarak (`manual`) dahil olup
-  olamayacağı.
-- **Denetçi**: belirli bir tarafın mint için her transfer tutarını şifresini
-  çözebilmesi amacıyla global bir denetçi ElGamal genel anahtarı ayarlanıp
+- **Onay politikası**: hesapların izin gerektirmeksizin gizli transferlere
+  katılıp katılamayacağı (`auto`) ya da mint'in gizli transfer yetkisi
+  (`manual`) tarafından onaylanması gerekip gerekmediği.
+- **Denetçi**: belirli bir tarafın mint için tüm transfer tutarlarını şifresini
+  çözebilmesi amacıyla global bir denetçi ElGamal pubkey ayarlanıp
   ayarlanmayacağı. İsteğe bağlıdır ve sonradan değiştirilebilir.
-- **İsteğe bağlı tamamlayıcı uzantılar**: gizli transfer ücretleri (transfer
+- **İsteğe bağlı eşlik eden uzantılar**: gizli transfer ücretleri (transfer
   ücreti uzantısıyla eşleştirilmiş) ve gizli mint/burn; her ikisi de aşağıda ele
-  alınmıştır. Bunların da oluşturma sırasında başlatılması gerekir.
+  alınmaktadır. Bunların da oluşturma sırasında başlatılması gerekir.
 
-## Gizli bir mint oluşturun
+## Gizli bir mint oluşturma
 
 CLI, onay politikasını `--enable-confidential-transfers auto` veya `manual` ile
-ayarlar; `auto` herhangi bir sahibinin kendi hesabını yapılandırmasına izin
-verirken, `manual` bunu gizli transfer yetkisinin onayı arkasına kilitler (bu
-yetki varsayılan olarak mint yetkisine atanır). İstemci tarafındaki yollar da
-aynı ayarları `ConfidentialTransferMint` parametreleri aracılığıyla alır: bir
-yetki, otomatik onay bayrağı ve isteğe bağlı bir denetçi anahtarı. Onay
-politikası ve denetçi daha sonra değiştirilebilir (bkz.
-[Denetçi yapılandırma](#configure-an-auditor)); yalnızca extension'ın varlığı
-oluşturma sırasında sabit olarak belirlenir.
+belirler; `auto` herhangi bir sahipten kendi hesabını yapılandırmasına izin
+verirken, `manual` bunu gizli transfer yetkisinin (varsayılan olarak mint
+yetkisine düşer) onayı arkasına kilitler. İstemci yolları, aynı ayarları
+`ConfidentialTransferMint` parametreleri aracılığıyla alır: bir yetki, otomatik
+onay bayrağı ve isteğe bağlı bir denetçi anahtarı. Hem onay politikası hem de
+denetçi sonradan değiştirilebilir (bkz.
+[Denetçi yapılandırma](#configure-an-auditor)); yalnızca uzantının varlığı
+oluşturma sırasında sabitlenir.
 
 <CodeTabs>
 
@@ -129,22 +120,22 @@ const instructions = [
 
 ## Denetçi yapılandırma
 
-Küresel bir denetçi, mint üzerinde depolanan bir ElGamal pubkey'dir.
-Ayarlandığında, her gizli transfer aynı zamanda tutarını bu anahtar altında
-şifreler; böylece ilgili gizli anahtara sahip olan kişi, mint için tüm transfer
-tutarlarını çözebilir. Gizli transferlerin denetim ve uyumluluk
-gereksinimleriyle uyumlu kalması bu şekilde sağlanır: genel kitle hiçbir şey
+Global bir denetçi, mint üzerinde saklanan bir ElGamal pubkey'dir.
+Ayarlandığında, her gizli transfer tutarını bu anahtar altında ek olarak
+şifreler; böylece ilgili gizli anahtarı elinde bulunduran kişi, mint için tüm
+transfer tutarlarının şifresini çözebilir. Gizli transferlerin denetim ve
+uyumluluk gereksinimleriyle uyumlu kalmasının yolu budur: kamuoyu hiçbir şey
 görmez, denetçi her şeyi görür.
 
-Gizli transfer yetkisi, denetçiyi istediği zaman ayarlayabilir, değiştirebilir
-veya kaldırabilir. Aynı işlem onay politikasını da günceller. CLI'de denetçi
-anahtarı, bir ElGamal pubkey'nin base64 kodlamasıdır; kaldırmak için
+Gizli transfer yetkilisi, denetçiyi istediği zaman ayarlayabilir, değiştirebilir
+veya kaldırabilir. Aynı işlem onay politikasını da günceller. CLI'da denetçi
+anahtarı, bir ElGamal pubkey'inin base64 kodlamasıdır; kaldırmak için
 `--auditor-pubkey none`, politikayı değiştirmek için
 `--approve-policy auto|manual` kullanın.
 
-Rotasyon yalnızca gelecekteki transferleri etkiler. Zincirde zaten mevcut olan
-işlemlerdeki tutarlar, çalıştırıldıkları sırada etkin olan denetçi anahtarıyla
-şifreli kalmaya devam eder; dolayısıyla geçmiş aktiviteyi çözmeniz gerekiyorsa
+Rotasyon yalnızca gelecekteki transferleri etkiler. Zincirde halihazırda bulunan
+işlemlerdeki tutarlar, yürütüldükleri sırada aktif olan denetçi anahtarıyla
+şifreli kalmaya devam eder; bu nedenle geçmiş aktiviteyi çözmeniz gerekiyorsa
 eski denetçi anahtarlarını saklayın.
 
 <CodeTabs>
@@ -178,19 +169,19 @@ const ix = getUpdateConfidentialTransferMintInstruction({
 </CodeTabs>
 
 <Callout type="warn">
-  Denetçi gizli anahtarı, mint için tüm transfer tutarlarını çözebilir. Bunu bir
-  imzalama anahtarıyla aynı titizlikle saklayın ve rotasyon için plan yapın.
-  Denetçiyi `None` olarak ayarlamak, hesap sahiplerinin kendileri dışında herkes
-  için tutar görünürlüğünü devre dışı bırakır.
+  Denetçi gizli anahtarı, mint için her transfer tutarını çözebilir. Bunu bir
+  imzalama anahtarıyla aynı titizlikte saklayın ve rotasyon planı yapın.
+  Denetçinin `None` olarak ayarlanması, hesap sahiplerinin kendileri dışında
+  herkes için tutar görünürlüğünü devre dışı bırakır.
 </Callout>
 
-## Hesapları onayla (manuel politika)
+## Hesap onayı (manuel politika)
 
 Manuel onay politikasıyla, gizli transferler için yapılandırılmış bir hesap,
-gizli transfer yetkilisi onu onaylayana kadar gizli işlem yapamaz. Bu,
-yayıncılara izin listesindeki veya KYC doğrulamasından geçmiş katılımcılar için
-bir kontrol kapısı sağlar. CLI bir onaylama komutu sunmadığından, onay işlemi
-bir istemci aracılığıyla gerçekleştirilir.
+gizli transfer yetkilisi tarafından onaylanana kadar gizli işlem yapamaz. Bu,
+ihraçcılara izin verilenler listesindeki veya KYC'den geçmiş katılımcılar için
+bir kontrol noktası sağlar. CLI bir onay komutu sunmadığından, onay işlemi bir
+istemci aracılığıyla gerçekleştirilir.
 
 <CodeTabs>
 
@@ -220,17 +211,16 @@ const ix = getApproveConfidentialTransferAccountInstruction({
 
 Mint'iniz bir [transfer ücreti](/docs/tokens/extensions/transfer-fees) alıyorsa
 ve transferler gizliyse, ücretin de gizli olarak tutulması gerekir.
-`ConfidentialTransferFeeConfig` uzantısı bunu yönetir ve mint oluşturma
-sırasında hem transfer ücreti hem de gizli transfer uzantılarıyla birlikte
-başlatılır.
+`ConfidentialTransferFeeConfig` uzantısı bunu yönetir ve mint oluşturulurken hem
+transfer ücreti hem de gizli transfer uzantılarıyla birlikte başlatılır.
 
-Tutulan ücretler, alıcı hesaplarda şifreli olarak birikir, mint'e aktarılır,
-ardından tutulan ücreti çekme yetkililisi tarafından çekilir. Her ücret miktarı
-baştan sona şifreli kalır. Bunların hiçbiri CLI aracılığıyla sunulmaz. Tutulan
-ücreti çekme yetkilisinin ElGamal gizli anahtarı, tutulan ücret miktarlarının
-şifresini çözebilir; bu durum, kamuya açık ücret parametreleriyle birleşince
-transfer miktarları hakkında bilgi açığa çıkarabilir. Bu nedenle söz konusu
-anahtar hassas olarak değerlendirilmelidir.
+Tutulan ücretler, alıcı hesaplarda şifreli olarak birikir, mint'e aktarılır ve
+ardından tutulan miktarı çekme yetkisi tarafından çekilir. Her ücret tutarı
+boyunca şifreli kalır. Bunların hiçbiri CLI üzerinden erişilebilir değildir.
+Tutulan miktarı çekme yetkisinin ElGamal gizli anahtarı, tutulan ücret
+tutarlarını çözebilir; bu durum, genel ücret parametreleriyle birleştiğinde
+transfer tutarları hakkında bilgi açığa çıkarabilir; dolayısıyla bu anahtara
+hassas bir veri olarak muamele edin.
 
 ### Ücret yapılandırmasını başlat
 
@@ -262,17 +252,17 @@ const ix = getInitializeConfidentialTransferFeeInstruction({
 
 ### Tutulan ücretleri topla ve çek
 
-Toplama işlemi, şifreli tutulan ücretleri hesaplardan mint'e taşır; çekme işlemi
-ise bunları mint'ten seçilen bir hesaba aktarır. İki yetkili devreye girer ve
-her biri mint yetkilisinden farklı olabilir:
+Toplama işlemi, şifrelenmiş tutulan ücretleri hesaplardan mint'e taşır; çekme
+işlemi ise bunları mint'ten seçilen bir hesaba aktarır. İki yetki dahildir ve
+her ikisi de mint yetkisinden farklı olabilir:
 
-- **Gizli transfer ücreti yetkilisi** (`ConfidentialTransferFeeConfig` üzerinde
-  ayarlanan `authority`), toplamayı etkinleştirir veya devre dışı bırakır.
-- **Tutulan ücreti çekme yetkilisi** (transfer ücreti uzantısının
-  `TransferFeeConfig` alanından), toplanan ücretleri mint'ten çeker.
+- **Gizli transfer ücreti yetkisi** (`ConfidentialTransferFeeConfig` üzerinde
+  ayarlanan `authority`) toplamayı etkinleştirir veya devre dışı bırakır.
+- **Tutulanları çekme yetkisi** (transfer ücreti uzantısının
+  `TransferFeeConfig`'inden) toplanan ücretleri mint'ten çeker.
 
-Para çekme işlemleri, satır içi olarak sağlanan veya bağlam durumu hesaplarına
-doğrulanan bir eşitlik ve bir aralık kanıtı gerektirir.
+Çekme işlemleri, satır içi sağlanan veya bağlam durum hesaplarında doğrulanan
+bir eşitlik ve bir aralık kanıtı gerektirir.
 
 <CodeTabs>
 
@@ -317,35 +307,35 @@ const harvestIx =
 
 </CodeTabs>
 
-JS istemcisinde, basılan ücretlerin mint'ten çekilmesi
+JS istemcisinde, toplanan ücretleri mint'ten çekmek
 (`getWithdrawWithheldTokensFromMintForConfidentialTransferFeeInstruction`)
-ayrıca bağlam durumu hesaplarına doğrulanmış bir eşitlik ve aralık kanıtı
+ayrıca bağlam durum hesaplarında doğrulanan bir eşitlik ve bir aralık kanıtı
 gerektirir; bu nedenle gizli bir transferle aynı kanıt hesabı modelini izler.
 
 ## Gizli mint ve yakma
 
-`ConfidentialMintBurn` uzantısı, mint otoritesinin doğrudan gizli bakiyelere
-karşı arz çıkarmasına ve yakmasına olanak tanır; toplam arzı şifreli tutar. Bu
-uzantıya sahip bir mint, genel para yatırma ve çekme yolunu devre dışı bırakır;
-zira tokenlar yalnızca gizli olarak var olur. Tam model için
+`ConfidentialMintBurn` uzantısı, mint yetkisinin toplam arzı şifreli tutarak
+doğrudan gizli bakiyelere karşı arz yayınlamasına ve yakmasına olanak tanır. Bu
+uzantıya sahip bir mint, ortak mevduat ve çekme yolunu devre dışı bırakır; zira
+tokenlar yalnızca gizli olarak var olur. Tam model için
 [protokol belgelerine](https://www.solana-program.com/docs/confidential-balances)
-bakınız.
+bakın.
 
 <Callout type="info">
   Gizli mint/yakma işlemi en kolay şekilde Rust `spl-token-client` aracılığıyla
-  yapılır; bu araç gerekli kanıtları oluşturur ve işlemleri sizin için sıralar.
-  `@solana-program/token-2022` JS istemcisi düşük seviyeli talimat
-  oluşturucuları (`getConfidentialMintInstruction`,
-  `getConfidentialBurnInstruction` ve benzerleri) içerir ancak kanıtları
-  oluşturan üst düzey bir yardımcı içermez ve CLI komutları da bulunmaz; bu
-  nedenle aşağıdaki örnekler yalnızca Rust içindir.
+  gerçekleştirilir; bu araç gerekli kanıtları oluşturur ve işlemleri sizin için
+  sıralar. `@solana-program/token-2022` JS istemcisi düşük seviyeli talimat
+  oluşturucularıyla (`getConfidentialMintInstruction`,
+  `getConfidentialBurnInstruction` ve benzerleri) birlikte gelir; ancak
+  kanıtları oluşturan üst düzey bir yardımcı içermez ve CLI komutları da
+  bulunmaz, bu nedenle aşağıdaki örnekler yalnızca Rust içindir.
 </Callout>
 
 Uzantıyı mint oluşturma sırasında başlatın, ardından zaman içinde arzı mint
-edin, yakın ve mutabık kılın. Mint işlemi, alıcının gizli bakiyesine şifreli bir
-miktar gönderir; yakma işlemi ise daha sonra arza katlanacak olan bekleyen bir
-yakma işlemine şifreli bir miktar aktarır. Her ikisi de gizli bir transfer gibi
-kanıtlar üretir.
+edin, burn edin ve mutabık kılın. Mint işlemi, alıcının gizli bakiyesine
+şifrelenmiş bir miktar ekler; burn işlemi ise şifrelenmiş bir miktarı daha sonra
+arza dahil edilecek bekleyen bir burn'e aktarır. Her ikisi de gizli bir transfer
+gibi kanıtlar oluşturur.
 
 <CodeTabs>
 
@@ -404,25 +394,25 @@ token
 </CodeTabs>
 
 Arz şifreleme anahtarını `confidential_transfer_rotate_supply_elgamal_pubkey`
-ile döndürün (önce bekleyen yakma sıfır olmalıdır) ve okunabilir arz şifreli
-metnini `confidential_transfer_update_decrypt_supply` ile yenileyin.
+ile döndürün (önce bekleyen burn'ün sıfır olması gerekir) ve okunabilir arz
+şifreli metnini `confidential_transfer_update_decrypt_supply` ile yenileyin.
 
 ## Operasyonel ve uyumluluk değerlendirmeleri
 
-- **Denetçi anahtarı güvenliği.** Bir denetçi belirlediyseniz, denetçi gizli
+- **Denetçi anahtarı saklanması.** Bir denetçi belirlediyseniz, denetçi gizli
   anahtarı yüksek değerli bir şifre çözme anahtarıdır. Dikkatli bir şekilde
-  saklayın ve döndürün; kuruluşunuz içinde kimin (veya hangi düzenleyici
-  kurumun) bu anahtarı tutacağına karar verin.
+  saklayın ve döndürün; kuruluşunuzda (veya hangi düzenleyicide) bulunacağına
+  karar verin.
 - **Uyumluluk tutumu.** Adresler herkese açık kalmaya devam ettiğinden adres
   tarama ve karşı taraf grafik analizi çalışmaya devam eder. Miktara dayalı
-  izleme, denetçi anahtarına veya hesap sahiplerinin seçici ifşasına bağlıdır.
-  Başlatmadan önce yaklaşımınıza karar verin.
-- **Kullanıcı katılımı.** Gizli bir hesabın yapılandırılması, sahibinin imzasını
-  gerektirir. Kullanıcılar için hesapları sorunsuz bir şekilde sağlamak adına,
-  onlara bir kez ElGamal anahtarı kaydettirin ve
+  izleme, denetçi anahtarına veya hesap sahiplerinin seçici açıklamasına
+  bağlıdır. Başlatmadan önce yaklaşımınıza karar verin.
+- **Hesap sahiplerini dahil etme.** Gizli bir hesabın yapılandırılması,
+  sahibinin imzasını gerektirir. Kullanıcılar için hesapları sorunsuz biçimde
+  sağlamak amacıyla, onların bir kez ElGamal anahtarı kaydetmelerini ve
   [Entegrasyon Kılavuzu](/docs/tokens/extensions/confidential-transfer/integration-guide#creating-and-configuring-accounts)'nda
-  açıklanan kayıt defteri yolunu kullanın.
+  açıklanan kayıt defteri yolunu kullanmalarını sağlayın.
 - **İşlem sayısı.** Kanıtlar günümüzdeki işlem boyutu sınırını aştığından, gizli
   bir transfer şu anda birkaç bağımlı işlemi kapsamaktadır. İşlem formatı v1
-  (Agave v4.2 ile birlikte gelecek), bu sınırı artırır ve tek bir zincir üstü
-  işleme olanak tanıması beklenmektedir.
+  (Agave v4.2 ile kullanıma sunulmaktadır) bu sınırı yükseltmekte ve tek bir
+  zincir üstü işleme olanak tanıması beklenmektedir.

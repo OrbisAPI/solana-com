@@ -3,47 +3,40 @@ title: Menarik token
 description: Pelajari cara menarik token dari status konfidensial.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program sementara dinonaktifkan di mainnet dan devnet karena sedang
-  menjalani audit keamanan. Ini berarti ekstensi transfer konfidensial saat ini
-  tidak tersedia. Meskipun konsepnya masih valid, contoh kode tidak akan
-  berjalan.
-</Callout>
+## Cara menarik token dari saldo tersedia rahasia
 
-## Cara menarik token dari saldo tersedia konfidensial
-
-Untuk menarik token dari saldo tersedia konfidensial ke saldo publik:
+Untuk menarik token dari saldo tersedia rahasia ke saldo publik:
 
 1. Buat
    [dua bukti](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/proof-generation/src/withdraw.rs#L22)
    di sisi klien:
 
-   **Equality proof
+   **Bukti Kesetaraan
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
    Memverifikasi bahwa ciphertext saldo tersedia yang tersisa setelah penarikan
-   cocok dengan
-   [Pedersen commitment](https://en.wikipedia.org/wiki/Commitment_scheme) yang
-   sesuai, memastikan saldo tersedia baru akun dihitung dengan benar sebagai
-   `remaining_balance = current_balance - withdraw_amount`.
+   sesuai dengan
+   [komitmen Pedersen](https://en.wikipedia.org/wiki/Commitment_scheme) yang
+   bersesuaian, memastikan saldo tersedia baru akun dihitung dengan benar
+   sebagai `remaining_balance = current_balance - withdraw_amount`.
 
-   **Range proof
+   **Bukti Rentang
    ([BatchedRangeProofU64Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u64.rs#L37))**:
    Memverifikasi bahwa saldo tersedia yang tersisa setelah penarikan adalah
    non-negatif dan berada dalam rentang yang ditentukan.
 
 2. Untuk setiap bukti:
-   - Panggil ZK ElGamal proof program untuk memverifikasi data bukti.
-   - Simpan metadata spesifik bukti dalam akun "context state" bukti untuk
-     digunakan dalam instruksi lain.
+   - Panggil program bukti ZK ElGamal untuk memverifikasi data bukti.
+   - Simpan metadata khusus bukti dalam akun "context state" bukti untuk
+     digunakan dalam instruksi lainnya.
 
 3. Panggil instruksi
    [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
-   dengan menyediakan dua akun bukti.
+   dengan menyertakan dua akun bukti.
 
 4. Tutup akun bukti untuk memulihkan SOL yang digunakan untuk membuatnya.
 
 Diagram berikut menunjukkan langkah-langkah yang terlibat dalam menarik token
-dari saldo tersedia konfidensial ke saldo publik:
+dari saldo tersedia rahasia ke saldo publik:
 
 ```mermaid title="Withdraw Tokens"
 sequenceDiagram
@@ -70,18 +63,17 @@ sequenceDiagram
     deactivate ElGamal
 ```
 
-### Instruksi yang diperlukan
+### Instruksi yang Diperlukan
 
-Untuk menarik token dari saldo tersedia konfidensial ke saldo publik, Anda
-harus:
+Untuk menarik token dari saldo tersedia rahasia ke saldo publik, Anda harus:
 
-- Menghasilkan equality proof dan range proof di sisi klien
-- Memanggil Zk ElGamal proof program untuk memverifikasi bukti dan
+- Buat bukti kesetaraan dan bukti rentang di sisi klien
+- Panggil program bukti Zk ElGamal untuk memverifikasi bukti dan
   menginisialisasi akun "context state"
-- Memanggil instruksi
+- Panggil instruksi
   [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
-  dengan menyediakan dua akun bukti.
-- Menutup dua akun bukti untuk memulihkan rent.
+  dengan menyertakan dua akun bukti.
+- Tutup dua akun bukti untuk memulihkan rent.
 
 Crate `spl_token_client` menyediakan metode-metode berikut:
 
@@ -91,23 +83,23 @@ Crate `spl_token_client` menyediakan metode-metode berikut:
 - Metode `confidential_transfer_close_context_state_account` yang menutup akun
   bukti.
 
-### Contoh kode
+### Contoh Kode
 
-Contoh berikut mendemonstrasikan cara menarik token dari saldo rahasia yang
-tersedia ke saldo publik.
+Contoh berikut mendemonstrasikan cara menarik token dari saldo tersedia rahasia
+ke saldo publik.
 
-Untuk menjalankan contoh ini, mulai validator lokal dengan Token Extension
+Untuk menjalankan contoh ini, mulai validator lokal dengan Token Extensions
 Program yang dikloning dari mainnet menggunakan perintah berikut. Anda harus
-menginstal Solana CLI untuk memulai validator lokal.
+memiliki Solana CLI yang terinstal untuk memulai validator lokal.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Pada saat penulisan, Confidential Transfers belum diaktifkan pada validator
-  lokal default. Anda harus mengkloning Token Extension Program dari mainnet
-  untuk menjalankan contoh kode.
+  Pada saat penulisan ini, Confidential Transfers belum diaktifkan pada
+  validator lokal default. Anda harus mengkloning Token Extensions Program
+  mainnet untuk menjalankan kode contoh ini.
 </Callout>
 
 <CodeTabs>

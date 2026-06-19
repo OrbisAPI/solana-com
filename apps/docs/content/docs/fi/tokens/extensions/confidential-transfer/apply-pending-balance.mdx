@@ -3,33 +3,26 @@ title: Odottavan saldon soveltaminen
 description: Opi soveltamaan odottavaa saldoa varojen saataville saattamiseksi.
 ---
 
-<Callout type="warn">
-  ZK ElGamal -ohjelma on väliaikaisesti poistettu käytöstä mainnetissä ja
-  devnetissä turvallisuusauditoinnin ajaksi. Tämä tarkoittaa, että
-  luottamuksellisten siirtojen laajennus ei ole tällä hetkellä käytettävissä.
-  Vaikka konseptit ovat edelleen päteviä, koodiesimerkit eivät toimi.
-</Callout>
-
-## Miten odottava saldo sovelletaan käytettävissä olevaan saldoon
+## Kuinka ottaa käyttöön odottava saldo käytettävissä olevaan saldoon
 
 Ennen kuin tokeneita voidaan siirtää luottamuksellisesti, julkinen token-saldo
-on muunnettava luottamukselliseksi saldoksi. Tämä muunnos tapahtuu kahdessa
+täytyy muuntaa luottamukselliseksi saldoksi. Tämä muunnos tapahtuu kahdessa
 vaiheessa:
 
 1. **Luottamuksellinen odottava saldo**: Aluksi tokenit "talletetaan" julkisesta
    saldosta "odottavaan" luottamukselliseen saldoon.
-2. **Luottamuksellinen käytettävissä oleva saldo**: Odottava saldo "sovelletaan"
-   sitten käytettävissä olevaan saldoon, jolloin tokenit ovat käytettävissä
+2. **Luottamuksellinen käytettävissä oleva saldo**: Odottava saldo "otetaan
+   käyttöön" käytettävissä olevaan saldoon, jolloin tokenit ovat käytettävissä
    luottamuksellisiin siirtoihin.
 
-Tämä osio selittää toisen vaiheen: odottavan saldon soveltamisen käytettävissä
-olevaan saldoon.
+Tässä osiossa selitetään toinen vaihe: odottavan saldon ottaminen käyttöön
+käytettävissä olevaan saldoon.
 
-Kun tokeneita "talletetaan" julkisesta saldosta tai kun tokeneita siirretään
-luottamuksellisesti token-tilin välillä, tokenit lisätään aluksi
-luottamukselliseen odottavaan saldoon. Ennen kuin tokeneita voidaan käyttää
-luottamuksellisiin siirtoihin, odottava saldo on "sovellettava" käytettävissä
-olevaan saldoon.
+Kun tokenit "talletetaan" julkisesta saldosta tai kun tokenit siirretään
+luottamuksellisesti yhdestä token account -tilistä toiseen, tokenit lisätään
+aluksi luottamukselliseen odottavaan saldoon. Ennen kuin tokeneita voidaan
+käyttää luottamuksellisiin siirtoihin, odottava saldo täytyy "ottaa käyttöön"
+käytettävissä olevaan saldoon.
 
 ```mermaid title="Apply Pending Balance"
 sequenceDiagram
@@ -49,8 +42,8 @@ CC->>BB: Transfer
 B->>BB: Apply
 ```
 
-Seuraava kaavio näyttää vaiheet, jotka liittyvät odottavan saldon soveltamiseen
-käytettävissä olevaan saldoon:
+Seuraava kaavio näyttää vaiheet, jotka liittyvät odottavan saldon ottamiseen
+käyttöön käytettävissä olevaan saldoon:
 
 ```mermaid title="Apply Pending Balance"
 sequenceDiagram
@@ -71,34 +64,34 @@ sequenceDiagram
     Note over TokenAccount: Tokens now in available confidential balance<br>ready for confidential transfers
 ```
 
-### Vaadittu käsky
+### Vaadittu ohje
 
-Odottavan saldon muuntamiseksi käytettävissä olevaksi saldoksi kutsu
+Muuntaaksesi odottavan saldon käytettävissä olevaksi saldoksi, kutsu
 [ConfidentialTransferInstruction::ApplyPendingBalance](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L1152)
--käskyä.
+-ohjetta.
 
-`spl_token_client` -crate tarjoaa `confidential_transfer_apply_pending_balance`
--metodin, joka rakentaa ja lähettää transaktion `ApplyPendingBalance` -käskyllä,
-kuten alla olevassa esimerkissä on esitetty.
+`spl_token_client` -paketti tarjoaa
+`confidential_transfer_apply_pending_balance` -metodin, joka rakentaa ja
+lähettää tapahtuman `ApplyPendingBalance` -ohjeella, kuten alla olevassa
+esimerkissä on esitetty.
 
 ### Esimerkkikoodi
 
 Seuraava esimerkki havainnollistaa, kuinka luottamuksellinen odottava saldo
-sovelletaan luottamukselliseen käytettävissä olevaan saldoon.
+otetaan käyttöön luottamukselliseen käytettävissä olevaan saldoon.
 
-Esimerkin suorittamiseksi käynnistä paikallinen validaattori, jossa on
-mainnetistä kloonattu Token Extension Program, käyttämällä seuraavaa komentoa.
-Sinulla on oltava Solana CLI asennettuna paikallisen validaattorin
-käynnistämiseksi.
+Ajaksesi esimerkin, käynnistä paikallinen validator Token Extension Program
+-ohjelman kanssa, joka on kloonattu mainnetistä seuraavalla komennolla. Sinulla
+täytyy olla Solana CLI asennettuna paikallisen validatorin käynnistämiseksi.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Tätä kirjoitettaessa Confidential Transfers -toimintoa ei ole otettu käyttöön
-  oletusarvoisessa paikallisessa validaattorissa. Sinun on kloonattava mainnetin
-  Token Extension Program esimerkkikoodin suorittamiseksi.
+  Kirjoitushetkellä Luottamukselliset siirrot eivät ole käytössä
+  oletuspaikallisessa validatorissa. Sinun täytyy kloonata mainnet Token
+  Extension Program ajaksesi esimerkkikoodin.
 </Callout>
 
 <CodeTabs>

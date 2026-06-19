@@ -3,28 +3,23 @@ title: Wpłacanie tokenów
 description: Dowiedz się, jak wpłacać tokeny do stanu poufnego.
 ---
 
-<Callout type="warn">
-  Program ZK ElGamal jest tymczasowo wyłączony na mainnecie i devnecie, ponieważ
-  przechodzi audyt bezpieczeństwa. Oznacza to, że rozszerzenie poufnych
-  transferów jest obecnie niedostępne. Chociaż koncepcje są nadal aktualne,
-  przykłady kodu nie będą działać.
-</Callout>
+## Jak wpłacić tokeny na poufne saldo oczekujące
 
-## Jak wpłacić tokeny do poufnego salda oczekującego
+Zanim tokeny będą mogły być przesyłane w sposób poufny, publiczne saldo tokenów
+musi zostać przekonwertowane na saldo poufne. Konwersja odbywa się w dwóch
+etapach:
 
-Zanim tokeny będą mogły być przesyłane poufnie, publiczne saldo tokenów musi
-zostać przekształcone w saldo poufne. Proces ten odbywa się w dwóch etapach:
+1. **Poufne saldo oczekujące**: Początkowo tokeny są „wpłacane“ z salda
+   publicznego na „oczekujące“ saldo poufne.
+2. **Poufne saldo dostępne**: Saldo oczekujące jest następnie „stosowane“ do
+   salda dostępnego, dzięki czemu tokeny stają się dostępne do poufnych
+   transferów.
 
-1. **Poufne saldo oczekujące**: Na początku tokeny są "wpłacane" z publicznego
-   salda na "oczekujące" poufne saldo.
-2. **Poufne saldo dostępne**: Następnie saldo oczekujące jest "zastosowane" do
-   salda dostępnego, co umożliwia poufne transfery tokenów.
+W tej sekcji opisano pierwszy etap: wpłacanie publicznego salda tokenów na
+poufne saldo oczekujące.
 
-Ta sekcja wyjaśnia pierwszy etap: wpłacanie publicznego salda tokenów na poufne
-saldo oczekujące.
-
-Poniższy diagram przedstawia kroki związane z wpłacaniem tokenów z publicznego
-salda na poufne saldo oczekujące:
+Poniższy diagram przedstawia kroki związane z wpłacaniem tokenów z salda
+publicznego na poufne saldo oczekujące:
 
 ```mermaid title="Deposit Tokens"
 sequenceDiagram
@@ -44,33 +39,33 @@ sequenceDiagram
 
 ### Wymagana instrukcja
 
-Aby przekształcić publiczne saldo w poufne saldo oczekujące, należy wywołać
+Aby przekonwertować saldo publiczne na poufne saldo oczekujące, należy wywołać
 instrukcję
 [ConfidentialTransferInstruction::Deposit](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L386).
 [Maksymalna kwota](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L21)
 na jedną instrukcję wpłaty jest ograniczona do 2^48.
 
-Pakiet `spl_token_client` udostępnia metodę `confidential_transfer_deposit`,
-która buduje i wysyła transakcję z instrukcją `Deposit`, co pokazano w poniższym
-przykładzie.
+Crate `spl_token_client` udostępnia metodę `confidential_transfer_deposit`,
+która buduje i wysyła transakcję z instrukcją `Deposit`, jak przedstawiono w
+poniższym przykładzie.
 
 ### Przykładowy kod
 
-Poniższy przykład demonstruje, jak wpłacić publiczne saldo tokenów na poufne
-saldo oczekujące.
+Poniższy przykład pokazuje, jak wpłacić publiczne saldo tokenów na poufne saldo
+oczekujące.
 
-Aby uruchomić przykład, uruchom lokalny walidator z Token Extension Program
-sklonowanym z mainnetu za pomocą następującego polecenia. Aby uruchomić lokalny
-walidator, musisz mieć zainstalowane Solana CLI.
+Aby uruchomić przykład, uruchom lokalny validator z Token Extensions Program
+sklonowanym z sieci głównej za pomocą poniższego polecenia. Aby uruchomić
+lokalny validator, musi być zainstalowany Solana CLI.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  W momencie pisania tego tekstu, Poufne Transfery nie są włączone na domyślnym
-  lokalnym validatorze. Musisz sklonować główną sieć Token Extensions Program,
-  aby uruchomić przykładowy kod.
+  W chwili pisania tego tekstu Poufne Transfery nie są włączone w domyślnym
+  lokalnym validatorze. Aby uruchomić przykładowy kod, musisz sklonować Token
+  Extensions Program z sieci głównej.
 </Callout>
 
 <CodeTabs>

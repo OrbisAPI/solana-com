@@ -5,21 +5,15 @@ description:
   Transfer-Erweiterung erstellen.
 ---
 
-<Callout type="warn">
-  Das ZK ElGamal-Programm ist vorübergehend im Mainnet und Devnet deaktiviert,
-  da es einem Sicherheitsaudit unterzogen wird. Dies bedeutet, dass die
-  Confidential Transfers-Erweiterung derzeit nicht verfügbar ist. Während die
-  Konzepte weiterhin gültig sind, werden die Code-Beispiele nicht funktionieren.
-</Callout>
+## So erstellen Sie ein token account mit der Confidential Transfer-Erweiterung
 
-## Wie man ein Token-Konto mit der Confidential Transfer-Erweiterung erstellt
+Die Confidential Transfer-Erweiterung ermöglicht private Token-Übertragungen,
+indem dem token account zusätzliche Zustände hinzugefügt werden. In diesem
+Abschnitt wird erläutert, wie ein token account mit aktivierter Erweiterung
+erstellt wird.
 
-Die Confidential Transfer-Erweiterung ermöglicht private Token-Transfers, indem
-sie zusätzlichen Status zum Token-Konto hinzufügt. Dieser Abschnitt erklärt, wie
-man ein Token-Konto mit aktivierter Erweiterung erstellt.
-
-Das folgende Diagramm zeigt die Schritte, die beim Erstellen eines Token-Kontos
-mit der Confidential Transfer-Erweiterung erforderlich sind:
+Das folgende Diagramm zeigt die Schritte zur Erstellung eines token account mit
+der Confidential Transfer-Erweiterung:
 
 ```mermaid title="Create Token Account with Confidential Transfer Extension"
 sequenceDiagram
@@ -52,11 +46,11 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Confidential Transfer Token-Konto-Status
+### Zustandsdaten des Confidential Transfer Token Account
 
-Die Erweiterung fügt den
+Die Erweiterung fügt dem token account den Zustand
 [ConfidentialTransferAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L75-L122)
--Status zum Token-Konto hinzu:
+hinzu:
 
 ```rust title="Confidential Token Account State"
 #[repr(C)]
@@ -109,78 +103,78 @@ pub struct ConfidentialTransferAccount {
 ```
 
 Der _rs`ConfidentialTransferAccount`_ enthält mehrere Felder zur Verwaltung
-vertraulicher Transfers:
+vertraulicher Übertragungen:
 
-- **approved**: Der Genehmigungsstatus des Kontos für vertrauliche Transfers.
-  Wenn die `auto_approve_new_accounts`-Konfiguration des Mint-Kontos auf `true`
-  gesetzt ist, werden alle Token-Konten automatisch für vertrauliche Transfers
-  genehmigt.
+- **approved**: Der Genehmigungsstatus des Konten für vertrauliche
+  Übertragungen. Wenn die Konfiguration `auto_approve_new_accounts` des mint
+  account auf `true` gesetzt ist, werden alle token accounts automatisch für
+  vertrauliche Übertragungen genehmigt.
 
-- **elgamal_pubkey**: Der ElGamal-Public-Key, der zur Verschlüsselung von Salden
-  und Transferbeträgen verwendet wird.
+- **elgamal_pubkey**: Der öffentliche ElGamal-Schlüssel, der zur Verschlüsselung
+  von Guthaben und Überweisungsbeträgen verwendet wird.
 
-- **pending_balance_lo**: Die verschlüsselten unteren 16 Bits des ausstehenden
-  Saldos. Der Saldo wird in hohe und niedrige Teile aufgeteilt, um eine
-  effiziente Entschlüsselung zu ermöglichen.
+- **pending_balance_lo**: Die verschlüsselten unteren 16 Bit des ausstehenden
+  Guthabens. Das Guthaben wird zur effizienten Entschlüsselung in einen hohen
+  und einen niedrigen Teil aufgeteilt.
 
-- **pending_balance_hi**: Die verschlüsselten höheren 48 Bits des ausstehenden
-  Saldos. Der Saldo wird in hohe und niedrige Teile aufgeteilt, um eine
-  effiziente Entschlüsselung zu ermöglichen.
+- **pending_balance_hi**: Die verschlüsselten oberen 48 Bit des ausstehenden
+  Guthabens. Das Guthaben wird zur effizienten Entschlüsselung in einen hohen
+  und einen niedrigen Teil aufgeteilt.
 
-- **available_balance**: Der verschlüsselte Saldo, der für Transfers verfügbar
-  ist.
+- **available_balance**: Das verschlüsselte Guthaben, das für Übertragungen
+  verfügbar ist.
 
-- **decryptable_available_balance**: Der verfügbare Saldo, verschlüsselt mit
+- **decryptable_available_balance**: Das verfügbare Guthaben, verschlüsselt mit
   einem Advanced Encryption Standard (AES)-Schlüssel zur effizienten
-  Entschlüsselung durch den Kontoinhaber.
+  Entschlüsselung durch den Konten-Inhaber.
 
-- **allow_confidential_credits**: Wenn true, erlaubt eingehende vertrauliche
-  Überweisungen.
+- **allow_confidential_credits**: Wenn true, werden eingehende vertrauliche
+  Übertragungen erlaubt.
 
-- **allow_non_confidential_credits**: Wenn true, erlaubt eingehende
-  nicht-vertrauliche Überweisungen.
+- **allow_non_confidential_credits**: Wenn true, werden eingehende
+  nicht-vertrauliche Übertragungen erlaubt.
 
 - **pending_balance_credit_counter**: Zählt eingehende ausstehende
-  Guthabengutschriften aus Einzahlungs- und Überweisungsanweisungen.
+  Guthabengutschriften aus Einzahlungs- und Übertragungs- Anweisungen.
 
 - **maximum_pending_balance_credit_counter**: Das Zähllimit für ausstehende
-  Gutschriften, bevor eine _rs`ApplyPendingBalance`_ Anweisung erforderlich ist,
-  um das ausstehende Guthaben in das verfügbare Guthaben umzuwandeln.
+  Gutschriften, bevor eine _rs`ApplyPendingBalance`_ Anweisungen erforderlich
+  ist, um das ausstehende Guthaben in das verfügbare Guthaben umzuwandeln.
 
 - **expected_pending_balance_credit_counter**: Der
-  `pending_balance_credit_counter` Wert, der vom Client über die Anweisungsdaten
-  bereitgestellt wurde, als die _rs`ApplyPendingBalance`_ Anweisung zuletzt
+  `pending_balance_credit_counter`-Wert, der vom Client über die instruction
+  data übermittelt wurde, als die _rs`ApplyPendingBalance`_ Anweisungen zuletzt
   verarbeitet wurde.
 
 - **actual_pending_balance_credit_counter**: Der
-  `pending_balance_credit_counter` Wert auf dem Token-Konto zum Zeitpunkt, als
-  die letzte _rs`ApplyPendingBalance`_ Anweisung verarbeitet wurde.
+  `pending_balance_credit_counter` Wert im token account zum Zeitpunkt, als die
+  letzte _rs`ApplyPendingBalance`_ Anweisung verarbeitet wurde.
 
 <Callout type="info">
-  **Ausstehendes vs. verfügbares Guthaben**
+  **Ausstehendes vs. Verfügbares Guthaben**
 
 Vertrauliche Guthaben werden in ausstehende und verfügbare Guthaben aufgeteilt,
 um DoS-Angriffe zu verhindern. Ohne diese Trennung könnte ein Angreifer
-wiederholt Token an ein Token-Konto senden und so die Fähigkeit des
-Token-Konto-Inhabers blockieren, Token zu übertragen. Der Token-Konto-Inhaber
+wiederholt Token an ein token account senden und damit die Fähigkeit des token
+account-Inhabers, Token zu übertragen, blockieren. Der token account-Inhaber
 wäre nicht in der Lage, Token zu übertragen, da sich das verschlüsselte Guthaben
-zwischen dem Zeitpunkt der Transaktionsübermittlung und der Verarbeitung ändern
-würde, was zu einer fehlgeschlagenen Transaktion führt.
+zwischen der Einreichung und der Verarbeitung der Transaktion ändern würde, was
+zu einer fehlgeschlagenen Transaktion führen würde.
 
 Alle Einzahlungen und Überweisungsbeträge werden zunächst dem ausstehenden
-Guthaben hinzugefügt. Token-Konto-Inhaber müssen die _rs`ApplyPendingBalance`_
+Guthaben hinzugefügt. Token account-Inhaber müssen die _rs`ApplyPendingBalance`_
 Anweisung verwenden, um das ausstehende Guthaben in das verfügbare Guthaben
-umzuwandeln. Eingehende Überweisungen oder Einzahlungen wirken sich nicht auf
-das verfügbare Guthaben eines Token-Kontos aus.
+umzuwandeln. Eingehende Überweisungen oder Einzahlungen beeinflussen das
+verfügbare Guthaben eines token accounts nicht.
 
 </Callout>
 
 <Callout type="info">
-  **Aufteilung des ausstehenden Guthabens in hoch/niedrig**
+  **Aufteilung des ausstehenden Guthabens in Hoch/Niedrig**
 
 Das vertrauliche ausstehende Guthaben wird in `pending_balance_lo` und
 `pending_balance_hi` aufgeteilt, da die ElGamal-Entschlüsselung bei größeren
-Zahlen mehr Rechenleistung erfordert. Die Implementierung der
+Zahlen mehr Rechenaufwand erfordert. Die Implementierung der
 Chiffretext-Arithmetik finden Sie
 [hier](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/ciphertext-arithmetic/src/lib.rs#L54),
 die in der _rs`ApplyPendingBalance`_ Anweisung
@@ -190,79 +184,80 @@ verwendet wird.
 </Callout>
 
 <Callout type="info">
-  **Ausstehende Guthaben-Gutschriftszähler**
+  **Zähler für ausstehende Gutschriften**
 
-Beim Aufrufen der _rs`ApplyPendingBalance`_ Anweisung zur Umwandlung des
+Beim Aufruf der _rs`ApplyPendingBalance`_ Anweisung zur Umwandlung des
 ausstehenden Guthabens in das verfügbare Guthaben:
 
-1. Der Client ruft die aktuellen ausstehenden und verfügbaren Guthaben ab,
+1. Der Client ruft das aktuelle ausstehende und verfügbare Guthaben ab,
    verschlüsselt die Summe und stellt einen `decryptable_available_balance`
-   bereit, der mit dem AES-Schlüssel des Token-Konto-Inhabers verschlüsselt ist.
+   bereit, der mit dem AES-Schlüssel des token account-Inhabers verschlüsselt
+   ist.
 
-2. Die erwarteten und tatsächlichen ausstehenden Gutschriftszähler verfolgen
-   Änderungen am Zählerwert zwischen dem Zeitpunkt, an dem die
-   _rs`ApplyPendingBalance`_ Anweisung erstellt und verarbeitet wird:
+2. Die erwarteten und tatsächlichen Zähler für ausstehende Gutschriften
+   verfolgen Änderungen am Zählerwert zwischen der Erstellung und der
+   Verarbeitung der _rs`ApplyPendingBalance`_ Anweisung:
    - `expected_pending_balance_credit_counter`: Der
      `pending_balance_credit_counter` Wert, wenn der Client die
      _rs`ApplyPendingBalance`_ Anweisung erstellt
    - `actual_pending_balance_credit_counter`: Der
-     `pending_balance_credit_counter` Wert auf dem Token-Konto zum Zeitpunkt der
-     Verarbeitung der _rs`ApplyPendingBalance`_ Anweisung
+     `pending_balance_credit_counter` Wert im token account zum Zeitpunkt, als
+     die _rs`ApplyPendingBalance`_ Anweisung verarbeitet wird
 
-Übereinstimmende erwartete/tatsächliche Zähler zeigen an, dass der
-`decryptable_available_balance` mit dem `available_balance` übereinstimmt.
+Übereinstimmende erwartete/tatsächliche Zähler zeigen an, dass
+`decryptable_available_balance` mit `available_balance` übereinstimmt.
 
-Beim Abrufen des Zustands eines Token-Kontos zum Lesen des
-`decryptable_available_balance` erfordern unterschiedliche
-erwartete/tatsächliche Zählerwerte, dass der Client kürzliche
-Einzahlungs-/Überweisungsanweisungen nachschlägt, die der Zählerdifferenz
-entsprechen, um das korrekte Guthaben zu berechnen.
+Beim Abrufen des Zustands eines token account, um
+`decryptable_available_balance` zu lesen, erfordern unterschiedliche
+erwartete/tatsächliche Zählerwerte, dass der Client kürzlich durchgeführte
+Einzahlungs-/Überweisungs- Anweisungen sucht, die der Zählerdifferenz
+entsprechen, um den korrekten Kontostand zu berechnen.
 
-**Prozess zur Guthabenabstimmung**
+**Kontostandabgleichsprozess**
 
-Wenn die erwarteten und tatsächlichen ausstehenden Guthabenzähler voneinander
-abweichen, befolgen Sie diese Schritte zur Abstimmung des
-`decryptable_available_balance`:
+Wenn die erwarteten und tatsächlichen Zähler für ausstehende Kontostände
+abweichen, folgen Sie diesen Schritten, um `decryptable_available_balance`
+abzugleichen:
 
-1. Beginnen Sie mit dem `decryptable_available_balance` vom Token-Konto
-2. Rufen Sie die neuesten Transaktionen einschließlich Einzahlungs- und
-   Überweisungsanweisungen bis zur Zählerdifferenz (tatsächlich - erwartet) ab:
-   - Addieren Sie öffentliche Beträge aus Einzahlungsanweisungen
-   - Entschlüsseln und addieren Sie Ziel-Chiffretextbeträge aus
-     Überweisungsanweisungen
+1. Beginnen Sie mit `decryptable_available_balance` aus dem token account
+2. Rufen Sie die neuesten Transaktionen ab, einschließlich Einzahlungs- und
+   Überweisungs- Anweisungen bis zur Zählerdifferenz (tatsächlich - erwartet):
+   - Öffentliche Beträge aus Einzahlungs- Anweisungen addieren
+   - Ziel-Chiffretext-Beträge aus Überweisungs- Anweisungen entschlüsseln und
+     addieren
 
 </Callout>
 
 ### Erforderliche Anweisungen
 
-Das Erstellen eines Token-Kontos mit der Confidential Transfer-Erweiterung
+Das Erstellen eines token account mit der Confidential Transfer-Erweiterung
 erfordert drei Anweisungen:
 
-1. **Token-Konto erstellen**: Rufen Sie die
-   _rs`AssociatedTokenAccountInstruction:Create`_ Anweisung des Associated Token
-   Program auf, um das Token-Konto zu erstellen.
+1. **Token Konten erstellen**: Rufen Sie die
+   _rs`AssociatedTokenAccountInstruction:Create`_-Anweisung des Associated Token
+   Program auf, um den token account zu erstellen.
 
-2. **Kontospeicher neu zuweisen**: Rufen Sie die
-   _rs`TokenInstruction::Reallocate`_-Anweisung des Token Extension Program auf,
-   um Speicherplatz für den _rs`ConfidentialTransferAccount`_-Zustand
+2. **Kontospeicherplatz neu zuweisen**: Rufen Sie die
+   _rs`TokenInstruction::Reallocate`_-Anweisung des Token Extensions Program
+   auf, um Speicherplatz für den _rs`ConfidentialTransferAccount`_-Zustand
    hinzuzufügen.
 
-3. **Vertrauliche Überweisungen konfigurieren**: Rufen Sie die
+3. **Vertrauliche Übertragungen konfigurieren**: Rufen Sie die
    [ConfidentialTransferInstruction::ConfigureAccount](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L201)-Anweisung
-   des Token Extension Program auf, um den
+   des Token Extensions Program auf, um den
    _rs`ConfidentialTransferAccount`_-Zustand zu initialisieren.
 
 <Callout type="info">
 
-**Nur der Besitzer des Token-Kontos kann ein Token-Konto für vertrauliche
-Überweisungen konfigurieren**.
+**Nur der Inhaber des token account kann einen token account für vertrauliche
+Übertragungen konfigurieren**.
 
 Die _rs`ConfigureAccount`_-Anweisung erfordert die clientseitige Generierung von
-Verschlüsselungsschlüsseln und Nachweisdaten, die nur vom Besitzer des
-Token-Kontos generiert werden können.
+Verschlüsselungsschlüsseln und Nachweisdaten, die nur vom Inhaber des token
+account generiert werden können.
 
 Der _rs`PubkeyValidityProofData`_ erstellt einen Nachweis, der verifiziert, dass
-ein ElGamal-Schlüssel gültig ist. Für Implementierungsdetails siehe:
+ein ElGamal-Schlüssel gültig ist. Implementierungsdetails finden Sie hier:
 
 - [PubkeyValidityProofData](https://github.com/anza-xyz/agave/blob/b39a9764005ac8596b7e14e61d381305ce57ecaa/zk-sdk/src/zk_elgamal_proof_program/proof_data/pubkey_validity.rs#L58)
 - [PubkeyValidityProof](https://github.com/anza-xyz/agave/blob/b39a9764005ac8596b7e14e61d381305ce57ecaa/zk-sdk/src/sigma_proofs/pubkey_validity.rs#L65)
@@ -271,21 +266,22 @@ ein ElGamal-Schlüssel gültig ist. Für Implementierungsdetails siehe:
 
 ### Beispielcode
 
-Der folgende Code zeigt, wie man ein Associated Token Account mit der
-Confidential Transfer-Erweiterung erstellt,
+Der folgende Code zeigt, wie ein associated token account mit der Confidential
+Transfer-Erweiterung erstellt wird,
 
-Um das Beispiel auszuführen, starten Sie einen lokalen Validator mit dem Token
-Extensions Program, das von Mainnet geklont wurde, mit dem folgenden Befehl. Sie
-müssen die Solana CLI installiert haben, um den lokalen Validator zu starten.
+Um das Beispiel auszuführen, starten Sie einen lokalen Validatoren mit dem Token
+Extensions Program, das vom Mainnet geklont wurde, mithilfe des folgenden
+Befehls. Sie müssen die Solana CLI installiert haben, um den lokalen Validatoren
+zu starten.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Zum Zeitpunkt der Erstellung sind die Confidential Transfers auf dem
-  Standard-lokalen Validator nicht aktiviert. Sie müssen das Token Extensions
-  Program vom Mainnet klonen, um den Beispielcode auszuführen.
+  Zum Zeitpunkt der Erstellung ist Confidential Transfers nicht auf dem
+  standardmäßigen lokalen validator aktiviert. Sie müssen das Mainnet Token
+  Extensions Program klonen, um den Beispielcode auszuführen.
 </Callout>
 
 <CodeTabs>

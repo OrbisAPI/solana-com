@@ -207,59 +207,68 @@ wymaganych jednostek obliczeniowych jest kluczowe, aby Twoja transakcja została
 uwzględniona w bloku (i ważne dla zarządzania opłatami priorytetowymi).
 
 Solana JSON RPC API posiada metodę
-[`simulatetransaction`](/docs/rpc/http/simulatetransaction), która pozwala
-oszacować liczbę jednostek obliczeniowych wymaganych do wykonania transakcji, w
-tym przewidywaną liczbę jednostek, które zostaną użyte. Pakiet
-[`@solana-program/compute-budget`](https://github.com/solana-program/compute-budget)
-zawiera funkcję pomocniczą, która umożliwia łatwe oszacowanie liczby jednostek
-obliczeniowych potrzebnych do transakcji (wykorzystuje ona metodę
-`simulatetransaction` w tle).
+[`simulatetransaction`](/docs/rpc/http/simulatetransaction), która może być
+używana do szacowania jednostek obliczeniowych wymaganych przez transakcję, co
+obejmuje szacunkową liczbę jednostek obliczeniowych, które zostaną użyte.
+[`@solana/kit`](https://github.com/anza-xyz/kit) udostępnia funkcje pomocnicze,
+które szacują limity zasobów transakcji i ustawiają je w wiadomości w jednym
+kroku (używając pod spodem metody `simulatetransaction`). W przypadku transakcji
+w wersji 1 te funkcje pomocnicze szacują również limit rozmiaru danych
+załadowanych kont.
 
 ```ts
 import {
-  estimateComputeUnitLimitFactory,
-  updateOrAppendSetComputeUnitLimitInstruction
-} from "@solana-program/compute-budget";
+  estimateResourceLimitsFactory,
+  estimateAndSetResourceLimitsFactory
+} from "@solana/kit";
 
-const estimateComputeUnitLimit = estimateComputeUnitLimitFactory({ rpc });
-const computeUnitLimit = await estimateComputeUnitLimit(tx);
-const txWithComputeUnitLimit = updateOrAppendSetComputeUnitLimitInstruction(
-  computeUnitLimit,
-  tx
+const estimateResourceLimits = estimateResourceLimitsFactory({ rpc });
+const estimateAndSetResourceLimits = estimateAndSetResourceLimitsFactory(
+  estimateResourceLimits
 );
+const txWithResourceLimits = await estimateAndSetResourceLimits(tx);
 ```
 
-W środowisku produkcyjnym, jeśli wielokrotnie wykonujesz ten sam typ transakcji,
-warto rozważyć cache'owanie oszacowania jednostek obliczeniowych dla danego typu
-transakcji, aby uniknąć narzutu związanego z każdorazowym szacowaniem.
+<Callout type="info">
+  Jeśli budujesz i wysyłasz transakcje za pomocą klienta z wtyczką kit,
+  zazwyczaj nie potrzebujesz tego kroku — klient automatycznie dodaje instrukcje
+  budżetu obliczeniowego podczas wysyłania (`.sendTransaction()`). Powyższy
+  przepływ manualny jest przeznaczony dla przypadków, gdy składasz transakcje
+  bezpośrednio za pomocą `@solana/kit`.
+</Callout>
 
-### Jito Bundles
+W środowisku produkcyjnym, jeśli wielokrotnie powtarzasz ten sam typ transakcji,
+powinieneś rozważyć buforowanie szacunku obliczeniowego dla danego typu
+transakcji, aby uniknąć narzutu związanego z każdorazowym szacowaniem jednostek
+obliczeniowych.
 
-Jito bundles to narzędzie do zarządzania atomowym wykonaniem wielu transakcji.
-Osiąga się to poprzez wysyłanie wielu transakcji do sieci Jito z tipem. Tipy
-mogą być używane do zachęcania sieci Jito do włączenia twoich transakcji do
-bloku.
+### Paczki Jito
+
+Paczki Jito to narzędzie służące do zarządzania atomowym wykonywaniem wielu
+transakcji. Osiąga się to poprzez wysyłanie wielu transakcji do sieci Jito wraz
+z napiwkiem. Napiwki mogą być używane jako zachęta dla sieci Jito do włączenia
+Twoich transakcji do bloku.
 
 **Zasoby:**
 
 - [Dokumentacja Jito](https://docs.jito.wtf/lowlatencytxnsend/)
-- [🎥 Wideo: Jito Bundles](https://www.youtube.com/watch?v=HZ1pK9i6zx4)
-- [Przewodnik QuickNode o Jito bundles](https://www.quicknode.com/guides/solana-development/transactions/jito-bundles)
+- [🎥 Wideo: Paczki Jito](https://www.youtube.com/watch?v=HZ1pK9i6zx4)
+- [Przewodnik QuickNode po paczkach Jito](https://www.quicknode.com/guides/solana-development/transactions/jito-bundles)
 
 ### Strategie ponawiania
 
 Transakcje mogą się nie powieść z wielu powodów. W przeciwieństwie do
-tradycyjnych API płatności, które natychmiast zwracają sukces/porażkę,
-transakcje blockchain wymagają śledzenia potwierdzenia.
+tradycyjnych API płatności, które natychmiast zwracają informację o powodzeniu
+lub niepowodzeniu, transakcje blockchain wymagają śledzenia potwierdzeń.
 
 **Kluczowe pojęcia:**
 
-- **Wygaśnięcie blockhasha**: Transakcje są ważne przez ok. 150 bloków (ok.
-  60–90 sekund)
-- **Idempotencja**: Ta sama podpisana transakcja zawsze generuje ten sam
-  podpis—ponowne wysłanie jest bezpieczne
-- **Exponential backoff**: Unikaj przeciążania sieci zbyt szybkimi próbami
-  ponowienia
+- **Wygaśnięcie blockhasha**: Transakcje są ważne przez ~150 bloków (~60–90
+  sekund)
+- **Idempotentność**: Ta sama podpisana transakcja zawsze generuje taki sam
+  podpis — ponowne wysyłanie jest bezpieczne
+- **Wykładnicze wycofanie**: Unikaj przeciążania sieci przez zbyt szybkie
+  ponawianie prób
 
 ```typescript
 import {
@@ -295,43 +304,43 @@ try {
 ```
 
 `sendAndConfirmTransactionFactory` z `@solana/kit` automatycznie obsługuje
-polling potwierdzeń i śledzenie wysokości bloku. Zgłasza
+odpytywanie o potwierdzenie i śledzenie wysokości bloku. Zgłasza
 `SOLANA_ERROR__BLOCK_HEIGHT_EXCEEDED`, gdy blockhash transakcji wygaśnie,
-sygnalizując konieczność zbudowania transakcji na nowo z aktualnym blockhashem.
+sygnalizując konieczność przebudowania transakcji z nowym blockhash.
 
 ### Dodatkowe zasoby
 
-- [Przewodnik: Potwierdzanie i wygasanie transakcji](https://solana.com/developers/guides/advanced/confirmation)
-- [Helius: Jak zatwierdzać transakcje na Solanie](https://www.helius.dev/blog/how-to-land-transactions-on-solana)
-- [QuickNode: Strategie optymalizacji transakcji na Solanie](https://www.quicknode.com/docs/solana/transactions)
+- [Przewodnik: Potwierdzenie i wygasanie transakcji](https://solana.com/developers/guides/advanced/confirmation)
+- [Helius: Jak przeprowadzać transakcje na Solana](https://www.helius.dev/blog/how-to-land-transactions-on-solana)
+- [QuickNode: Strategie optymalizacji transakcji Solana](https://www.quicknode.com/docs/solana/transactions)
 
-## Poziomy potwierdzenia – wyjaśnienie
+## Poziomy potwierdzenia — omówienie
 
-Solana oferuje trzy poziomy potwierdzenia. W kategoriach finansów tradycyjnych:
+Solana oferuje trzy poziomy potwierdzenia. W terminologii tradycyjnych finansów:
 
-| Poziom      | Definicja Solana                             | Odpowiednik tradycyjny        | Przykład użycia                       |
-| ----------- | -------------------------------------------- | ----------------------------- | ------------------------------------- |
-| `processed` | W bloku, jeszcze niezatwierdzone głosowaniem | Oczekuje na autoryzację       | Aktualizacje UI w czasie rzeczywistym |
-| `confirmed` | Zatwierdzone przez superwiększość            | Środki rozliczone             | **Większość płatności**               |
-| `finalized` | Zakorzenione, nieodwracalne                  | Środki rozliczone ostatecznie | Wysokie kwoty, zgodność z przepisami  |
+| Poziom      | Definicja Solana            | Odpowiednik tradycyjny        | Przypadek użycia                      |
+| ----------- | --------------------------- | ----------------------------- | ------------------------------------- |
+| `processed` | W bloku, bez głosowania     | Oczekująca autoryzacja        | Aktualizacje UI w czasie rzeczywistym |
+| `confirmed` | Głosowanie superwiekszości  | Rozliczone środki             | **Większość płatności**               |
+| `finalized` | Zakorzeniony, nieodwracalny | Ostatecznie rozliczone środki | Duże wartości, zgodność               |
 
-**Kiedy używać którego:**
+**Kiedy używać każdego z nich:**
 
-- **Aktualizacje UI**: Pokazuj `processed` dla natychmiastowej informacji
-  zwrotnej ("Płatność wysłana")
-- **Zaksięgowanie środków użytkownika**: Poczekaj na `confirmed` (bezpieczne dla
+- **Aktualizacje UI**: Pokaż `processed` dla natychmiastowej informacji zwrotnej
+  ("Płatność przesłana")
+- **Uznaj konto użytkownika**: Poczekaj na `confirmed` (bezpieczne dla
   większości transakcji)
 - **Wysyłka towarów fizycznych**: Poczekaj na `finalized`
 - **Duże wypłaty**: Poczekaj na `finalized`
 - **Zgodność/audyt**: Zawsze rejestruj status `finalized`
 
-Więcej o sprawdzaniu statusu transakcji znajdziesz w
-[Interakcja z Solaną](/docs/payments/interacting-with-solana).
+Więcej informacji na temat sprawdzania statusu transakcji znajdziesz w
+[Interakcja z Solana](/docs/payments/interacting-with-solana).
 
 ## Obsługa błędów
 
-Solana Kit udostępnia typowane błędy przez `isSolanaError()`. Używaj konkretnych
-kodów błędów zamiast dopasowywania tekstu:
+Solana Kit udostępnia typowane błędy za pomocą `isSolanaError()`. Używaj
+konkretnych kodów błędów zamiast dopasowywania ciągów znaków:
 
 ```typescript
 import {
@@ -377,56 +386,54 @@ function handlePaymentError(error: unknown): {
 }
 ```
 
-**Najczęstsze kody błędów:**
+**Typowe kody błędów:**
 
-| Kod błędu                    | Przyczyna                | Rozwiązanie                                                                                                    |
-| ---------------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| `BLOCK_HEIGHT_EXCEEDED`      | Wygasł blockhash         | Zbuduj ponownie z nowym blockhashem                                                                            |
-| `BLOCKHASH_NOT_FOUND`        | Nie znaleziono blockhash | Zbuduj ponownie z nowym blockhashem                                                                            |
-| `INSUFFICIENT_FUNDS_FOR_FEE` | Za mało SOL              | Zasil konto opłat lub użyj [abstrakcji opłat](/docs/payments/send-payments/payment-processing/fee-abstraction) |
-| `INSUFFICIENT_FUNDS`         | Za mało tokenów          | Użytkownik musi zwiększyć saldo                                                                                |
-| `ACCOUNT_NOT_FOUND`          | Brak token account       | Utwórz ATA w transakcji                                                                                        |
+| Kod błędu                    | Przyczyna                | Rozwiązanie                                                                                                                 |
+| ---------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `BLOCK_HEIGHT_EXCEEDED`      | Blockhash wygasł         | Przebuduj z nowym blockhash                                                                                                 |
+| `BLOCKHASH_NOT_FOUND`        | Blockhash nie znaleziony | Przebuduj z nowym blockhash                                                                                                 |
+| `INSUFFICIENT_FUNDS_FOR_FEE` | Za mało SOL              | Doładuj płatnika opłat lub skorzystaj z [abstrakcji opłat](/docs/payments/send-payments/payment-processing/fee-abstraction) |
+| `INSUFFICIENT_FUNDS`         | Za mało tokenów          | Użytkownik potrzebuje większego salda                                                                                       |
+| `ACCOUNT_NOT_FOUND`          | Brak token account       | Utwórz ATA w transakcji                                                                                                     |
 
-## Transakcje bez opłat (gasless)
+## Transakcje bez opłat gazowych
 
-Użytkownicy oczekują płatności w stablecoinach, bez konieczności kupowania SOL
-na opłaty sieciowe. Transakcje bez opłat rozwiązują ten problem—podobnie jak
-użytkownicy Venmo nie myślą o opłatach ACH. Pełną implementację znajdziesz w
-sekcji
-[Abstrakcja opłat](/docs/payments/send-payments/payment-processing/fee-abstraction).
+Użytkownicy oczekują płatności w stablecoinach, a nie konieczności pozyskiwania
+SOL na opłaty sieciowe. Transakcje bez opłat gazowych rozwiązują ten problem —
+podobnie jak użytkownicy Venmo nie zastanawiają się nad opłatami ACH. Siehe
+[Abstrakcja opłat](/docs/payments/send-payments/payment-processing/fee-abstraction)
+aby zapoznać się z pełną implementacją.
 
 ## Bezpieczeństwo
 
 ### Zarządzanie kluczami
 
-- **Nigdy nie ujawniaj kluczy prywatnych w kodzie frontendowym.** Używaj
-  podpisywania po stronie backendu, portfeli sprzętowych, portfeli multisig lub
-  usług zarządzania kluczami.
-- **Oddziel portfele gorące od zimnych.** Gorący portfel do operacji, zimny do
-  przechowywania środków.
-- **Wykonaj kopie zapasowe wszystkich kluczy produkcyjnych.** Przechowuj
-  zaszyfrowane kopie w kilku bezpiecznych lokalizacjach. Utrata klucza oznacza
-  trwałą utratę dostępu.
-- **Używaj różnych kluczy dla devnetu i mainnetu.** Klucze devnet nie powinny
-  być używane na mainnecie. Skonfiguruj środowiska tak, by ładowały odpowiednie
-  klucze dla każdej sieci.
+- **Nigdy nie ujawniaj kluczy prywatnych w kodzie frontend.** Używaj
+  podpisywania po stronie backendu, portfeli sprzętowych, portfeli
+  wielopodpisowych lub usług zarządzania kluczami.
+- **Oddziel portfele gorące od zimnych.** Portfel gorący do operacji bieżących,
+  zimny do skarbca.
+- **Twórz kopie zapasowe wszystkich kluczy produkcyjnych.** Przechowuj
+  zaszyfrowane kopie zapasowe w wielu bezpiecznych lokalizacjach. Utrata klucza
+  oznacza trwałą utratę dostępu.
+- **Używaj różnych kluczy dla devnet i mainnet.** Twoje klucze devnet nie
+  powinny być kluczami mainnet. Używaj konfiguracji opartej na środowisku, aby
+  zapewnić załadowanie właściwych kluczy dla każdej sieci.
 
 ### Infrastruktura podpisywania
 
-W przypadku podpisywania na backendzie w środowisku produkcyjnym rozważ użycie
-[solana-keychain](https://github.com/solana-foundation/solana-keychain)
-—zunifikowanej biblioteki do podpisywania, która abstrahuje wiele backendów
-zarządzania kluczami poprzez jeden interfejs: Memory, Vault, Privy, Turnkey, AWS
-KMS, Fireblocks, GCP KMS, CDP, Para, Dfns, Crossmint. Pozwala to na lokalne
-rozwijanie aplikacji z kluczami w pamięci, a następnie przejście na backendy
-klasy produkcyjnej bez zmiany kodu aplikacji.
+Do produkcyjnego podpisywania po stronie backendu używaj
+[Keychain](/docs/tools/keychain) — ujednoliconej biblioteki do podpisywania,
+która abstrahuje wiele backendów zarządzania kluczami przez jeden interfejs:
+Memory, Vault, Privy, Turnkey, AWS KMS, Fireblocks, GCP KMS, CDP, Para, Dfns,
+Crossmint, Openfort i Utila. Dzięki temu możesz rozwijać aplikację lokalnie z
+kluczami w pamięci, a następnie przełączyć się na backendy klasy produkcyjnej
+bez zmiany kodu aplikacji.
 
-Dostępne zarówno dla [Rust](https://crates.io/crates/solana-keychain), jak i
+Nie wiesz, który backend wybrać? Zobacz
+[Wybór backendu](/docs/tools/keychain/choosing-a-backend). Keychain jest
+dostępny zarówno dla [Rust](https://crates.io/crates/solana-keychain), jak i
 [TypeScript](https://www.npmjs.com/package/@solana/keychain).
-
-Sprawdź
-[przewodnik dodawania signerów](https://github.com/solana-foundation/solana-keychain/blob/main/docs/ADDING_SIGNERS.md),
-aby zintegrować dodatkowe usługi zarządzania kluczami.
 
 ### Bezpieczeństwo RPC
 

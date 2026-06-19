@@ -3,21 +3,14 @@ title: Token mint oluşturma
 description: Gizli Transfer uzantısına sahip bir token mint oluşturmayı öğrenin.
 ---
 
-<Callout type="warn">
-  ZK ElGamal Program, güvenlik denetiminden geçerken mainnet ve devnet üzerinde
-  geçici olarak devre dışı bırakılmıştır. Bu, gizli transfer uzantısının şu anda
-  kullanılamadığı anlamına gelir. Kavramlar hala geçerli olsa da, kod örnekleri
-  çalışmayacaktır.
-</Callout>
+## Confidential Transfer uzantısıyla mint nasıl oluşturulur
 
-## Gizli Transfer uzantısına sahip mint nasıl oluşturulur
+Confidential Transfer uzantısı, mint account'a ekstra durum bilgisi ekleyerek
+özel token transferlerini etkinleştirir. Bu bölümde, bu uzantı etkinleştirilmiş
+bir token mint'in nasıl oluşturulacağı açıklanmaktadır.
 
-Gizli Transfer uzantısı, mint hesabına ekstra durum ekleyerek özel token
-transferlerini etkinleştirir. Bu bölüm, bu uzantı etkinleştirilmiş bir token
-mint'in nasıl oluşturulacağını açıklar.
-
-Aşağıdaki diyagram, Gizli Transfer uzantısına sahip bir mint oluşturma
-adımlarını gösterir:
+Aşağıdaki diyagram, Confidential Transfer uzantısıyla mint oluşturma adımlarını
+göstermektedir:
 
 ```mermaid title="Create Mint with Confidential Transfer Extension"
 sequenceDiagram
@@ -31,11 +24,11 @@ sequenceDiagram
     deactivate Token22
 ```
 
-### Gizli Transfer mint durumu
+### Confidential Transfer Mint Durumu
 
-Uzantı, mint hesabına
+Bu uzantı,
 [ConfidentialTransferMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/mod.rs#L48-L69)
-durumunu ekler:
+durumunu mint account'a ekler:
 
 ```rust title="Confidential Mint State"
 #[repr(C)]
@@ -61,58 +54,58 @@ pub struct ConfidentialTransferMint {
 }
 ```
 
-_rs`ConfidentialTransferMint`_, üç yapılandırma alanı içerir:
+_rs`ConfidentialTransferMint`_ üç yapılandırma alanı içerir:
 
 - **authority**: Mint için gizli transfer ayarlarını değiştirme ve otomatik onay
-  devre dışıysa yeni gizli hesapları onaylama iznine sahip hesap.
+  devre dışıyken yeni gizli hesapları onaylama iznine sahip hesap.
 
 - **auto_approve_new_accounts**: True olarak ayarlandığında, kullanıcılar
-  varsayılan olarak gizli transferler etkinleştirilmiş token hesapları
-  oluşturabilir. False olduğunda, authority her yeni token hesabını gizli
-  transferler için kullanılmadan önce onaylamalıdır.
+  varsayılan olarak gizli transferler etkinleştirilmiş token account'lar
+  oluşturabilir. False olarak ayarlandığında, authority'nin her yeni token
+  account'ı gizli transferler için kullanılmadan önce onaylaması gerekir.
 
-- **auditor_elgamal_pubkey**: Gizli işlemlerdeki transfer miktarlarının
-  şifresini çözebilen isteğe bağlı bir denetçi, genel halktan gizliliği korurken
-  bir uyumluluk mekanizması sağlar.
+- **auditor_elgamal_pubkey**: Gizli işlemlerdeki transfer tutarlarını çözebilen,
+  genel halktan gizliliği korurken uyumluluk mekanizması sağlayan isteğe bağlı
+  bir denetçi.
 
-### Gerekli talimatlar
+### Gerekli Talimatlar
 
-Gizli Transfer etkinleştirilmiş bir mint oluşturmak, tek bir işlemde üç talimat
-gerektirir:
+Confidential Transfer etkinleştirilmiş bir mint oluşturmak, tek bir işlemde üç
+talimat gerektirir:
 
-1. **Mint hesabını oluştur**: Mint hesabını oluşturmak için System Program'ın
-   _rs`CreateAccount`_ talimatını çağır.
+1. **Mint Account Oluşturma**: Mint account'ı oluşturmak için System Program'ın
+   _rs`CreateAccount`_ talimatını çağırın.
 
-2. **Gizli Transfer uzantısını başlat**: Mint için
-   _rs`ConfidentialTransferMint`_ durumunu yapılandırmak üzere Token Extension
-   Program'ın
+2. **Confidential Transfer Uzantısını Başlatma**: Mint için
+   _rs`ConfidentialTransferMint`_ durumunu yapılandırmak amacıyla Token
+   Extensions Program'ın
    [ConfidentialTransferInstruction::InitializeMint](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L48)
    talimatını çağırın.
 
-3. **Mint'i başlat**: Standart mint durumunu başlatmak için Token Extension
+3. **Mint'i Başlatma**: Standart mint durumunu başlatmak için Token Extensions
    Program'ın _rs`Instruction::InitializeMint`_ talimatını çağırın.
 
-Bu talimatları manuel olarak yazabilseniz de, `spl_token_client` crate'i,
-aşağıdaki örnekte gösterildiği gibi, üç talimatın tümünü tek bir fonksiyon
-çağrısında içeren bir işlem oluşturup gönderen bir `create_mint` metodu sağlar.
+Bu talimatları manuel olarak yazabilirsiniz; ancak `spl_token_client` crate'i,
+aşağıdaki örnekte gösterildiği gibi tek bir fonksiyon çağrısıyla üç talimatın
+tamamını içeren bir işlem oluşturup gönderen `create_mint` metodunu sağlar.
 
-### Örnek kod
+### Örnek Kod
 
-Aşağıdaki kod, Gizli Transfer uzantısına sahip bir mint'in nasıl
-oluşturulacağını gösterir.
+Aşağıdaki kod, Confidential Transfer uzantısıyla nasıl mint oluşturulacağını
+göstermektedir.
 
 Örneği çalıştırmak için, aşağıdaki komutu kullanarak mainnet'ten klonlanmış
-Token Extension Program ile yerel bir validator başlatın. Yerel validator'ı
-başlatmak için Solana CLI'nin yüklü olması gerekir.
+Token Extensions Program ile yerel bir validator başlatın. Yerel validator'ı
+başlatmak için Solana CLI'nin yüklü olması gerekmektedir.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Bu yazının yazıldığı sırada, Gizli Transferler varsayılan yerel validator'da
-  etkinleştirilmemiştir. Örnek kodu çalıştırmak için mainnet Token Extension
-  Program'ı klonlamanız gerekir.
+  Bu yazının hazırlandığı sırada, Confidential Transfers varsayılan yerel
+  validator üzerinde etkinleştirilmemiştir. Örnek kodu çalıştırmak için mainnet
+  Token Extensions Program'ı klonlamanız gerekmektedir.
 </Callout>
 
 <CodeTabs>

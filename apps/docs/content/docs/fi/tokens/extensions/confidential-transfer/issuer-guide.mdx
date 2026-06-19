@@ -21,39 +21,31 @@ jättävät tilin osoitteet, mintin ja omistajat julkisiksi. Ne perustuvat ZK
 ElGamal Proof -ohjelmaan ketjussa tapahtuvaa todisteiden varmentamista varten,
 joten minttiä voidaan käyttää klustereissa, joissa kyseinen ohjelma on käytössä.
 
-<Callout type="warn" title="Saatavuus">
-  Luottamukselliset siirrot edellyttävät Token-2022
-  [`program@v11.0.0`](https://github.com/solana-program/token-2022/releases/tag/program%40v11.0.0)
-  tai uudempaa versiota. Ne ovat tänään saatavilla devnetissä ja on suunniteltu
-  otettavaksi käyttöön mainnetissä kesäkuussa 2026. Token Extension Program on
-  otettu käyttöön erikseen kullakin klusterilla, joten vahvista käyttöönotto
-  kohdeklusterissasi.
-</Callout>
+## Luomishetkellä tehtävät päätökset
 
-## Luomisen yhteydessä tehtävät päätökset
+Luottamuksellinen siirto -laajennus täytyy alustaa ennen mintin alustamista,
+eikä sitä voi lisätä myöhemmin. Luomishetkellä päätät:
 
-Confidential Transfer -laajennus täytyy alustaa ennen mintin alustamista, eikä
-sitä voi lisätä jälkikäteen. Luomisen yhteydessä päätät:
-
-- **Hyväksymiskäytäntö**: voivatko tilit liittyä luottamuksellisiin siirtoihin
-  ilman lupaa (`auto`) vai täytyykö mintin luottamuksellisen siirron
-  auktoriteetin hyväksyä ne (`manual`).
+- **Hyväksymiskäytäntö**: voivatko tilit ottaa käyttöön luottamukselliset
+  siirrot ilman lupaa (`auto`) vai täytyykö mintin luottamuksellisen
+  siirtoauktoriteetin hyväksyä ne (`manual`).
 - **Tilintarkastaja**: asetetaanko globaali tilintarkastajan ElGamal-julkinen
-  avain, jotta nimetty osapuoli voi purkaa jokaisen mintin siirtomäärän
-  salauksen. Valinnainen ja muutettavissa myöhemmin.
+  avain, jotta nimetty osapuoli voi purkaa jokaisen mintin siirtosumman
+  salauksen. Valinnainen, ja sitä voidaan muuttaa myöhemmin.
 - **Valinnaiset lisälaajennukset**: luottamukselliset siirtomaksut (yhdistettynä
-  siirtomaksulaajennukseen) ja luottamuksellinen liikkeeseenlasku/poltto, joita
-  molempia käsitellään alla. Nämä on myös alustettava luomisen yhteydessä.
+  siirtomaksulaajennukseen) ja luottamuksellinen mint/burn, molemmat käsitellään
+  alla. Myös nämä täytyy alustaa luomishetkellä.
 
 ## Luo luottamuksellinen mint
 
-CLI asettaa hyväksymiskäytännön `--enable-confidential-transfers auto`- tai
-`manual`-asetuksella; `auto` sallii jokaisen haltijan määrittää oman tilinsä,
-kun taas `manual` edellyttää hyväksyntää luottamuksellisen siirron
-auktoriteetilta (joka oletuksena on mint-auktoriteetti). Asiakaspolut käyttävät
-samoja asetuksia `ConfidentialTransferMint`-parametrien kautta: auktoriteetti,
-automaattinen hyväksyntälippu ja valinnainen tilintarkastajan avain. Sekä
-hyväksymiskäytäntöä että tilintarkastajaa voidaan muuttaa myöhemmin (katso
+CLI asettaa hyväksymiskäytännön parametreilla
+`--enable-confidential-transfers auto` tai `manual`; `auto` sallii jokaisen
+haltijan määrittää oman tilinsä, kun taas `manual` edellyttää hyväksyntää
+luottamukselliselta siirtoauktoriteetilta (joka oletusarvoisesti on
+mint-auktoriteetti). Asiakaspolut käyttävät samoja asetuksia
+`ConfidentialTransferMint`-parametrien kautta: auktoriteetti, automaattinen
+hyväksyntälippu ja valinnainen tilintarkastajan avain. Sekä hyväksymiskäytäntöä
+että tilintarkastajaa voidaan muuttaa myöhemmin (katso
 [Määritä tilintarkastaja](#configure-an-auditor)); ainoastaan laajennuksen
 olemassaolo itsessään on kiinnitetty luomishetkellä.
 
@@ -130,22 +122,22 @@ const instructions = [
 ## Määritä tilintarkastaja
 
 Globaali tilintarkastaja on ElGamal-julkinen avain, joka on tallennettu mintiin.
-Kun se on asetettu, jokainen luottamuksellinen siirto salaa summansa myös tällä
-avaimella, joten se, jolla on vastaava salainen avain, voi purkaa kaikkien
-mintin siirtojen summat. Näin luottamukselliset siirrot pysyvät yhteensopivina
-tilintarkastus- ja vaatimustenmukaisuusvaatimusten kanssa: yleisö ei näe mitään,
-tilintarkastaja näkee kaiken.
+Kun se on asetettu, jokainen luottamuksellinen siirto salaa summansa lisäksi
+myös tämän avaimen alle, joten vastaavan salaisen avaimen haltija voi purkaa
+kaikkien mintin siirtosummien salauksen. Näin luottamukselliset siirrot pysyvät
+yhteensopivina tilintarkastus- ja määräystenmukaisuusvaatimusten kanssa:
+julkinen ei näe mitään, tilintarkastaja näkee kaiken.
 
-Luottamuksellisen siirron auktoriteetti voi asettaa, kiertää tai poistaa
+Luottamuksellisten siirtojen auktoritetti voi asettaa, vaihtaa tai poistaa
 tilintarkastajan milloin tahansa. Sama toiminto päivittää myös
 hyväksymiskäytännön. CLI:ssä tilintarkastajan avain on ElGamal-julkisen avaimen
-base64-koodaus; anna `--auditor-pubkey none` poistaaksesi sen ja
-`--approve-policy auto|manual` muuttaaksesi käytäntöä.
+base64-koodaus; anna `--auditor-pubkey none` sen poistamiseksi ja
+`--approve-policy auto|manual` käytännön muuttamiseksi.
 
-Kierrätys vaikuttaa vain tuleviin siirtoihin. Jo lohkoketjussa olevien
-transaktioiden summat pysyvät salattuina sillä tilintarkastajan avaimella, joka
-oli voimassa niiden suoritushetkellä, joten säilytä vanhat tilintarkastajan
-avaimet, jos sinun täytyy purkaa historiallisen toiminnan salaus.
+Vaihto vaikuttaa vain tuleviin siirtoihin. Jo lohkoketjussa olevien tapahtumien
+summat pysyvät salattuna sille tilintarkastajan avaimelle, joka oli aktiivinen
+niiden suoritushetkellä – säilytä siis vanhat tilintarkastajan avaimet, jos
+sinun täytyy purkaa historiallisen toiminnan salaus.
 
 <CodeTabs>
 
@@ -178,20 +170,21 @@ const ix = getUpdateConfidentialTransferMintInstruction({
 </CodeTabs>
 
 <Callout type="warn">
-  Tilintarkastajan salainen avain voi purkaa jokaisen mintin siirtosumman.
-  Säilytä se yhtä huolellisesti kuin allekirjoitusavainta ja suunnittele
-  kierrätys etukäteen. Tilintarkastajan asettaminen arvoon `None` poistaa
-  summien näkyvyyden kaikilta muilta paitsi tilien omistajilta itseltään.
+  Tilintarkastajan salainen avain voi purkaa jokaisen mintin siirtojen summan
+  salauksen. Säilytä se yhtä huolellisesti kuin allekirjoitusavainta, ja
+  suunnittele avainten vaihto etukäteen. Tilintarkastajan asettaminen arvoon
+  `None` poistaa summien näkyvyyden kaikilta muilta paitsi tilien omistajilta
+  itseltään.
 </Callout>
 
-## Hyväksy tilit (manuaalinen käytäntö)
+## Tilien hyväksyminen (manuaalinen käytäntö)
 
-Manuaalisen hyväksyntäkäytännön myötä luottamuksellisiin siirtoihin määritetty
-tili ei voi suorittaa luottamuksellisia transaktioita ennen kuin
-luottamuksellisen siirron valtuutus hyväksyy sen. Tämä antaa
-liikkeeseenlaskijoille portin sallituille tai KYC-varmennetuille osallistujille.
-CLI ei tarjoa hyväksyntäkomentoa, joten hyväksyntä tehdään asiakassovelluksen
-kautta.
+Manuaalisella hyväksymiskäytännöllä luottamuksellisiin siirtoihin määritetty
+tili ei voi suorittaa luottamuksellisia tapahtumia ennen kuin luottamuksellisten
+siirtojen auktoritetti hyväksyy sen. Tämä antaa liikkeeseenlaskijoille
+porttimahdollisuuden sallittujen listalla olevia tai KYC-varmistettuja
+osallistujia varten. CLI ei tarjoa hyväksymiskomentoa, joten hyväksyminen
+tehdään asiakkaan kautta.
 
 <CodeTabs>
 
@@ -219,25 +212,24 @@ const ix = getApproveConfidentialTransferAccountInstruction({
 
 ## Luottamukselliset siirtomaksut
 
-Jos liikkeeseenlaskusi veloittaa
-[siirtomaksun](/docs/tokens/extensions/transfer-fees) ja siirrot ovat
-luottamuksellisia, myös maksu on pidätettävä luottamuksellisesti.
+Jos mintissäsi peritään [siirtomaksu](/docs/tokens/extensions/transfer-fees) ja
+siirrot ovat luottamuksellisia, myös maksu on pidätettävä luottamuksellisesti.
 `ConfidentialTransferFeeConfig`-laajennus huolehtii tästä, ja se alustetaan
-liikkeeseenlaskun luomisen yhteydessä sekä siirtomaksun että luottamuksellisen
-siirron laajennusten kanssa.
+mintin luomisen yhteydessä sekä siirtomaksu- että luottamuksellinen siirto
+-laajennusten rinnalla.
 
-Pidätetyt maksut kertyvät salattuina vastaanottajatileille, kerätään
-liikkeeseenlaskuun ja nostetaan sitten pidätettyjen maksujen nostovaltuuttajan
-toimesta. Jokainen maksusumma pysyy salattuna koko prosessin ajan. Tätä ei ole
-saatavilla CLI:n kautta. Pidätettyjen maksujen nostovaltuuttajan
-ElGamal-salainen avain voi purkaa pidätettyjen maksujen salauksen, mikä
-yhdistettynä julkisiin maksuparametreihin voi paljastaa tietoja siirtosummista –
-käsittele siksi kyseistä avainta arkaluonteisena.
+Pidätetyt maksut kertyvät salattuina vastaanottajatileille, ne kerätään mintille
+ja sitten nostetaan pidätettyjen maksujen nosto-auktoriteetin toimesta. Jokainen
+maksusumma pysyy salattuna koko prosessin ajan. Tämä ei ole käytettävissä CLI:n
+kautta. Pidätettyjen maksujen nosto-auktoriteetin ElGamal-salainen avain voi
+purkaa pidätettyjen maksujen salauksen, ja yhdistettynä julkisiin
+maksuparametreihin se voi paljastaa tietoa siirtosummista – käsittele siksi
+kyseistä avainta arkaluonteisena.
 
 ### Alusta maksukonfiguraatio
 
-Sisällytä tämä `ConfidentialTransferMint`:n ja siirtomaksukonfiguraation
-rinnalle samaan liikkeeseenlaskun luomiseen.
+Sisällytä tämä yhdessä `ConfidentialTransferMint`:n ja siirtomaksun
+konfiguraation kanssa samaan mintin luontiin.
 
 <CodeTabs>
 
@@ -264,19 +256,18 @@ const ix = getInitializeConfidentialTransferFeeInstruction({
 
 ### Kerää ja nosta pidätetyt maksut
 
-Kerääminen siirtää salatut pidätetyt maksut tileiltä liikkeeseenlaskuun;
-nostaminen siirtää ne liikkeeseenlaskusta valitulle tilille. Prosessiin
-osallistuu kaksi valtuutusta, joista kumpikin voi poiketa liikkeeseenlaskun
-valtuutuksesta:
+Kerääminen siirtää salatut pidätetyt maksut tileiltä minttiin; nostaminen
+siirtää ne mintistä valitulle tilille. Mukana on kaksi auktoriteettia, ja
+kumpikin voi poiketa mint-auktoriteetista:
 
-- **Luottamuksellisen siirtomaksun valtuutus**
-  (`ConfidentialTransferFeeConfig`:lle asetettu `authority`) ottaa keräämisen
-  käyttöön tai poistaa sen käytöstä.
-- **Pidätettyjen maksujen nostovaltuuttaja** (siirtomaksulaajennnuksen
-  `TransferFeeConfig`:stä) nostaa kerätyt maksut liikkeeseenlaskusta.
+- **Luottamuksellinen siirtomaksuauktoriteetti** (`authority`, joka on asetettu
+  `ConfidentialTransferFeeConfig`:lle) mahdollistaa tai poistaa käytöstä
+  keräämisen.
+- **Pidätettyjen maksujen nostoauktoriteetti** (siirtomaksulaajenteen
+  `TransferFeeConfig`:sta) nostaa kerätyt maksut mintistä.
 
-Nostot edellyttävät yhtäläisyys- ja aluetodisteita, jotka toimitetaan suoraan
-tai vahvistetaan kontekstitila-tileihin.
+Nostot edellyttävät yhtälö- ja aluetodisteita, jotka toimitetaan suoraan tai
+vahvistetaan kontekstitilatileille.
 
 <CodeTabs>
 
@@ -321,37 +312,37 @@ const harvestIx =
 
 </CodeTabs>
 
-JS-asiakkaassa lyötyjen maksujen nostaminen mintistä
+JS-asiakkaassa kerättyjen maksujen nostaminen mintistä
 (`getWithdrawWithheldTokensFromMintForConfidentialTransferFeeInstruction`)
-edellyttää lisäksi yhtäläisyys- ja aluetodistetta, jotka on vahvistettu
-kontekstitila-tileihin, joten se noudattaa samaa todistustilikaavaa kuin
+edellyttää lisäksi yhtälö- ja aluetodisteita, jotka on vahvistettu
+kontekstitilatileille, joten se noudattaa samaa todistustilirakennetta kuin
 luottamuksellinen siirto.
 
-## Luottamuksellinen lyönti ja poltto
+## Luottamuksellinen mintaus ja polttaminen
 
-`ConfidentialMintBurn`-laajennus antaa lyöntiviranomaiselle mahdollisuuden
-laskea liikkeelle ja polttaa tarjontaa suoraan luottamuksellisia saldoja
-vastaan, pitäen kokonaistarjonnan salattuna. Tällä laajennuksella varustettu
-mint poistaa käytöstä julkisen talletus- ja nostopolun, koska tokenit ovat
-olemassa vain luottamuksellisessa muodossa. Katso
+`ConfidentialMintBurn`-laajenteen avulla mint-auktoriteetti voi laskea
+liikkeelle ja polttaa tarjontaa suoraan luottamuksellisia saldoja vastaan pitäen
+kokonaismäärän salattuna. Tämän laajennuksen omaava mintti poistaa käytöstä
+julkisen talletus- ja nostopolun, koska tokenit ovat aina vain
+luottamuksellisessa muodossa. Katso
 [protokolladokumentaatio](https://www.solana-program.com/docs/confidential-balances)
-täydellisen mallin osalta.
+täydellistä mallia varten.
 
 <Callout type="info">
-  Luottamuksellinen lyönti/poltto on helpointa Rustin
-  `spl-token-client`-kirjaston kautta, joka luo tarvittavat todisteet ja
-  järjestää tapahtumat puolestasi. `@solana-program/token-2022` JS-asiakkaassa
-  toimitetaan matalan tason käskyjen rakentajat
-  (`getConfidentialMintInstruction`, `getConfidentialBurnInstruction` ja muut),
-  mutta ei korkean tason apuohjelmaa todisteiden rakentamiseen, eikä
-  CLI-komentoja ole, joten alla olevat esimerkit ovat vain Rust-muodossa.
+  Luottamuksellinen mintaus/polttaminen on helpointa Rust-kirjaston
+  `spl-token-client` kautta, joka luo tarvittavat todisteet ja järjestää
+  transaktiot puolestasi. The `@solana-program/token-2022` JS-asiakas toimittaa
+  matalan tason instruktioiden rakentajat (`getConfidentialMintInstruction`,
+  `getConfidentialBurnInstruction` ja muut), mutta ei korkean tason apuohjelmaa
+  todisteiden rakentamiseen, eikä CLI-komentoja ole, joten alla olevat esimerkit
+  ovat vain Rust-esimerkkejä.
 </Callout>
 
-Alusta laajennus mintin luomisen yhteydessä, lyö sitten, polta ja täsmäytä
-tarjonta ajan mittaan. Lyönti laskee salatun summan vastaanottajan
-luottamukselliseen saldoon; poltto poistaa salatun summan odottavaan polttoon,
-joka myöhemmin yhdistetään tarjontaan. Molemmat tuottavat todisteita kuten
-luottamuksellinen siirto.
+Alusta laajennus minnauksen luonnin yhteydessä, minkä jälkeen voit minata,
+polttaa ja täsmäyttää tarjonnan ajan kuluessa. Mintaus laskee liikkeeseen
+salatun summan vastaanottajan luottamukselliseen saldoon; polttaminen poistaa
+salatun summan odottavaan polttoon, joka myöhemmin yhdistetään tarjontaan.
+Molemmat tuottavat todisteet kuten luottamuksellinen siirto.
 
 <CodeTabs>
 
@@ -410,27 +401,26 @@ token
 </CodeTabs>
 
 Kierrätä tarjonnan salausavain komennolla
-`confidential_transfer_rotate_supply_elgamal_pubkey` (odottavan polton on oltava
-ensin nolla), ja päivitä luettava tarjonnan salateksti komennolla
+`confidential_transfer_rotate_supply_elgamal_pubkey` (odottavan polton on ensin
+oltava nolla) ja päivitä luettava tarjonnan salateksti komennolla
 `confidential_transfer_update_decrypt_supply`.
 
-## Operatiiviset ja sääntelynmukaisuuteen liittyvät näkökohdat
+## Operatiiviset ja vaatimustenmukaisuuteen liittyvät näkökohdat
 
-- **Tilintarkastajan avainten hallinta.** Jos määrität tilintarkastajan,
-  tilintarkastajan salainen avain on arvokas salausavain. Säilytä ja kierrätä
-  sitä huolellisesti, ja päätä kuka organisaatiossasi (tai mikä
-  sääntelyviranomainen) hallussapitää sitä.
-- **Sääntelynmukaisuuden asema.** Osoitteiden seulonta ja vastapuoliverkon
-  analyysi toimivat edelleen, koska osoitteet pysyvät julkisina. Summapohjainen
-  seuranta riippuu tilintarkastajan avaimesta tai tilien omistajien valikoivasta
-  tiedonluovutuksesta. Päätä lähestymistapasi ennen käyttöönottoa.
-- **Käyttäjien perehdyttäminen.** Luottamuksellisen tilin määrittäminen
-  edellyttää omistajan allekirjoitusta. Tilin sujuvaa käyttöönottoa varten pyydä
-  käyttäjiä rekisteröimään ElGamal-avain kerran ja käyttämään rekisteripolkua,
-  joka on kuvattu
-  [Integrointioppaassa](/docs/tokens/extensions/confidential-transfer/integration-guide#creating-and-configuring-accounts).
-- **Tapahtumienmäärä.** Luottamuksellinen siirto kattaa tällä hetkellä muutaman
-  riippuvaisen tapahtuman, koska todisteet ylittävät nykyisen
+- **Tarkastajan avainten hallinta.** Jos määrität tarkastajan, tarkastajan
+  salainen avain on arvokas salausavain. Säilytä ja kierrätä sitä huolellisesti,
+  ja päätä kuka organisaatiossasi (tai mikä viranomainen) pitää sen hallussaan.
+- **Vaatimustenmukaisuusasenne.** Osoitteiden seulonta ja vastapuoliverkon
+  analyysi toimivat edelleen, koska osoitteet pysyvät julkisina.
+  Summaperusteinen seuranta riippuu tarkastajan avaimesta tai tilien omistajien
+  valikoivasta tiedonannosta. Päätä lähestymistapasi ennen julkaisua.
+- **Haltijoiden käyttöönotto.** Luottamuksellisen tilin konfigurointi vaatii
+  omistajan allekirjoituksen. Provisioidaksesi käyttäjätilit sujuvasti, pyydä
+  heitä rekisteröimään ElGamal-avain kerran ja käyttämään rekisteripolkua, joka
+  on kuvattu
+  [Integrointiohjeessa](/docs/tokens/extensions/confidential-transfer/integration-guide#creating-and-configuring-accounts).
+- **Tapahtumienmäärä.** Luottamuksellinen siirto kattaa tällä hetkellä useita
+  riippuvaisia tapahtumia, koska todisteet ylittävät nykyisen
   tapahtumakokorajan. Tapahtumaformaatti v1 (tulossa Agave v4.2:n myötä) nostaa
-  tätä rajaa ja sen odotetaan mahdollistavan yksittäisen ketjussa tapahtuvan
-  transaktion.
+  tätä rajaa ja sen odotetaan mahdollistavan yksittäisen ketjun sisäisen
+  tapahtuman.

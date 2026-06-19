@@ -4,20 +4,13 @@ description:
   Opi siirtämään tokeneita yksityisesti yhdeltä token-tililtä toiselle.
 ---
 
-<Callout type="warn">
-  ZK ElGamal -ohjelma on väliaikaisesti poistettu käytöstä mainnetissä ja
-  devnetissä turvallisuusauditoinnin ajaksi. Tämä tarkoittaa, että
-  luottamuksellisten siirtojen laajennus ei ole tällä hetkellä käytettävissä.
-  Vaikka konseptit ovat edelleen päteviä, koodiesimerkit eivät toimi.
-</Callout>
+## Kuinka siirtää tokeneita luottamuksellisesti yhdestä token accountista toiseen
 
-## Miten siirtää tokeneita luottamuksellisesti yhdeltä token-tililtä toiselle
-
-Siirtääksesi tokeneita luottamuksellisesti yhdeltä token-tililtä toiselle, sekä
-lähettäjällä että vastaanottajalla täytyy olla token-tilit, jotka on konfiguoitu
-_rs`ConfidentialTransferAccount`_ -tilalla ja hyväksytty luottamuksellisia
-siirtoja varten. Lähettäjän token-tilillä täytyy myös olla käytettävissä oleva
-luottamuksellinen saldo, josta siirtää.
+Siirtääksesi tokeneita luottamuksellisesti yhdestä token accountista toiseen,
+sekä lähettäjällä että vastaanottajalla on oltava token accountit, jotka on
+määritetty _rs`ConfidentialTransferAccount`_-tilalla ja hyväksytty
+luottamuksellisia siirtoja varten. Lähettäjän token accountilla on myös oltava
+käytettävissä oleva luottamuksellinen saldo siirtoa varten.
 
 Siirtääksesi tokeneita luottamuksellisesti:
 
@@ -27,35 +20,37 @@ Siirtääksesi tokeneita luottamuksellisesti:
 
    **Yhtäläisyystodiste
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
-   Varmistaa, että uusi käytettävissä olevan saldon salausteksti siirron jälkeen
-   vastaa sen vastaavaa
-   [Pedersen-sitoumusta](https://en.wikipedia.org/wiki/Commitment_scheme),
-   varmistaen että lähdetilin uusi käytettävissä oleva saldo lasketaan oikein
+   Varmistaa, että uuden käytettävissä olevan saldon salateksti siirron jälkeen
+   vastaa vastaavaa
+   [Pedersen-sitoumustaan](https://en.wikipedia.org/wiki/Commitment_scheme),
+   varmistaen, että lähdetilin uusi käytettävissä oleva saldo lasketaan oikein
    muodossa `new_balance = current_balance - transfer_amount`.
 
-   **Salaustekstin pätevyystodiste
+   **Salatekstin voimassaolotodiste
    ([BatchedGroupedCiphertext3HandlesValidityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_grouped_ciphertext_validity/handles_3.rs#L63))**:
-   Varmistaa, että siirtosumman salaustekstit on luotu oikein kaikille kolmelle
-   osapuolelle (lähde, kohde ja tarkastaja), varmistaen että siirtosumma on
-   salattu oikein kunkin osapuolen julkisella avaimella.
+   Varmistaa, että siirtobeträgin salatekstit on asianmukaisesti luotu kaikille
+   kolmelle osapuolelle (lähde, kohde ja tarkastaja), varmistaen, että
+   siirtosumma on oikein salattu kunkin osapuolen julkisella avaimella.
 
-   **Arvoaluetodiste
+   **Aluetodiste
    ([BatchedRangeProofU128Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u128.rs#L37))**:
-   Varmistaa, että uusi käytettävissä oleva saldo ja siirtosumma (jaettuna
-   ala-/yläbitteihin) ovat kaikki ei-negatiivisia ja määritetyllä arvoalueella.
+   Varmistaa, että uusi käytettävissä oleva saldo ja siirtosumma (jaettu
+   mataliin/korkeisiin bitteihin) ovat ei-negatiivisia ja määritetyn alueen
+   sisällä.
 
-2. Jokaiselle todisteelle:
-   - Kutsu ZK ElGamal -todistusohjelmaa todistustietojen vahvistamiseksi.
-   - Tallenna todistekohtaiset metatiedot todisteen "kontekstitila"-tilille
+2. Kutakin todistetta varten:
+   - Kutsu ZK ElGamal -todisteohjelma todistetietojen varmentamiseksi.
+   - Tallenna todiste-kohtainen metatiedot todisteen "kontekstitila"-tilille
      käytettäväksi muissa ohjeissa.
 
 3. Kutsu
    [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604)
-   -ohjetta, tarjoten todisteiden kontekstitilatilit.
+   -ohje antamalla todisteen kontekstitilit.
 
-4. Sulje proof context -tilit palauttaaksesi niiden luomiseen käytetyn SOL:n.
+4. Sulje todisteen kontekstitilit palauttaaksesi niiden luomiseen käytetyn
+   SOL:n.
 
-Seuraava kaavio näyttää vaiheet, jotka liittyvät tokenien siirtämiseen
+Seuraava kaavio näyttää vaiheet, jotka liittyvät tokeneiden siirtämiseen
 lähettäjän token accountilta vastaanottajan token accountille.
 
 ```mermaid title="Transfer Tokens"
@@ -84,45 +79,46 @@ sequenceDiagram
     deactivate ElGamal
 ```
 
-### Vaaditut käskyt
+### Vaaditut ohjeet
 
-Siirtääksesi tokeneita luottamuksellisesti yhdeltä token accountilta toiselle,
-sinun on:
+Siirtääksesi tokeneita luottamuksellisesti yhdestä token accountista toiseen,
+sinun täytyy:
 
-- Luotava equality proof, ciphertext validity proof ja range proof
+- Luoda yhtäläisyystodiste, salatekstin voimassaolotodiste ja aluetodiste
   asiakaspuolella
-- Kutsuttava Zk ElGamal proof -ohjelmaa todentamaan proofit ja alustamaan
-  "context state" -tilit
-- Kutsuttava
+- Kutsua Zk ElGamal -todisteohjelma todisteiden varmentamiseksi ja
+  "kontekstitila"-tilien alustamiseksi
+- Kutsua
   [ConfidentialTransferInstruction::Transfer](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L604)
-  -käskyä tarjoamalla kolme proof-tiliä.
-- Suljettava kolme proof-tiliä palauttaaksesi rentin.
+  -ohje antamalla kolme todistetilin.
+- Sulkea kolme todistetilin palauttaaksesi rent.
 
-`spl_token_client` -crate tarjoaa seuraavat metodit:
+`spl_token_client`-crate tarjoaa seuraavat metodit:
 
-- `confidential_transfer_create_context_state_account` -metodi, joka luo
-  proof-tilin.
-- `confidential_transfer_transfer` -metodi, joka kutsuu `Transfer` -käskyä.
-- `confidential_transfer_close_context_state_account` -metodi, joka sulkee
-  proof-tilin.
+- `confidential_transfer_create_context_state_account`-metodi, joka luo
+  todistustilin.
+- `confidential_transfer_transfer`-metodi, joka kutsuu `Transfer`- käskyä.
+- `confidential_transfer_close_context_state_account`-metodi, joka sulkee
+  todistus- tilin.
 
 ### Esimerkkikoodi
 
-Seuraava esimerkki havainnollistaa, kuinka siirtää tokeneita luottamuksellisesti
-token accountien välillä.
+Seuraava esimerkki havainnollistaa, kuinka tokeneita siirretään
+luottamuksellisesti token account -tilien välillä.
 
-Esimerkin suorittamiseksi käynnistä paikallinen validaattori, jossa on Token
-Extension Program kloonattu mainnetistä käyttämällä seuraavaa komentoa. Sinulla
-on oltava Solana CLI asennettuna paikallisen validaattorin käynnistämiseksi.
+Esimerkin suorittamista varten käynnistä paikallinen validator, johon on
+kloonattu Token Extensions Program mainnetistä, käyttämällä alla olevaa
+komentoa. Sinulla täytyy olla Solana CLI asennettuna paikallisen validatorin
+käynnistämiseksi.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Kirjoitushetkellä Confidential Transfers ei ole käytössä oletusarvoisessa
-  paikallisessa validaattorissa. Sinun on kloonattava mainnetin Token Extension
-  Program suorittaaksesi esimerkkikoodin.
+  Kirjoitushetkellä Confidential Transfers ei ole käytössä oletuspaikallisessa
+  validatorissa. Sinun täytyy kloonata mainnetin Token Extension Program
+  esimerkkikoodin suorittamiseksi.
 </Callout>
 
 <CodeTabs>

@@ -3,52 +3,44 @@ title: Token abheben
 description: Erfahren Sie, wie Sie Token aus dem vertraulichen Zustand abheben.
 ---
 
-<Callout type="warn">
-  Das ZK ElGamal Program ist vorübergehend im Mainnet und Devnet deaktiviert, da
-  es einem Sicherheitsaudit unterzogen wird. Dies bedeutet, dass die Erweiterung
-  für vertrauliche Überweisungen derzeit nicht verfügbar ist. Obwohl die
-  Konzepte weiterhin gültig sind, werden die Code-Beispiele nicht ausgeführt.
-</Callout>
+## So werden Token aus dem vertraulichen verfügbaren Guthaben abgehoben
 
-## Wie man Token aus dem vertraulichen verfügbaren Guthaben abhebt
-
-Um Token aus dem vertraulichen verfügbaren Guthaben auf das öffentliche Guthaben
-abzuheben:
+So heben Sie Token aus dem vertraulichen verfügbaren Guthaben auf das
+öffentliche Guthaben ab:
 
 1. Erstellen Sie
-   [zwei Nachweise](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/proof-generation/src/withdraw.rs#L22)
-   clientseitig:
+   [zwei Beweise](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/confidential-transfer/proof-generation/src/withdraw.rs#L22)
+   auf der Client-Seite:
 
    **Gleichheitsnachweis
    ([CiphertextCommitmentEqualityProofData](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/ciphertext_commitment_equality.rs#L56))**:
-   Überprüft, dass der verbleibende verfügbare Guthaben-Ciphertext nach der
-   Abhebung mit seinem entsprechenden
-   [Pedersen Commitment](https://en.wikipedia.org/wiki/Commitment_scheme)
-   übereinstimmt, um sicherzustellen, dass das neue verfügbare Guthaben des
-   Kontos korrekt als `remaining_balance = current_balance - withdraw_amount`
-   berechnet wird.
+   Überprüft, ob der verbleibende verfügbare Guthaben-Chiffretext nach der
+   Abhebung mit dem entsprechenden
+   [Pedersen-Commitment](https://en.wikipedia.org/wiki/Commitment_scheme)
+   übereinstimmt und stellt sicher, dass das neue verfügbare Guthaben der Konten
+   korrekt als `remaining_balance = current_balance - withdraw_amount` berechnet
+   wird.
 
    **Bereichsnachweis
    ([BatchedRangeProofU64Data](https://github.com/anza-xyz/agave/blob/8b33d6d311c95780362a7d235919e7b8d2345939/zk-token-sdk/src/instruction/batched_range_proof/batched_range_proof_u64.rs#L37))**:
    Überprüft, dass das verbleibende verfügbare Guthaben nach der Abhebung nicht
-   negativ ist und sich innerhalb eines bestimmten Bereichs befindet.
+   negativ und innerhalb eines bestimmten Bereichs liegt.
 
 2. Für jeden Nachweis:
-   - Rufen Sie das ZK ElGamal Proof Program auf, um die Nachweisdaten zu
+   - Rufen Sie das ZK-ElGamal-Nachweisprogramm auf, um die Nachweisdaten zu
      verifizieren.
-   - Speichern Sie die nachweisspezifischen Metadaten in einem "Context State"
-     Konto, um sie in anderen Anweisungen zu verwenden.
+   - Speichern Sie die nachweissspezifischen Metadaten in einem
+     Nachweis-"Kontextzustands"-Konten zur Verwendung in anderen Anweisungen.
 
 3. Rufen Sie die
    [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
-   Anweisung auf und übergeben Sie die beiden Nachweis-Konten.
+   Anweisungen auf und übergeben Sie die beiden Nachweiskonten.
 
-4. Schließen Sie die Nachweis-Konten, um die SOL zurückzuerhalten, die für deren
-   Erstellung verwendet wurden.
+4. Schließen Sie die Nachweiskonten, um das zum Erstellen verwendete SOL
+   zurückzuerhalten.
 
-Das folgende Diagramm zeigt die Schritte, die beim Abheben von Token aus dem
-vertraulichen verfügbaren Guthaben auf das öffentliche Guthaben erforderlich
-sind:
+Das folgende Diagramm zeigt die Schritte zum Abheben von Token aus dem
+vertraulichen verfügbaren Guthaben auf das öffentliche Guthaben:
 
 ```mermaid title="Withdraw Tokens"
 sequenceDiagram
@@ -80,40 +72,40 @@ sequenceDiagram
 Um Token aus dem vertraulichen verfügbaren Guthaben auf das öffentliche Guthaben
 abzuheben, müssen Sie:
 
-- Einen Gleichheitsnachweis und Bereichsnachweis clientseitig generieren
-- Das Zk ElGamal Proof Program aufrufen, um die Nachweise zu verifizieren und
-  die "Context State" Konten zu initialisieren
+- Einen Gleichheits- und Bereichsnachweis auf der Client-Seite generieren
+- Das ZK-ElGamal-Nachweisprogramm aufrufen, um die Nachweise zu verifizieren und
+  die "Kontextzustands"-Konten zu initialisieren
 - Die
   [ConfidentialTransferInstruction::Withdraw](https://github.com/solana-program/token-2022/blob/efd0c957fefbd79882d77df5fb2dac88c001249c/program/src/extension/confidential_transfer/processor.rs#L493)
-  Anweisung aufrufen und die beiden Nachweis-Konten übergeben.
-- Die beiden Nachweis-Konten schließen, um die Miete zurückzuerhalten.
+  Anweisungen aufrufen und die beiden Nachweiskonten übergeben.
+- Die beiden Nachweiskonten schließen, um rent zurückzuerhalten.
 
-Die `spl_token_client` Crate bietet die folgenden Methoden:
+Das `spl_token_client`-Crate stellt folgende Methoden bereit:
 
-- `confidential_transfer_create_context_state_account` Methode, die ein
-  Nachweis-Konto erstellt.
-- `confidential_transfer_withdraw` Methode, die die `Withdraw` Anweisung
+- `confidential_transfer_create_context_state_account`-Methode, die ein
+  Nachweiskonto erstellt.
+- `confidential_transfer_withdraw`-Methode, die die `Withdraw` Anweisungen
   aufruft.
-- `confidential_transfer_close_context_state_account` Methode, die ein
-  Nachweis-Konto schließt.
+- `confidential_transfer_close_context_state_account`-Methode, die ein
+  Nachweiskonto schließt.
 
 ### Beispielcode
 
-Das folgende Beispiel zeigt, wie man Token vom vertraulichen verfügbaren
-Guthaben zum öffentlichen Guthaben abhebt.
+Das folgende Beispiel zeigt, wie Token aus dem vertraulichen verfügbaren
+Guthaben auf das öffentliche Guthaben abgehoben werden.
 
-Um das Beispiel auszuführen, starten Sie einen lokalen Validator mit dem Token
-Extension Program, das vom Mainnet geklont wurde, mit folgendem Befehl. Sie
-müssen die Solana CLI installiert haben, um den lokalen Validator zu starten.
+Um das Beispiel auszuführen, starten Sie einen lokalen Validatoren mit dem Token
+Extensions Program, der von Mainnet geklont wurde, mit dem folgenden Befehl. Sie
+müssen die Solana CLI installiert haben, um den lokalen Validatoren zu starten.
 
 ```terminal
 $ solana-test-validator --clone-upgradeable-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --url https://api.mainnet.solana.com -r
 ```
 
 <Callout type="info">
-  Zum Zeitpunkt der Erstellung ist Confidential Transfers auf dem
-  Standard-lokalen Validator nicht aktiviert. Sie müssen das Mainnet Token
-  Extension Program klonen, um den Beispielcode auszuführen.
+  Zum Zeitpunkt der Erstellung ist Confidential Transfers im standardmäßigen
+  lokalen Validatoren nicht aktiviert. Sie müssen das Mainnet Token Extensions
+  Program klonen, um den Beispielcode auszuführen.
 </Callout>
 
 <CodeTabs>
