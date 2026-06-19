@@ -4012,7 +4012,7 @@
         },
         "custody": {
           "question": "Hangi saklama çözümleri mevcut?",
-          "answer": "Solana'yı destekleyen başlıca kurumsal saklama sağlayıcıları şunlardır: Fireblocks, Anchorage, BitGo, Coinbase, Copper, Crypto Finance ve Gemini. Bu sağlayıcılar sigorta kapsamı, düzenleyici uyumluluk (SOC2, nitelikli saklayıcı statüsü), kurumsal SLA'lar ve ticaret/uzlaşma sistemleriyle entegrasyon sunar."
+          "answer": "Solana'yı destekleyen başlıca kurumsal saklama sağlayıcıları şunlardır: Fireblocks, Anchorage, BitGo, Coinbase, Copper, Crypto Finance ve Gemini. Bu sağlayıcılar sigorta kapsamı, mevzuat uyumluluğu (SOC2, yetkili saklayıcı statüsü), kurumsal SLA'lar ve alım-satım/takas sistemleriyle entegrasyon sunar. Uygulama düzeyinde imzalama için Solana Keychain, Fireblocks, bulut KMS (AWS ve GCP), HashiCorp Vault ve yönetilen cüzdan hizmetleri dahil olmak üzere bu arka uçların pek çoğunda tek bir arayüz sağlar; böylece kod değiştirmeden sağlayıcı değiştirebilirsiniz."
         },
         "compliance": {
           "question": "Hangi uyumluluk özellikleri mevcut?",
@@ -4035,6 +4035,10 @@
         "token-extensions": {
           "title": "Token Extensions",
           "description": "Uyumluluk ve programlanabilirlik özelliklerine derinlemesine bakış."
+        },
+        "keychain": {
+          "title": "Keychain — Güvenli İmzalama",
+          "description": "KMS, HSM ve kurumsal saklama arka uçlarında birleşik imzalama."
         },
         "grants": {
           "title": "Hibe Programı",
